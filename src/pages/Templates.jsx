@@ -6,82 +6,104 @@ import { FileText, ArrowRight } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 const templates = [
-  { 
-    id: 1, 
-    title: 'Audit Report', 
+  {
+    id: 1,
+    title: 'Audit Report',
     description: 'Annual audit report with income, expenditure & auditor remarks.',
-    gradient: 'from-blue-50/50 to-indigo-50/50'
+    accent: 'bg-blue-400/20'
   },
-  { 
-    id: 2, 
-    title: 'Non-Dini Register', 
+  {
+    id: 2,
+    title: 'Non-Dini Register',
     description: 'Schedule VIII non-religious property register entries.',
-    gradient: 'from-emerald-50/50 to-teal-50/50'
+    accent: 'bg-emerald-400/20'
   },
-  { 
-    id: 3, 
-    title: 'Donation Report', 
+  {
+    id: 3,
+    title: 'Donation Report',
     description: 'Donor-wise contributions with receipt details.',
-    gradient: 'from-pink-50/50 to-rose-50/50'
+    accent: 'bg-pink-400/20'
   },
-  { 
-    id: 4, 
-    title: 'Balance Sheet', 
+  {
+    id: 4,
+    title: 'Balance Sheet',
     description: 'Statement of assets & liabilities for the financial year.',
-    gradient: 'from-orange-50/50 to-amber-50/50'
+    accent: 'bg-orange-400/20'
   }
 ];
 
+
+
 const Templates = () => {
   return (
-    <div className="min-h-screen pb-20">
+    <div className="min-h-screen pb-20 relative overflow-hidden bg-[#F8FAFF]">
+      {/* Background Decorative Gradients */}
+      <div className="absolute top-0 left-1/4 w-[800px] h-[800px] bg-blue-400/5 blur-[120px] rounded-full -translate-x-1/2 -translate-y-1/2" />
+      <div className="absolute bottom-0 right-0 w-[600px] h-[600px] bg-indigo-500/10 blur-[100px] rounded-full translate-x-1/4 translate-y-1/4" />
+      <div className="absolute top-1/2 right-0 w-[500px] h-[500px] bg-purple-400/10 blur-[120px] rounded-full translate-x-1/3" />
+
       <Navbar />
-      
-      <main className="max-w-[1600px] mx-auto px-8 pt-12">
-        <Heading 
-          title="Report Templates" 
+
+      <main className="max-w-[1600px] mx-auto px-8 lg:px-16 pt-12 relative z-10">
+        <Heading
+          title="Report Templates"
           subtitle="Choose a template to begin."
-          className="mb-12"
+          className="mb-16"
         />
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 xl:gap-20 items-center">
           {/* Left: Template Grid */}
-          <div className="lg:col-span-7 grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="lg:col-span-7 grid grid-cols-1 md:grid-cols-2 gap-8">
             {templates.map((template, index) => (
               <motion.div
                 key={template.id}
-                initial={{ opacity: 0, y: 20 }}
+                initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.1 }}
+                transition={{
+                  duration: 0.6,
+                  delay: index * 0.1,
+                  ease: [0.23, 1, 0.32, 1]
+                }}
               >
-                <Card className={`p-8 h-full flex flex-col justify-between group cursor-pointer hover:shadow-2xl hover:shadow-blue-500/10 transition-all border-slate-100 bg-gradient-to-br ${template.gradient}`}>
-                  <div>
-                    <div className="bg-gradient-to-br from-blue-600 to-indigo-700 w-12 h-12 rounded-xl flex items-center justify-center text-white mb-6 shadow-lg shadow-blue-500/20 group-hover:rotate-6 transition-transform">
-                      <FileText size={24} />
+                <Card className="p-10 h-[300px] w-[350px] flex flex-col justify-between group border border-slate-200 cursor-pointer hover:shadow-[0_30px_60px_-15px_rgba(0,0,0,0.08)] transition-all duration-500  bg-white">
+                  {/* Top-Right Accent Glow (Matching design exactly) */}
+                  <div className={`absolute -top-24 -right-24 w-80 h-80 blur-[80px] rounded-full opacity-40 group-hover:opacity-70 transition-opacity duration-700 ${template.accent}`} />
+
+                  <div className="relative z-10">
+                    <div className="bg-gradient-to-br from-indigo-900 to-blue-600 w-16 h-16 rounded-[1.25rem] flex items-center justify-center text-white mb-8 shadow-lg shadow-blue-500/10 group-hover:scale-105 transition-transform duration-500">
+                      <FileText size={32} strokeWidth={1.5} />
                     </div>
-                    <h3 className="text-xl font-bold text-slate-800 mb-3">{template.title}</h3>
-                    <p className="text-slate-500 text-sm leading-relaxed">{template.description}</p>
-                  </div>
-                  
-                  <div className="mt-8 flex justify-end">
-                    <div className="w-10 h-10 rounded-xl bg-white border border-slate-100 flex items-center justify-center text-slate-400 group-hover:bg-blue-600 group-hover:text-white group-hover:border-blue-600 transition-all shadow-sm">
-                      <ArrowRight size={20} className="group-hover:-rotate-45 transition-transform" />
+                    <h3 className="text-2xl font-bold text-slate-800 mb-4 tracking-tight">{template.title}</h3>
+                    <div className="flex justify-between">
+                      <p className="text-slate-500 text-[15px] leading-relaxed font-normal">
+                        {template.description}
+                      </p>
+                      <div className="w-[60px] h-[60px] p-5 ms-3 rounded-2xl bg-white border border-slate-200 flex items-center justify-center text-blue-900 shadow-[0_4px_20px_rgba(0,0,0,0.03)] group-hover:bg-slate-50 transition-all duration-300">
+                        <ArrowRight size={26} className="group-hover:-rotate-45 transition-transform duration-300" />
+                      </div>
                     </div>
                   </div>
+
                 </Card>
               </motion.div>
             ))}
+
           </div>
 
           {/* Right: Illustration */}
-          <motion.div 
-            initial={{ opacity: 0, scale: 0.9 }}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="lg:col-span-5 relative"
+            transition={{ duration: 0.8, delay: 0.3 }}
+            className="lg:col-span-5 relative hidden lg:block"
           >
-            <div className="absolute inset-0 bg-blue-500/10 blur-[100px] rounded-full" />
-            <div className="relative z-10 flex items-center justify-center p-12">
-               <Image src="/dashboard.png" alt="Templates Hero" className="w-full h-auto object-contain" />
+            <div className="absolute inset-0 bg-blue-500/15 blur-[120px] rounded-full scale-110 animate-pulse" />
+            <div className="relative z-10 flex items-center justify-center p-8">
+              <Image
+                src="/dashboard.png"
+                alt="Templates Hero"
+                className="w-full h-auto object-contain drop-shadow-[0_35px_35px_rgba(0,0,0,0.1)]"
+              />
             </div>
           </motion.div>
         </div>
@@ -89,5 +111,6 @@ const Templates = () => {
     </div>
   );
 };
+
 
 export default Templates;

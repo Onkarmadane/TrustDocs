@@ -10,7 +10,7 @@ const StatCard = ({ title, count, icon: Icon, variant = 'default' }) => {
   };
 
   return (
-    <Card className={cn("p-8 group relative overflow-hidden", variants[variant])}>
+    <Card className={cn("p-8 group relative overflow-hidden w-[350px] h-[130px] justify-center", variants[variant])}>
       <div className="flex justify-between items-start relative z-10">
         <div>
           <h3 className={cn(
@@ -25,19 +25,19 @@ const StatCard = ({ title, count, icon: Icon, variant = 'default' }) => {
           </p>
         </div>
         <div className={cn(
-          "p-4 rounded-2xl transition-all duration-500 group-hover:rotate-12 group-hover:scale-110",
-          variant === 'primary' ? "bg-white/20 text-white" : "bg-blue-600 text-white shadow-lg shadow-blue-500/30"
+          "p-4 rounded-2xl transition-all duration-500 group-hover:rotate-12 group-hover:scale-110 shadow-lg",
+          variant === 'primary' ? "bg-indigo-900/50 text-white" : "bg-blue-600 text-white shadow-blue-500/30"
         )}>
           {Icon ? <Icon size={24} /> : <FileText size={24} />}
         </div>
       </div>
 
       {/* Dotted Grid Background */}
-      <div className="absolute inset-0 pointer-events-none opacity-[0.03]">
+      <div className="absolute inset-0 pointer-events-none opacity-[0.08]">
         <div className="absolute inset-0" style={{ backgroundImage: 'radial-gradient(#000 1px, transparent 1px)', backgroundSize: '20px 20px' }} />
       </div>
       {variant === 'primary' && (
-        <div className="absolute inset-0 pointer-events-none opacity-[0.1]">
+        <div className="absolute inset-0 pointer-events-none opacity-[0.15]">
           <div className="absolute inset-0" style={{ backgroundImage: 'radial-gradient(#fff 1px, transparent 1px)', backgroundSize: '20px 20px' }} />
         </div>
       )}

@@ -19,19 +19,19 @@ const Navbar = () => {
     return (
       <div className={cn(
         "flex items-center gap-3",
-        mobile ? "flex-col w-full" : "bg-white/40 p-1.5 rounded-full border border-white/60 backdrop-blur-xl shadow-sm"
+        mobile ? "flex-col w-full" : ""
       )}>
         {links.map((link) => {
           const isActive = location.pathname === link.path;
-          
+
           return (
-            <Link 
+            <Link
               key={link.name}
               to={link.path}
               className={cn(
                 "rounded-full px-8 py-2.5 font-semibold text-xs transition-all duration-300 flex items-center justify-center whitespace-nowrap",
-                isActive 
-                  ? "gradient text-white shadow-lg shadow-blue-500/40" 
+                isActive
+                  ? "gradient text-white shadow-lg shadow-blue-500/40"
                   : "bg-white text-slate-600 shadow-sm hover:bg-slate-50",
                 mobile ? "w-full py-4 text-sm" : ""
               )}
@@ -61,19 +61,19 @@ const Navbar = () => {
           <NavLinks />
         </div>
 
-        {/* Right: Actions */}
-        <div className="flex items-center justify-end gap-4 w-1/4">
-          <button className="hidden sm:flex w-11 h-11 rounded-full bg-white border border-slate-100 items-center justify-center text-blue-600 shadow-sm hover:bg-blue-50 transition-colors">
-            <Search size={20} />
+        {/* Right: Actions & Profile */}
+        <div className="flex items-center gap-4 w-1/4 justify-end">
+          <button className="w-11 h-11 rounded-full bg-white border border-slate-100 flex items-center justify-center text-slate-400 hover:text-blue-600 transition-all shadow-sm hidden sm:flex">
+            <Search size={18} />
           </button>
-
-          <div className="flex items-center gap-3 pl-4 border-l border-slate-200 hidden sm:flex">
-            <div className="w-11 h-11 rounded-full bg-white border border-slate-100 flex items-center justify-center text-blue-600 shadow-sm overflow-hidden">
+          
+          <div className="flex items-center gap-3 pl-2 hidden sm:flex">
+            <div className="w-11 h-11 rounded-full bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-600 shadow-sm overflow-hidden">
               <User size={20} />
             </div>
             <div className="text-left hidden xl:block">
-              <p className="text-[13px] font-bold text-slate-800 leading-none">Admin</p>
-              <p className="text-[11px] text-slate-500 mt-0.5">admin@gmail.com</p>
+              <p className="text-[12px] font-bold text-slate-800 leading-none">Admin</p>
+              <p className="text-[10px] text-slate-400 mt-0.5">admin@gmail.com</p>
             </div>
           </div>
 

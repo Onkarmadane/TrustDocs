@@ -37,25 +37,11 @@ const ReportChart = () => {
   return (
     <Card className="p-8 h-[400px] bg-white border-slate-100 shadow-sm relative overflow-hidden">
       {/* Dotted Grid Background */}
-      <div className="absolute inset-0 pointer-events-none opacity-[0.03]">
+      <div className="absolute inset-0 pointer-events-none opacity-[0.08]">
         <div className="absolute inset-0" style={{ backgroundImage: 'radial-gradient(#000 1px, transparent 1px)', backgroundSize: '20px 20px' }} />
       </div>
 
-      <div className="flex justify-between items-center mb-8 relative z-10">
-        <h3 className="text-slate-900 font-semibold">Report Statistics</h3>
-        <div className="flex gap-6">
-          <div className="flex items-center gap-2">
-            <div className="w-2.5 h-2.5 rounded-full bg-blue-600" />
-            <span className="text-xs font-medium text-slate-500">Created Reports</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="w-2.5 h-2.5 rounded-full bg-slate-400" />
-            <span className="text-xs font-medium text-slate-500">Draft Reports</span>
-          </div>
-        </div>
-      </div>
-      
-      <div className="h-[300px] w-full relative z-10">
+      <div className="h-[300px] w-full relative z-10 mt-4">
         <ResponsiveContainer width="100%" height="100%">
           <AreaChart data={data} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
             <defs>
