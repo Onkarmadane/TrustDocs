@@ -43,7 +43,7 @@ const A4Page = ({ children, pageLabel }) => (
 /* ═══════════════════════════════════════════════════════════ */
 /*  PAGE 1 — Cover Page                                       */
 /* ═══════════════════════════════════════════════════════════ */
-const CoverPage = ({ formData }) => (
+export const CoverPage = ({ formData }) => (
   <A4Page pageLabel="Page 1 — Cover">
     <div className="h-full flex flex-col items-center justify-center text-center px-4">
       <div className="space-y-5 flex-1 flex flex-col items-center justify-center">
@@ -84,7 +84,7 @@ const CoverPage = ({ formData }) => (
 /* ═══════════════════════════════════════════════════════════ */
 /*  PAGE 2 — Permissions & Disclosures                        */
 /* ═══════════════════════════════════════════════════════════ */
-const PermissionsPage = ({ formData }) => (
+export const PermissionsPage = ({ formData }) => (
   <A4Page pageLabel="Page 2 — Permissions">
     <div className="text-[5.5px] leading-relaxed">
       {/* Header */}
@@ -149,7 +149,7 @@ const PermissionsPage = ({ formData }) => (
 /*  PAGE 3.1 — Schedule IX (Deductions)                       */
 /* ═══════════════════════════════════════════════════════════ */
 
-const ScheduleIXPage = ({ formData }) => {
+export const ScheduleIXPage = ({ formData }) => {
   const grossIncome = parseFloat(formData.sch_income_shown || 0);
   const totalDeductions = scheduleIXItems.reduce((s, item) => s + (parseFloat(formData[item.key]) || 0), 0);
   const netIncome = grossIncome - totalDeductions;
@@ -217,7 +217,7 @@ const ScheduleIXPage = ({ formData }) => {
 /* ═══════════════════════════════════════════════════════════ */
 /*  PAGE 3.2 — Income & Expenditure Account Table             */
 /* ═══════════════════════════════════════════════════════════ */
-const IncomeExpPage = ({ formData }) => {
+export const IncomeExpPage = ({ formData }) => {
   const expTotal = expenditureItems.reduce((s, item) => s + (parseFloat(formData[item.key]) || 0), 0);
   const incTotal = incomeItems.reduce((s, item) => s + (parseFloat(formData[item.key]) || 0), 0);
   const maxRows = Math.max(expenditureItems.length, incomeItems.length);
@@ -304,7 +304,7 @@ const IncomeExpPage = ({ formData }) => {
 /* ═══════════════════════════════════════════════════════════ */
 /*  PAGE 4 — Balance Sheet                                    */
 /* ═══════════════════════════════════════════════════════════ */
-const BalanceSheetPage = ({ formData }) => {
+export const BalanceSheetPage = ({ formData }) => {
   const flTotal = Object.entries(formData).filter(([k]) => k.startsWith('fl_')).reduce((s, [, v]) => s + (parseFloat(v) || 0), 0);
   const paTotal = Object.entries(formData).filter(([k]) => k.startsWith('pa_')).reduce((s, [, v]) => s + (parseFloat(v) || 0), 0);
 

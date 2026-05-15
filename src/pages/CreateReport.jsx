@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect, useRef } from 'react';
 import Navbar from '../components/layout/Navbar';
 import Card from '../components/ui/Card';
 import { InputField, RadioGroup, SelectField } from '../components/ui/FormFields';
@@ -6,6 +6,8 @@ import { ChevronLeft, ChevronRight, MoreVertical, Search, Maximize2, Upload } fr
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '../lib/utils';
 import LivePreview from './LivePreview';
+import { reportService } from '../services/reportService';
+import { mapFormDataToBackendPayload } from '../utils/reportMapper';
 import {
   permissionsQuestions,
   expenditureItems,
@@ -62,15 +64,36 @@ const StepIndicator = ({ currentStep }) => (
 );
 
 /* ─── Upload Box ─── */
-const UploadBox = ({ label }) => (
-  <div className="flex-1">
-    <label className="block text-[11px] font-bold text-slate-500 mb-2 uppercase tracking-wide">{label}</label>
-    <div className="border border-slate-100 rounded-xl px-4 py-3 flex items-center justify-between hover:bg-slate-50 hover:border-blue-200 transition-all cursor-pointer group bg-white shadow-sm">
-      <span className="text-xs text-slate-400 group-hover:text-blue-500">Upload</span>
-      <Upload size={18} className="text-slate-300 group-hover:text-blue-500 transition-colors" />
+const UploadBox = ({ label, value, onUpload }) => {
+  const fileInputRef = useRef(null);
+  const [isUploading, setIsUploading] = useState(false);
+
+  const handleFileChange = async (e) => {
+    const file = e.target.files[0];
+    if (file && onUpload) {
+      setIsUploading(true);
+      await onUpload(file);
+      setIsUploading(false);
+    }
+  };
+
+  return (
+    <div className="flex-1">
+      <label className="block text-[11px] font-bold text-slate-500 mb-2 uppercase tracking-wide">{label}</label>
+      <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handleFileChange} />
+      <div 
+        onClick={() => fileInputRef.current?.click()}
+        className="border border-slate-100 rounded-xl px-4 py-3 flex items-center justify-between hover:bg-slate-50 hover:border-blue-200 transition-all cursor-pointer group bg-white shadow-sm"
+      >
+        <span className="text-xs text-slate-400 group-hover:text-blue-500 truncate max-w-[80%]">
+          {isUploading ? 'Uploading...' : (value ? 'Uploaded' : 'Upload')}
+        </span>
+        <Upload size={18} className={cn("text-slate-300 transition-colors", value ? "text-green-500" : "group-hover:text-blue-500")} />
+      </div>
+      {value && <img src={value} alt={label} className="mt-2 h-16 object-contain rounded border border-slate-100" />}
     </div>
-  </div>
-);
+  );
+};
 
 /* ─── Accounting Row (Expenditure / Income / Balance Sheet) ─── */
 const AccountingRow = ({ item, formData, onChange }) => {
@@ -201,17 +224,75 @@ const CreateReport = () => {
   const [subStep, setSubStep] = useState(1); // For Step 3 (3.1 and 3.2)
   const [formData, setFormData] = useState({});
   const [zoom, setZoom] = useState(100);
+  const [reportId, setReportId] = useState(null);
+
+  const lastSavedData = useRef({});
+  const formDataRef = useRef(formData);
+  const currentStepRef = useRef(currentStep);
+  const reportIdRef = useRef(reportId);
+
+  useEffect(() => {
+    formDataRef.current = formData;
+    currentStepRef.current = currentStep;
+    reportIdRef.current = reportId;
+  }, [formData, currentStep, reportId]);
+
+  useEffect(() => {
+    const autosaveTimer = setInterval(async () => {
+      const currentData = formDataRef.current;
+      const step = currentStepRef.current;
+      const id = reportIdRef.current;
+
+      if (Object.keys(currentData).length === 0) return;
+      if (JSON.stringify(currentData) === JSON.stringify(lastSavedData.current)) return;
+
+      try {
+        const payload = mapFormDataToBackendPayload(currentData, step, 'draft');
+        
+        if (!id) {
+          const result = await reportService.createReport(payload);
+          if (result.success && result.data?._id) {
+            setReportId(result.data._id);
+            lastSavedData.current = currentData;
+            console.log('Autosaved (Created Draft):', result.data._id);
+          }
+        } else {
+          const result = await reportService.updateReport(id, payload);
+          if (result.success) {
+            lastSavedData.current = currentData;
+            console.log('Autosaved (Updated Draft):', id);
+          }
+        }
+      } catch (err) {
+        console.error('Autosave failed:', err);
+      }
+    }, 15000);
+
+    return () => clearInterval(autosaveTimer);
+  }, []);
 
   const handleChange = useCallback((e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
   }, []);
 
+  const handleImageUpload = async (file, key) => {
+    try {
+      const result = await reportService.uploadImage(file);
+      if (result.success && result.data?.url) {
+        setFormData(prev => ({ ...prev, [key]: result.data.url }));
+      }
+    } catch (error) {
+      console.error('Image upload failed:', error);
+      alert('Failed to upload image.');
+    }
+  };
+
   const handleNext = () => {
     if (currentStep === 3 && subStep === 1) {
       setSubStep(2);
     } else {
-      setCurrentStep(prev => Math.min(6, prev + 1));
+      setCurrentStep(prev => Math.min(4, prev + 1));
       if (currentStep === 2) setSubStep(1); // Reset subStep when entering Step 3
     }
   };
@@ -232,6 +313,32 @@ const CreateReport = () => {
   // Calculate totals for step 4
   const flTotal = Object.entries(formData).filter(([k]) => k.startsWith('fl_')).reduce((s, [, v]) => s + (parseFloat(v) || 0), 0);
   const paTotal = Object.entries(formData).filter(([k]) => k.startsWith('pa_')).reduce((s, [, v]) => s + (parseFloat(v) || 0), 0);
+
+  const handleSaveReport = async () => {
+    try {
+      const payload = mapFormDataToBackendPayload(formData, currentStep, 'completed');
+      
+      let result;
+      if (!reportId) {
+        result = await reportService.createReport(payload);
+        if (result.success && result.data?._id) {
+          setReportId(result.data._id);
+        }
+      } else {
+        result = await reportService.updateReport(reportId, payload);
+      }
+      
+      if (result.success) {
+        alert('Report saved successfully!');
+        lastSavedData.current = formData;
+      } else {
+        alert('Error saving report: ' + result.message);
+      }
+    } catch (error) {
+      console.error('Save Report Error:', error);
+      alert('Failed to save report: ' + (error.message || 'Unknown error'));
+    }
+  };
 
   return (
     <div className="min-h-screen pb-20">
@@ -320,10 +427,26 @@ const CreateReport = () => {
                     <div className="pt-8 border-t border-slate-50">
                       <h2 className="text-[11px] font-bold text-slate-400 mb-6 uppercase tracking-[0.2em]">Upload Stamp & Signature</h2>
                       <div className="grid grid-cols-2 gap-x-8 gap-y-5">
-                        <UploadBox label="Signature 1" />
-                        <UploadBox label="Stamp 1" />
-                        <UploadBox label="Signature 2" />
-                        <UploadBox label="Stamp 2" />
+                        <UploadBox 
+                          label="Signature 1" 
+                          value={formData.signature_1} 
+                          onUpload={(file) => handleImageUpload(file, 'signature_1')} 
+                        />
+                        <UploadBox 
+                          label="Stamp 1" 
+                          value={formData.stamp_1} 
+                          onUpload={(file) => handleImageUpload(file, 'stamp_1')} 
+                        />
+                        <UploadBox 
+                          label="Signature 2" 
+                          value={formData.signature_2} 
+                          onUpload={(file) => handleImageUpload(file, 'signature_2')} 
+                        />
+                        <UploadBox 
+                          label="Stamp 2" 
+                          value={formData.stamp_2} 
+                          onUpload={(file) => handleImageUpload(file, 'stamp_2')} 
+                        />
                       </div>
                     </div>
                   </motion.div>
@@ -539,13 +662,22 @@ const CreateReport = () => {
                 <ChevronLeft size={20} />
                 Back
               </button>
-              <button
-                onClick={handleNext}
-                className="px-10 py-3 rounded-2xl gradient text-white font-bold flex items-center gap-2 shadow-lg shadow-blue-500/20 hover:shadow-xl hover:shadow-blue-500/40 transition-all"
-              >
-                Next
-                <ChevronRight size={20} />
-              </button>
+              {currentStep === 4 ? (
+                <button
+                  onClick={handleSaveReport}
+                  className="px-10 py-3 rounded-2xl bg-green-600 text-white font-bold flex items-center gap-2 shadow-lg shadow-green-500/20 hover:shadow-xl hover:shadow-green-500/40 transition-all"
+                >
+                  Save Report
+                </button>
+              ) : (
+                <button
+                  onClick={handleNext}
+                  className="px-10 py-3 rounded-2xl gradient text-white font-bold flex items-center gap-2 shadow-lg shadow-blue-500/20 hover:shadow-xl hover:shadow-blue-500/40 transition-all"
+                >
+                  Next
+                  <ChevronRight size={20} />
+                </button>
+              )}
             </div>
           </div>
 

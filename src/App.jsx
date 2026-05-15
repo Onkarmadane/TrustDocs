@@ -3,6 +3,7 @@ import Dashboard from './pages/Dashboard';
 import SavedReports from './pages/SavedReports';
 import Templates from './pages/Templates';
 import CreateReport from './pages/CreateReport';
+import AuditForm from './pages/AuditForm';
 
 function App() {
   return (
@@ -12,6 +13,7 @@ function App() {
         <Route path="/all-reports" element={<SavedReports />} />
         <Route path="/templates" element={<Templates />} />
         <Route path="/create-report" element={<CreateReport />} />
+        <Route path="/add" element={<AuditForm />} />
       </Routes>
     </Router>
   );
