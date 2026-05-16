@@ -1,12 +1,24 @@
-import { Search, User, FileText, Menu, X } from 'lucide-react';
+import { Search, User, FileText, Menu, X, LogOut, ChevronDown } from 'lucide-react';
 import { cn } from '../../lib/utils';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link, useLocation } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const { user, logout } = useAuth();
   const location = useLocation();
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 20);
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   const NavLinks = ({ mobile = false }) => {
     const links = [
@@ -46,7 +58,10 @@ const Navbar = () => {
   };
 
   return (
-    <nav className="relative z-50">
+    <nav className={cn(
+      "sticky top-0 z-50 transition-all duration-300",
+      scrolled ? "bg-white shadow-sm" : "bg-transparent"
+    )}>
       <div className="flex items-center justify-between px-6 lg:px-12 py-6">
         {/* Left: Logo */}
         <div className="flex items-center gap-3 w-1/4">
@@ -63,18 +78,50 @@ const Navbar = () => {
 
         {/* Right: Actions & Profile */}
         <div className="flex items-center gap-4 w-1/4 justify-end">
-          <button className="w-11 h-11 rounded-full bg-white border border-slate-100 flex items-center justify-center text-slate-400 hover:text-blue-600 transition-all shadow-sm hidden sm:flex">
+          {/* <button className="w-11 h-11 rounded-full bg-white border border-slate-100 flex items-center justify-center text-slate-400 hover:text-blue-600 transition-all shadow-sm hidden sm:flex">
             <Search size={18} />
-          </button>
-          
-          <div className="flex items-center gap-3 pl-2 hidden sm:flex">
-            <div className="w-11 h-11 rounded-full bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-600 shadow-sm overflow-hidden">
-              <User size={20} />
-            </div>
-            <div className="text-left hidden xl:block">
-              <p className="text-[12px] font-bold text-slate-800 leading-none">Admin</p>
-              <p className="text-[10px] text-slate-400 mt-0.5">admin@gmail.com</p>
-            </div>
+          </button> */}
+
+          <div className="relative">
+            <button 
+              onClick={() => setIsProfileOpen(!isProfileOpen)}
+              className="flex items-center gap-3 pl-2 hidden sm:flex hover:bg-slate-50 p-1.5 rounded-2xl transition-all"
+            >
+              <div className="w-11 h-11 rounded-full bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-600 shadow-sm overflow-hidden">
+                <User size={20} />
+              </div>
+              <div className="text-left hidden xl:block">
+                <p className="text-[12px] font-bold text-slate-800 leading-none">{user?.fullName || 'Admin'}</p>
+                <p className="text-[10px] text-slate-400 mt-0.5">{user?.email || 'admin@gmail.com'}</p>
+              </div>
+              <ChevronDown size={14} className={cn("text-slate-400 transition-transform", isProfileOpen && "rotate-180")} />
+            </button>
+
+            {isProfileOpen && (
+              <>
+                <div className="fixed inset-0 z-10" onClick={() => setIsProfileOpen(false)}></div>
+                <motion.div
+                  initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  className="absolute right-0 mt-2 w-56 bg-white border border-slate-100 rounded-2xl shadow-xl z-20 overflow-hidden py-2"
+                >
+                  <div className="px-4 py-3 border-b border-slate-50 mb-1">
+                    <p className="text-sm font-bold text-slate-800">{user?.fullName}</p>
+                    <p className="text-xs text-slate-400 truncate">{user?.email}</p>
+                  </div>
+                  <button 
+                    onClick={() => {
+                      logout();
+                      setIsProfileOpen(false);
+                    }}
+                    className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors font-semibold"
+                  >
+                    <LogOut size={16} />
+                    Sign Out
+                  </button>
+                </motion.div>
+              </>
+            )}
           </div>
 
           {/* Mobile Menu Toggle */}
@@ -98,14 +145,22 @@ const Navbar = () => {
           >
             <div className="bg-white/90 backdrop-blur-2xl rounded-[2rem] border border-white/60 shadow-2xl p-6 space-y-4">
               <NavLinks mobile />
-              <div className="pt-4 border-t border-slate-100 flex items-center gap-4">
-                <div className="w-12 h-12 rounded-full bg-blue-50 flex items-center justify-center text-blue-600">
-                  <User size={24} />
+              <div className="pt-4 border-t border-slate-100 flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-full bg-blue-50 flex items-center justify-center text-blue-600">
+                    <User size={24} />
+                  </div>
+                  <div>
+                    <p className="font-bold text-slate-800">{user?.fullName}</p>
+                    <p className="text-sm text-slate-500">{user?.email}</p>
+                  </div>
                 </div>
-                <div>
-                  <p className="font-bold text-slate-800">Admin</p>
-                  <p className="text-sm text-slate-500">admin@gmail.com</p>
-                </div>
+                <button 
+                  onClick={() => logout()}
+                  className="w-11 h-11 rounded-full bg-red-50 flex items-center justify-center text-red-600"
+                >
+                  <LogOut size={20} />
+                </button>
               </div>
             </div>
           </motion.div>

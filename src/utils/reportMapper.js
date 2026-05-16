@@ -5,7 +5,7 @@ import {
   incomeItems,
   fundsLiabilitiesItems,
   propertyAssetsItems,
-} from '../pages/reportData';
+} from '../components/auditreport/reportData';
 
 export const mapFormDataToBackendPayload = (formData, currentStep, status = 'draft') => {
   const expTotal = Object.entries(formData).filter(([k]) => k.startsWith('exp_')).reduce((s, [, v]) => s + (parseFloat(v) || 0), 0);
@@ -45,30 +45,30 @@ export const mapFormDataToBackendPayload = (formData, currentStep, status = 'dra
     },
     incomeExpenditure: {
       expenditures: expenditureItems.map(item => ({
-         key: item.key,
-         label: item.label,
-         amount: Number(formData[item.key]) || 0
+        key: item.key,
+        label: item.label,
+        amount: Number(formData[item.key]) || 0
       })),
       incomes: incomeItems.map(item => ({
-         key: item.key,
-         label: item.label,
-         amount: Number(formData[item.key]) || 0
+        key: item.key,
+        label: item.label,
+        amount: Number(formData[item.key]) || 0
       })),
       totalExpenditure: expTotal,
       totalIncome: incTotal
     },
     balanceSheet: {
       fundsLiabilities: fundsLiabilitiesItems.map(item => ({
-         key: item.key,
-         label: item.label,
-         amount: Number(formData[item.key]) || 0,
-         total: Number(formData[`${item.key}_total`]) || 0
+        key: item.key,
+        label: item.label,
+        amount: Number(formData[item.key]) || 0,
+        total: Number(formData[`${item.key}_total`]) || 0
       })),
       propertyAssets: propertyAssetsItems.map(item => ({
-         key: item.key,
-         label: item.label,
-         amount: Number(formData[item.key]) || 0,
-         total: Number(formData[`${item.key}_total`]) || 0
+        key: item.key,
+        label: item.label,
+        amount: Number(formData[item.key]) || 0,
+        total: Number(formData[`${item.key}_total`]) || 0
       })),
       totalFundsLiabilities: flTotal,
       totalPropertyAssets: paTotal

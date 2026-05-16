@@ -65,15 +65,15 @@ const Templates = () => {
                   ease: [0.23, 1, 0.32, 1]
                 }}
               >
-                <Card className="p-10 h-[300px] w-[350px] flex flex-col justify-between group border border-slate-200 cursor-pointer hover:shadow-[0_30px_60px_-15px_rgba(0,0,0,0.08)] transition-all duration-500  bg-white">
+                <Card className="p-5 h-[230px] w-[350px] flex flex-col justify-between group border border-slate-200 cursor-pointer hover:shadow-[0_30px_60px_-15px_rgba(0,0,0,0.08)] transition-all duration-500  bg-white">
                   {/* Top-Right Accent Glow (Matching design exactly) */}
                   <div className={`absolute -top-24 -right-24 w-80 h-80 blur-[80px] rounded-full opacity-40 group-hover:opacity-70 transition-opacity duration-700 ${template.accent}`} />
 
                   <div className="relative z-10">
-                    <div className="bg-gradient-to-br from-indigo-900 to-blue-600 w-16 h-16 rounded-[1.25rem] flex items-center justify-center text-white mb-8 shadow-lg shadow-blue-500/10 group-hover:scale-105 transition-transform duration-500">
+                    <div className="bg-gradient-to-br from-indigo-900 to-blue-600 w-[60px] h-[60px] rounded-[12px] flex items-center justify-center text-white mb-8 shadow-lg shadow-blue-500/10 group-hover:scale-105 transition-transform duration-500">
                       <FileText size={32} strokeWidth={1.5} />
                     </div>
-                    <h3 className="text-2xl font-bold text-slate-800 mb-4 tracking-tight">{template.title}</h3>
+                    <h3 className="text-[15px] font-bold text-slate-800 mb-4 tracking-tight">{template.title}</h3>
                     <div className="flex justify-between">
                       <p className="text-slate-500 text-[15px] leading-relaxed font-normal">
                         {template.description}
@@ -90,7 +90,6 @@ const Templates = () => {
 
           </div>
 
-          {/* Right: Illustration */}
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}

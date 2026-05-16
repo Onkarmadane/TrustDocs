@@ -8,8 +8,15 @@ export const reportService = {
     });
   },
 
-  getReports: async () => {
-    return await apiClient('/reports', {
+  getReports: async (status, search, page = 1, per_page = 10) => {
+    let url = `/reports?page=${page}&per_page=${per_page}&`;
+    if (status && status !== 'all') url += `status=${status}&`;
+    if (search) url += `search=${search}&`;
+    
+    // Remove trailing & or ?
+    url = url.replace(/[&?]$/, '');
+    
+    return await apiClient(url, {
       method: 'GET',
     });
   },
@@ -39,6 +46,13 @@ export const reportService = {
     return await apiClient('/upload', {
       method: 'POST',
       data: formData,
+    });
+  },
+
+  downloadPdf: async (id) => {
+    return await apiClient(`/reports/${id}/pdf`, {
+      method: 'GET',
+      responseType: 'blob',
     });
   }
 };

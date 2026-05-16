@@ -32,12 +32,21 @@ export const apiClient = async (endpoint, { method = 'GET', data, ...customConfi
   const response = await fetch(`${API_BASE_URL}${endpoint}`, config);
 
   if (!response.ok) {
-    const errorData = await response.json().catch(() => ({}));
+    let errorData = {};
+    try {
+      errorData = await response.json();
+    } catch (e) {
+      // Ignore if not JSON
+    }
     throw new ApiError(
       errorData.message || 'Something went wrong',
       response.status,
       errorData
     );
+  }
+
+  if (customConfig.responseType === 'blob') {
+    return response.blob();
   }
 
   return response.json();

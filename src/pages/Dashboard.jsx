@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import Navbar from '../components/layout/Navbar';
 import StatCard from '../components/dashboard/StatCard';
 import ReportChart from '../components/dashboard/ReportChart';
@@ -7,8 +7,13 @@ import { motion } from 'framer-motion';
 import Button from '../components/ui/Button';
 import Image from '../components/ui/Image';
 import Heading from '../components/ui/Heading';
+import { useNavigate } from 'react-router-dom';
 
 const Dashboard = () => {
+  const [isDownloading, setIsDownloading] = useState(false);
+  const navigate = useNavigate();
+
+
   return (
     <div className="min-h-screen text-slate-900 pb-20">
       <Navbar />
@@ -23,6 +28,7 @@ const Dashboard = () => {
                 subtitle="Welcome back. Pick a template to start a new report."
                 className="mb-12"
               />
+
             </div>
 
             <motion.div
@@ -53,10 +59,10 @@ const Dashboard = () => {
       </main>
 
       {/* Premium Circular Floating Button */}
-      <div className="fixed bottom-12 right-12 z-50 group">
+      <div className="fixed bottom-10 right-10 z-50 group">
         <motion.div
           whileHover={{ scale: 1.05 }}
-          className="relative w-32 h-32 flex items-center justify-center"
+          className="relative w-20 h-20 flex items-center justify-center"
         >
           {/* Rotating Text */}
           <motion.div
@@ -70,9 +76,9 @@ const Dashboard = () => {
                 d="M 50, 50 m -38, 0 a 38,38 0 1,1 76,0 a 38,38 0 1,1 -76,0"
                 fill="none"
               />
-              <text className="text-[9px] font-bold fill-indigo-600/60 uppercase tracking-[0.25em]">
+              <text className="text-[10px] font-bold fill-indigo-600/60 uppercase tracking-[0.18em]">
                 <textPath href="#circlePath">
-                  CREATE • CREATE • CREATE • CREATE •
+                  CREATE • CREATE • CREATE • CREATE • CREATE • CREATE • CREATE • CREATE • CREATE •
                 </textPath>
               </text>
             </svg>
@@ -81,11 +87,18 @@ const Dashboard = () => {
           {/* Central Button */}
           <motion.button
             whileTap={{ scale: 0.9 }}
-            className="w-16 h-16 bg-gradient-to-tr from-indigo-900 to-blue-600 text-white rounded-full flex items-center justify-center shadow-2xl shadow-blue-500/40 relative z-10 overflow-hidden"
+            className="w-10 h-10 bg-gradient-to-tr from-indigo-900 to-blue-600 text-white rounded-full flex items-center justify-center shadow-xl shadow-blue-500/30 relative z-10 overflow-hidden"
+            onClick={() => navigate('/create-report')}
           >
             <div className="absolute inset-0 bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity" />
-            <FileText size={28} className="group-hover:scale-110 transition-transform" strokeWidth={1.5} />
-            <div className="absolute bottom-4 right-4 bg-white text-indigo-900 rounded-full w-5 h-5 flex items-center justify-center text-[10px] font-bold border-2 border-indigo-900">
+
+            <FileText
+              size={22}
+              className="group-hover:scale-110 transition-transform"
+              strokeWidth={1.5}
+            />
+
+            <div className="absolute bottom-1 right-1 bg-white text-indigo-900 rounded-full w-4 h-4 flex items-center justify-center text-[9px] font-bold border border-indigo-900">
               +
             </div>
           </motion.button>

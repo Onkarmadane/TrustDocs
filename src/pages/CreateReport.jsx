@@ -2,12 +2,21 @@ import React, { useState, useCallback, useEffect, useRef } from 'react';
 import Navbar from '../components/layout/Navbar';
 import Card from '../components/ui/Card';
 import { InputField, RadioGroup, SelectField } from '../components/ui/FormFields';
-import { ChevronLeft, ChevronRight, MoreVertical, Search, Maximize2, Upload } from 'lucide-react';
+import { ChevronLeft, ChevronRight, MoreVertical, Search, Maximize2, Upload, Download } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import toast from 'react-hot-toast';
 import { cn } from '../lib/utils';
-import LivePreview from './LivePreview';
+import LivePreview from '../components/auditreport/LivePreview';
 import { reportService } from '../services/reportService';
 import { mapFormDataToBackendPayload } from '../utils/reportMapper';
+
+// Import subcomponents
+import StepIndicator from '../components/auditreport/StepIndicator';
+import UploadBox from '../components/auditreport/UploadBox';
+import AccountingRow from '../components/auditreport/AccountingRow';
+import BalanceSheetColumn from '../components/auditreport/BalanceSheetColumn';
+import { steps } from '../components/auditreport/steps';
+
 import {
   permissionsQuestions,
   expenditureItems,
@@ -15,216 +24,23 @@ import {
   fundsLiabilitiesItems,
   propertyAssetsItems,
   scheduleIXItems,
-} from './reportData';
+} from '../components/auditreport/reportData';
 
-const steps = [
-  { id: 1, name: 'Basic\nDetails' },
-  { id: 2, name: 'Permissions' },
-  { id: 3, name: 'Income &\nExpenditure' },
-  { id: 4, name: 'Balance\nSheet' },
-  { id: 5, name: 'Receipt & Payment\nAccount' },
-  { id: 6, name: 'Preview &\nSave' },
-];
 
-/* ─── Step Indicator ─── */
-const StepIndicator = ({ currentStep }) => (
-  <div className="flex items-center justify-between w-full relative">
-    {/* Background Line (Gray) - Starts at center of 1st, ends at center of last */}
-    <div className="absolute top-[17px] left-[8.33%] right-[8.33%] h-[2px] bg-slate-50" />
-    
-    {/* Progress Line (Blue) */}
-    <motion.div 
-      className="absolute top-[17px] left-[8.33%] h-[2px] bg-blue-600 z-0 origin-left"
-      initial={{ width: 0 }}
-      animate={{ width: `${((currentStep - 1) / (steps.length - 1)) * 83.33}%` }}
-      transition={{ duration: 0.5, ease: "easeInOut" }}
-    />
 
-    {steps.map((step) => (
-      <div key={step.id} className="flex flex-col items-center relative z-10 flex-1">
-        {/* Step Circle */}
-        <div className={cn(
-          "w-9 h-9 rounded-full flex items-center justify-center text-[13px] font-bold transition-all duration-500 relative",
-          currentStep === step.id ? "gradient text-white shadow-lg shadow-blue-500/30 scale-105" :
-            currentStep > step.id ? "bg-blue-600 text-white" : "bg-white text-slate-300 border-2 border-slate-100"
-        )}>
-          {step.id}
-        </div>
 
-        {/* Step Label */}
-        <span className={cn(
-          "mt-3 text-[10px] font-bold uppercase tracking-wider text-center whitespace-pre-line leading-tight transition-colors duration-500",
-          currentStep === step.id ? "text-blue-600" : "text-slate-400"
-        )}>
-          {step.name}
-        </span>
-      </div>
-    ))}
-  </div>
-);
 
-/* ─── Upload Box ─── */
-const UploadBox = ({ label, value, onUpload }) => {
-  const fileInputRef = useRef(null);
-  const [isUploading, setIsUploading] = useState(false);
 
-  const handleFileChange = async (e) => {
-    const file = e.target.files[0];
-    if (file && onUpload) {
-      setIsUploading(true);
-      await onUpload(file);
-      setIsUploading(false);
-    }
-  };
-
-  return (
-    <div className="flex-1">
-      <label className="block text-[11px] font-bold text-slate-500 mb-2 uppercase tracking-wide">{label}</label>
-      <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handleFileChange} />
-      <div 
-        onClick={() => fileInputRef.current?.click()}
-        className="border border-slate-100 rounded-xl px-4 py-3 flex items-center justify-between hover:bg-slate-50 hover:border-blue-200 transition-all cursor-pointer group bg-white shadow-sm"
-      >
-        <span className="text-xs text-slate-400 group-hover:text-blue-500 truncate max-w-[80%]">
-          {isUploading ? 'Uploading...' : (value ? 'Uploaded' : 'Upload')}
-        </span>
-        <Upload size={18} className={cn("text-slate-300 transition-colors", value ? "text-green-500" : "group-hover:text-blue-500")} />
-      </div>
-      {value && <img src={value} alt={label} className="mt-2 h-16 object-contain rounded border border-slate-100" />}
-    </div>
-  );
-};
-
-/* ─── Accounting Row (Expenditure / Income / Balance Sheet) ─── */
-const AccountingRow = ({ item, formData, onChange }) => {
-  const hasSubItems = item.subItems && item.subItems.length > 0;
-
-  return (
-    <div className="space-y-2">
-      <div className="flex items-start justify-between gap-3 group">
-        <p className="text-[10px] font-bold text-slate-700 leading-relaxed flex-1">{item.label}</p>
-        <div className="flex items-center gap-2 shrink-0">
-          <InputField
-            name={item.key}
-            type="number"
-            value={formData[item.key] || ''}
-            onChange={onChange}
-            placeholder="0"
-            variant="minimal"
-            size="compact"
-            className="w-24"
-          />
-          <button className="p-1 text-slate-300 hover:text-slate-500 transition-colors opacity-0 group-hover:opacity-100">
-            <MoreVertical size={14} />
-          </button>
-        </div>
-      </div>
-      {hasSubItems && (
-        <div className="pl-4 border-l-2 border-blue-50 space-y-1.5">
-          {item.subItems.map((sub, i) => {
-            const subKey = typeof sub === 'string' ? `${item.key}_sub${i}` : sub.key;
-            const subLabel = typeof sub === 'string' ? sub : sub.label;
-            return (
-              <div key={i} className="flex items-center justify-between gap-3 group">
-                <p className="text-[9px] text-slate-500 font-medium group-hover:text-slate-700 transition-colors flex-1">{subLabel}</p>
-                <div className="flex items-center gap-2 shrink-0">
-                  <InputField
-                    name={subKey}
-                    type="number"
-                    value={formData[subKey] || ''}
-                    onChange={onChange}
-                    placeholder="0"
-                    variant="minimal"
-                    size="compact"
-                    className="w-20"
-                  />
-                  <button className="p-1 text-slate-300 hover:text-slate-500 transition-colors opacity-0 group-hover:opacity-100">
-                    <MoreVertical size={12} />
-                  </button>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      )}
-    </div>
-  );
-};
-
-/* ─── Balance Sheet Section ─── */
-const BalanceSheetColumn = ({ items, formData, onChange, colorClass = 'text-blue-600', borderColor = 'border-blue-50' }) => (
-  <div className="px-10 py-6 space-y-5">
-    {items.map((item) => (
-      <div key={item.key} className="space-y-3">
-        <div className="flex items-center justify-between">
-          <p className={cn("text-[11px] font-bold uppercase tracking-wide pb-1 border-b flex-1", colorClass, borderColor)}>
-            {item.label}
-          </p>
-          <div className="flex items-center gap-2 ml-3 shrink-0">
-            <InputField
-              name={item.key}
-              type="number"
-              value={formData[item.key] || ''}
-              onChange={onChange}
-              placeholder="Amount"
-              variant="minimal"
-              size="compact"
-              className="w-20"
-            />
-            <InputField
-              name={`${item.key}_total`}
-              type="number"
-              value={formData[`${item.key}_total`] || ''}
-              onChange={onChange}
-              placeholder="Total"
-              variant="minimal"
-              size="compact"
-              className="w-20"
-            />
-          </div>
-        </div>
-        {item.subItems && (
-          <div className="pl-3 space-y-2">
-            {item.subItems.map((sub, i) => {
-              const subKey = typeof sub === 'string' ? `${item.key}_s${i}` : sub.key;
-              const subLabel = typeof sub === 'string' ? sub : sub.label;
-              return (
-                <div key={i} className="flex items-center justify-between gap-3 group">
-                  <p className="text-[9px] text-slate-500 font-medium group-hover:text-slate-700 transition-colors flex-1">{subLabel}</p>
-                  <div className="flex items-center gap-2 shrink-0">
-                    <InputField
-                      name={subKey}
-                      type="number"
-                      value={formData[subKey] || ''}
-                      onChange={onChange}
-                      placeholder="0"
-                      variant="minimal"
-                      size="compact"
-                      className="w-20"
-                    />
-                    <button className="p-1 text-slate-300 hover:text-slate-500 transition-colors opacity-0 group-hover:opacity-100">
-                      <MoreVertical size={12} />
-                    </button>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        )}
-      </div>
-    ))}
-  </div>
-);
-
-/* ═══════════════════════════════════════════════════════ */
 /*                    MAIN COMPONENT                      */
-/* ═══════════════════════════════════════════════════════ */
+
 const CreateReport = () => {
   const [currentStep, setCurrentStep] = useState(1);
   const [subStep, setSubStep] = useState(1); // For Step 3 (3.1 and 3.2)
   const [formData, setFormData] = useState({});
   const [zoom, setZoom] = useState(100);
   const [reportId, setReportId] = useState(null);
+  const [isReportSaved, setIsReportSaved] = useState(false);
+  const [isDownloading, setIsDownloading] = useState(false);
 
   const lastSavedData = useRef({});
   const formDataRef = useRef(formData);
@@ -237,39 +53,35 @@ const CreateReport = () => {
     reportIdRef.current = reportId;
   }, [formData, currentStep, reportId]);
 
-  useEffect(() => {
-    const autosaveTimer = setInterval(async () => {
-      const currentData = formDataRef.current;
-      const step = currentStepRef.current;
-      const id = reportIdRef.current;
+  const saveDraft = async () => {
+    const currentData = formDataRef.current;
+    const step = currentStepRef.current;
+    const id = reportIdRef.current;
 
-      if (Object.keys(currentData).length === 0) return;
-      if (JSON.stringify(currentData) === JSON.stringify(lastSavedData.current)) return;
+    if (Object.keys(currentData).length === 0) return;
+    if (JSON.stringify(currentData) === JSON.stringify(lastSavedData.current)) return;
 
-      try {
-        const payload = mapFormDataToBackendPayload(currentData, step, 'draft');
-        
-        if (!id) {
-          const result = await reportService.createReport(payload);
-          if (result.success && result.data?._id) {
-            setReportId(result.data._id);
-            lastSavedData.current = currentData;
-            console.log('Autosaved (Created Draft):', result.data._id);
-          }
-        } else {
-          const result = await reportService.updateReport(id, payload);
-          if (result.success) {
-            lastSavedData.current = currentData;
-            console.log('Autosaved (Updated Draft):', id);
-          }
+    try {
+      const payload = mapFormDataToBackendPayload(currentData, step, 'draft');
+
+      if (!id) {
+        const result = await reportService.createReport(payload);
+        if (result.success && result.data?._id) {
+          setReportId(result.data._id);
+          lastSavedData.current = currentData;
+          console.log('Background Saved (Created Draft):', result.data._id);
         }
-      } catch (err) {
-        console.error('Autosave failed:', err);
+      } else {
+        const result = await reportService.updateReport(id, payload);
+        if (result.success) {
+          lastSavedData.current = currentData;
+          console.log('Background Saved (Updated Draft):', id);
+        }
       }
-    }, 15000);
-
-    return () => clearInterval(autosaveTimer);
-  }, []);
+    } catch (err) {
+      console.error('Background save failed:', err);
+    }
+  };
 
   const handleChange = useCallback((e) => {
     const { name, value } = e.target;
@@ -281,14 +93,16 @@ const CreateReport = () => {
       const result = await reportService.uploadImage(file);
       if (result.success && result.data?.url) {
         setFormData(prev => ({ ...prev, [key]: result.data.url }));
+        toast.success('Image uploaded');
       }
     } catch (error) {
       console.error('Image upload failed:', error);
-      alert('Failed to upload image.');
+      toast.error('Failed to upload image');
     }
   };
 
   const handleNext = () => {
+    saveDraft();
     if (currentStep === 3 && subStep === 1) {
       setSubStep(2);
     } else {
@@ -317,7 +131,7 @@ const CreateReport = () => {
   const handleSaveReport = async () => {
     try {
       const payload = mapFormDataToBackendPayload(formData, currentStep, 'completed');
-      
+
       let result;
       if (!reportId) {
         result = await reportService.createReport(payload);
@@ -327,16 +141,43 @@ const CreateReport = () => {
       } else {
         result = await reportService.updateReport(reportId, payload);
       }
-      
+
       if (result.success) {
-        alert('Report saved successfully!');
+        setIsReportSaved(true);
+        toast.success('Report saved successfully!');
         lastSavedData.current = formData;
       } else {
-        alert('Error saving report: ' + result.message);
+        toast.error('Error saving report: ' + result.message);
       }
     } catch (error) {
       console.error('Save Report Error:', error);
-      alert('Failed to save report: ' + (error.message || 'Unknown error'));
+      toast.error('Failed to save report');
+    }
+  };
+
+  const handleDownloadPdf = async () => {
+    if (!reportId) {
+      toast.error("Please save the report first");
+      return;
+    }
+
+    setIsDownloading(true);
+    try {
+      const blob = await reportService.downloadPdf(reportId);
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `Audit_Report_${formData.trustName || 'Trust'}.pdf`);
+      document.body.appendChild(link);
+      link.click();
+      link.parentNode.removeChild(link);
+      window.URL.revokeObjectURL(url);
+      toast.success('PDF downloaded successfully!');
+    } catch (error) {
+      console.error('Error downloading PDF:', error);
+      toast.error('Failed to generate PDF');
+    } finally {
+      setIsDownloading(false);
     }
   };
 
@@ -359,7 +200,7 @@ const CreateReport = () => {
               </p>
             </div>
             <div className="flex items-center gap-1 bg-white/80 p-1.5 rounded-2xl border border-slate-100 shadow-sm backdrop-blur-md">
-              <button 
+              <button
                 onClick={() => setZoom(prev => Math.max(30, prev - 10))}
                 className="p-2 hover:bg-slate-50 rounded-xl text-slate-400 hover:text-blue-600 transition-all active:scale-95"
                 title="Zoom Out"
@@ -369,7 +210,7 @@ const CreateReport = () => {
               <div className="w-14 text-center">
                 <span className="text-[10px] font-bold text-slate-600 tabular-nums">{zoom}%</span>
               </div>
-              <button 
+              <button
                 onClick={() => setZoom(prev => Math.min(250, prev + 10))}
                 className="p-2 hover:bg-slate-50 rounded-xl text-slate-400 hover:text-blue-600 transition-all active:scale-95"
                 title="Zoom In"
@@ -377,7 +218,7 @@ const CreateReport = () => {
                 <Search size={14} />
               </button>
               <div className="w-px h-4 bg-slate-100 mx-1" />
-              <button 
+              <button
                 onClick={() => setZoom(100)}
                 className="p-2 hover:bg-slate-50 rounded-xl text-slate-400 hover:text-blue-600 transition-all active:scale-95"
                 title="Reset Zoom"
@@ -427,25 +268,25 @@ const CreateReport = () => {
                     <div className="pt-8 border-t border-slate-50">
                       <h2 className="text-[11px] font-bold text-slate-400 mb-6 uppercase tracking-[0.2em]">Upload Stamp & Signature</h2>
                       <div className="grid grid-cols-2 gap-x-8 gap-y-5">
-                        <UploadBox 
-                          label="Signature 1" 
-                          value={formData.signature_1} 
-                          onUpload={(file) => handleImageUpload(file, 'signature_1')} 
+                        <UploadBox
+                          label="Signature 1"
+                          value={formData.signature_1}
+                          onUpload={(file) => handleImageUpload(file, 'signature_1')}
                         />
-                        <UploadBox 
-                          label="Stamp 1" 
-                          value={formData.stamp_1} 
-                          onUpload={(file) => handleImageUpload(file, 'stamp_1')} 
+                        <UploadBox
+                          label="Stamp 1"
+                          value={formData.stamp_1}
+                          onUpload={(file) => handleImageUpload(file, 'stamp_1')}
                         />
-                        <UploadBox 
-                          label="Signature 2" 
-                          value={formData.signature_2} 
-                          onUpload={(file) => handleImageUpload(file, 'signature_2')} 
+                        <UploadBox
+                          label="Signature 2"
+                          value={formData.signature_2}
+                          onUpload={(file) => handleImageUpload(file, 'signature_2')}
                         />
-                        <UploadBox 
-                          label="Stamp 2" 
-                          value={formData.stamp_2} 
-                          onUpload={(file) => handleImageUpload(file, 'stamp_2')} 
+                        <UploadBox
+                          label="Stamp 2"
+                          value={formData.stamp_2}
+                          onUpload={(file) => handleImageUpload(file, 'stamp_2')}
                         />
                       </div>
                     </div>
@@ -663,12 +504,24 @@ const CreateReport = () => {
                 Back
               </button>
               {currentStep === 4 ? (
-                <button
-                  onClick={handleSaveReport}
-                  className="px-10 py-3 rounded-2xl bg-green-600 text-white font-bold flex items-center gap-2 shadow-lg shadow-green-500/20 hover:shadow-xl hover:shadow-green-500/40 transition-all"
-                >
-                  Save Report
-                </button>
+                <div className="flex items-center gap-4">
+                  {isReportSaved && (
+                    <button
+                      onClick={handleDownloadPdf}
+                      disabled={isDownloading}
+                      className="px-6 py-3 rounded-2xl bg-indigo-600 text-white font-bold flex items-center gap-2 shadow-lg shadow-indigo-500/20 hover:shadow-xl hover:shadow-indigo-500/40 transition-all disabled:opacity-50"
+                    >
+                      <Download size={20} />
+                      {isDownloading ? 'Generating...' : 'Download PDF'}
+                    </button>
+                  )}
+                  <button
+                    onClick={handleSaveReport}
+                    className="px-10 py-3 rounded-2xl bg-green-600 text-white font-bold flex items-center gap-2 shadow-lg shadow-green-500/20 hover:shadow-xl hover:shadow-green-500/40 transition-all"
+                  >
+                    Save Report
+                  </button>
+                </div>
               ) : (
                 <button
                   onClick={handleNext}

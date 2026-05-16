@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Maximize2, Minimize2 } from 'lucide-react';
-import { cn } from '../lib/utils';
+import { cn } from '../../lib/utils';
 import {
   permissionsQuestions,
   expenditureItems,
@@ -22,17 +22,17 @@ const A4Page = ({ children, pageLabel }) => (
   <div className="bg-white border border-slate-200 shadow-[0_20px_50px_rgba(0,0,0,0.1)] relative w-full aspect-[1/1.414] shrink-0 rounded-[2px] transition-all duration-500 overflow-hidden group">
     {/* Subtle Paper Texture Overlay */}
     <div className="absolute inset-0 pointer-events-none opacity-[0.03] mix-blend-multiply bg-[url('https://www.transparenttextures.com/patterns/paper-fibers.png')]" />
-    
+
     <div className="h-full p-10 select-none relative z-10">
       {children}
     </div>
-    
+
     {pageLabel && (
       <div className="absolute bottom-4 left-0 right-0 text-center opacity-40 group-hover:opacity-100 transition-opacity">
         <span className="text-[7px] text-slate-400 font-bold uppercase tracking-[0.3em]">{pageLabel}</span>
       </div>
     )}
-    
+
     <div className="absolute top-4 right-4 flex items-center gap-1.5 opacity-40 group-hover:opacity-100 transition-opacity">
       <div className="w-1.5 h-1.5 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)] animate-pulse" />
       <span className="text-[7px] font-bold text-green-600 uppercase tracking-widest">Live Sync</span>
@@ -410,22 +410,22 @@ const LivePreview = ({ currentStep, subStep, formData, zoom = 100, setZoom }) =>
 
   const handleFit = React.useCallback(() => {
     if (!viewportRef.current) return;
-    
+
     const viewport = viewportRef.current;
     const vWidth = viewport.clientWidth - (isFullscreen ? 120 : 80); // Subtract padding
     const vHeight = viewport.clientHeight - (isFullscreen ? 120 : 80);
-    
+
     // Base dimensions for our document container (maxWidths)
     const baseWidth = isFullscreen ? 1000 : 500;
     const baseHeight = baseWidth * 1.414;
-    
+
     const scaleX = vWidth / baseWidth;
     const scaleY = vHeight / baseHeight;
-    
+
     // Choose the smaller scale to fit entirely within the viewport
     const fitScale = Math.min(scaleX, scaleY);
     const fitZoom = Math.round(fitScale * 100);
-    
+
     // Clamp between 30% and 250%
     setZoom?.(Math.min(250, Math.max(30, fitZoom)));
   }, [isFullscreen, setZoom]);
@@ -441,7 +441,7 @@ const LivePreview = ({ currentStep, subStep, formData, zoom = 100, setZoom }) =>
     document.addEventListener('fullscreenchange', handleFullscreenChange);
     // Initial fit
     handleFit();
-    
+
     return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
   }, [handleFit]);
 
@@ -497,8 +497,8 @@ const LivePreview = ({ currentStep, subStep, formData, zoom = 100, setZoom }) =>
             case 1: return <CoverPage formData={formData} />;
             case 2: return <PermissionsPage formData={formData} />;
             case 3:
-              return subStep === 1 
-                ? <ScheduleIXPage formData={formData} /> 
+              return subStep === 1
+                ? <ScheduleIXPage formData={formData} />
                 : <IncomeExpPage formData={formData} />;
             case 4: return <BalanceSheetPage formData={formData} />;
             default: return <CoverPage formData={formData} />;
@@ -509,19 +509,19 @@ const LivePreview = ({ currentStep, subStep, formData, zoom = 100, setZoom }) =>
   };
 
   return (
-    <div 
+    <div
       ref={containerRef}
       className={cn(
         "lg:col-span-5 sticky top-8 transition-all duration-700 ease-in-out",
-        isFullscreen 
-          ? "fixed inset-0 z-[100] h-screen w-screen bg-slate-950 flex flex-col items-center justify-center p-0 overflow-hidden" 
+        isFullscreen
+          ? "fixed inset-0 z-[100] h-screen w-screen bg-slate-950 flex flex-col items-center justify-center p-0 overflow-hidden"
           : "h-[calc(100vh-10rem)]"
       )}
     >
       {/* Background Decor for Fullscreen */}
       <AnimatePresence>
         {isFullscreen && (
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -536,21 +536,21 @@ const LivePreview = ({ currentStep, subStep, formData, zoom = 100, setZoom }) =>
       {/* Floating Controls in Fullscreen */}
       <AnimatePresence>
         {isFullscreen && (
-          <motion.div 
+          <motion.div
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: 20, opacity: 0 }}
             className="absolute bottom-10 left-1/2 -translate-x-1/2 z-[110] flex items-center gap-4 bg-slate-900/80 backdrop-blur-2xl border border-white/10 p-2.5 rounded-[2rem] shadow-2xl"
           >
             <div className="flex items-center gap-1 px-2">
-              <button 
+              <button
                 onClick={() => setZoom(prev => Math.max(30, prev - 10))}
                 className="p-3 hover:bg-white/10 rounded-2xl text-slate-400 hover:text-white transition-all"
               >
                 <Minimize2 size={18} />
               </button>
               <span className="w-16 text-center text-xs font-bold text-white tabular-nums">{zoom}%</span>
-              <button 
+              <button
                 onClick={() => setZoom(prev => Math.min(250, prev + 10))}
                 className="p-3 hover:bg-white/10 rounded-2xl text-slate-400 hover:text-white transition-all"
               >
@@ -558,7 +558,7 @@ const LivePreview = ({ currentStep, subStep, formData, zoom = 100, setZoom }) =>
               </button>
             </div>
             <div className="w-px h-6 bg-white/10" />
-            <button 
+            <button
               onClick={toggleFullscreen}
               className="px-6 py-3 bg-blue-600 hover:bg-blue-500 rounded-2xl text-white text-[11px] font-bold uppercase tracking-widest transition-all active:scale-95 flex items-center gap-2"
             >
@@ -570,17 +570,17 @@ const LivePreview = ({ currentStep, subStep, formData, zoom = 100, setZoom }) =>
       </AnimatePresence>
 
       {/* Preview Viewport */}
-      <div 
+      <div
         ref={viewportRef}
         className={cn(
           "relative transition-all duration-500 flex flex-col items-center overflow-auto scrollbar-hide select-none w-full",
-          isFullscreen 
-            ? "h-full bg-transparent p-12 md:p-20" 
+          isFullscreen
+            ? "h-full bg-transparent p-12 md:p-20"
             : "h-full bg-slate-50 border border-slate-100 shadow-inner p-12 rounded-3xl"
         )}
       >
         {!isFullscreen && (
-          <button 
+          <button
             onClick={toggleFullscreen}
             className="absolute top-6 right-6 z-50 p-3 bg-white/80 hover:bg-white backdrop-blur-md border border-slate-200 rounded-2xl text-slate-400 hover:text-blue-600 shadow-sm transition-all active:scale-95 group"
             title="Expand to Full View"
@@ -589,7 +589,7 @@ const LivePreview = ({ currentStep, subStep, formData, zoom = 100, setZoom }) =>
           </button>
         )}
 
-        <motion.div 
+        <motion.div
           layout
           drag={zoom > 100}
           dragMomentum={false}
@@ -600,17 +600,17 @@ const LivePreview = ({ currentStep, subStep, formData, zoom = 100, setZoom }) =>
             "flex-shrink-0 origin-top mb-12 transition-shadow duration-500",
             zoom > 100 ? "cursor-grab active:cursor-grabbing" : "cursor-zoom-in hover:shadow-[0_30px_60px_rgba(0,0,0,0.2)]"
           )}
-          style={{ 
+          style={{
             width: '100%',
             maxWidth: isFullscreen ? '1000px' : '500px',
             scale: zoom / 100,
           }}
-          animate={{ 
+          animate={{
             scale: zoom / 100,
           }}
-          transition={{ 
-            type: "spring", 
-            stiffness: 300, 
+          transition={{
+            type: "spring",
+            stiffness: 300,
             damping: 30,
             mass: 0.8
           }}

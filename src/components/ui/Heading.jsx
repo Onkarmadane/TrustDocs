@@ -12,12 +12,12 @@ function Heading({
     >
       {/* Left Content */}
       <div>
-        <h1 className="text-xl md:text-2xl lg:text-[35px] font-semibold text-black">
+        <h1 className="text-[33px] font-semibold text-black">
           {title}
         </h1>
 
         {subtitle && (
-          <p className="text-sm font-dm-sans md:text-[18px] font-medium text-gray-500 mt-1">
+          <p className="text-[14px]  font-medium text-gray-500 mt-1">
             {subtitle}
           </p>
         )}
