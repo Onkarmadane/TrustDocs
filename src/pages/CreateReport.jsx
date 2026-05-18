@@ -24,6 +24,8 @@ import {
   fundsLiabilitiesItems,
   propertyAssetsItems,
   scheduleIXItems,
+  receiptItems,
+  paymentItems,
 } from '../components/auditreport/reportData';
 
 
@@ -35,7 +37,6 @@ import {
 
 const CreateReport = () => {
   const [currentStep, setCurrentStep] = useState(1);
-  const [subStep, setSubStep] = useState(1); // For Step 3 (3.1 and 3.2)
   const [formData, setFormData] = useState({});
   const [zoom, setZoom] = useState(100);
   const [reportId, setReportId] = useState(null);
@@ -53,13 +54,13 @@ const CreateReport = () => {
     reportIdRef.current = reportId;
   }, [formData, currentStep, reportId]);
 
-  const saveDraft = async () => {
-    const currentData = formDataRef.current;
+  const saveDraft = async (data) => {
+    const currentData = data || formDataRef.current;
     const step = currentStepRef.current;
     const id = reportIdRef.current;
 
-    if (Object.keys(currentData).length === 0) return;
-    if (JSON.stringify(currentData) === JSON.stringify(lastSavedData.current)) return;
+    if (Object.keys(currentData).length === 0) return id;
+    if (JSON.stringify(currentData) === JSON.stringify(lastSavedData.current)) return id;
 
     try {
       const payload = mapFormDataToBackendPayload(currentData, step, 'draft');
@@ -70,17 +71,20 @@ const CreateReport = () => {
           setReportId(result.data._id);
           lastSavedData.current = currentData;
           console.log('Background Saved (Created Draft):', result.data._id);
+          return result.data._id;
         }
       } else {
         const result = await reportService.updateReport(id, payload);
         if (result.success) {
           lastSavedData.current = currentData;
           console.log('Background Saved (Updated Draft):', id);
+          return id;
         }
       }
     } catch (err) {
       console.error('Background save failed:', err);
     }
+    return id;
   };
 
   const handleChange = useCallback((e) => {
@@ -92,7 +96,13 @@ const CreateReport = () => {
     try {
       const result = await reportService.uploadImage(file);
       if (result.success && result.data?.url) {
-        setFormData(prev => ({ ...prev, [key]: result.data.url }));
+        const url = result.data.url;
+        setFormData(prev => ({ ...prev, [key]: url }));
+        
+        // Save draft immediately after image upload to ensure it's in the payload
+        const newData = { ...formDataRef.current, [key]: url };
+        saveDraft(newData);
+        
         toast.success('Image uploaded');
       }
     } catch (error) {
@@ -103,21 +113,11 @@ const CreateReport = () => {
 
   const handleNext = () => {
     saveDraft();
-    if (currentStep === 3 && subStep === 1) {
-      setSubStep(2);
-    } else {
-      setCurrentStep(prev => Math.min(4, prev + 1));
-      if (currentStep === 2) setSubStep(1); // Reset subStep when entering Step 3
-    }
+    setCurrentStep(prev => Math.min(9, prev + 1));
   };
 
   const handleBack = () => {
-    if (currentStep === 3 && subStep === 2) {
-      setSubStep(1);
-    } else {
-      setCurrentStep(prev => Math.max(1, prev - 1));
-      if (currentStep === 4) setSubStep(2); // Coming back to Step 3 from 4
-    }
+    setCurrentStep(prev => Math.max(1, prev - 1));
   };
 
   // Calculate totals for step 3
@@ -156,14 +156,17 @@ const CreateReport = () => {
   };
 
   const handleDownloadPdf = async () => {
-    if (!reportId) {
-      toast.error("Please save the report first");
-      return;
-    }
-
     setIsDownloading(true);
     try {
-      const blob = await reportService.downloadPdf(reportId);
+      const id = await saveDraft();
+      
+      if (!id) {
+        toast.error("Please save the report first");
+        setIsDownloading(false);
+        return;
+      }
+
+      const blob = await reportService.downloadPdf(id);
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
@@ -258,6 +261,7 @@ const CreateReport = () => {
                         <InputField name="trustName" label="Trust Name" placeholder="Enter" value={formData.trustName || ''} onChange={handleChange} />
                         <InputField name="registrationNo" label="Registration No" placeholder="Enter" value={formData.registrationNo || ''} onChange={handleChange} />
                         <InputField name="date" label="Date" placeholder="Select" type="date" value={formData.date || ''} onChange={handleChange} />
+                        <InputField name="place" label="Place" placeholder="Enter Place" value={formData.place || ''} onChange={handleChange} />
                         <InputField name="financialYear" label="Financial Year" placeholder="2025-26" value={formData.financialYear || ''} onChange={handleChange} />
                         <div className="col-span-2">
                           <InputField name="address" label="Address" placeholder="Enter" value={formData.address || ''} onChange={handleChange} />
@@ -316,133 +320,125 @@ const CreateReport = () => {
                   </motion.div>
                 )}
 
-                {/* ─── STEP 3: Schedule IX + Income & Expenditure (Split into sub-steps) ─── */}
+                {/* ─── STEP 3: Schedule IX ─── */}
                 {currentStep === 3 && (
-                  <motion.div key={`step3-${subStep}`} initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} className="space-y-8">
+                  <motion.div key="step3" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} className="p-10 space-y-4">
+                    <div className="space-y-4">
+                      {/* Income as shown */}
+                      <div className="flex items-center justify-between p-4 rounded-2xl border border-slate-100 bg-white/50">
+                        <p className="text-xs font-bold text-slate-700">(I) Income as shown in the Income and Expenditure Account (Schedule IX)</p>
+                        <InputField
+                          name="sch_income_shown"
+                          type="number"
+                          value={formData.sch_income_shown || ''}
+                          onChange={handleChange}
+                          placeholder="0.00"
+                          variant="default"
+                          size="inline"
+                          className="w-32"
+                        />
+                      </div>
 
-                    {subStep === 1 && (
-                      <div className="animate-in fade-in slide-in-from-left-4 duration-500 p-10">
-                        {/* <h2 className="text-sm font-bold text-slate-800 mb-2 uppercase tracking-widest">Step 3.1: Schedule IX — Statement of Income</h2>
-                        <p className="text-[11px] text-slate-400 font-medium mb-6">Items not chargeable to contribution under Section 58 and Rules 32</p> */}
-
-                        <div className="space-y-4">
-                          {/* Income as shown */}
-                          <div className="flex items-center justify-between p-4 rounded-2xl border border-slate-100 bg-white/50">
-                            <p className="text-xs font-bold text-slate-700">(I) Income as shown in the Income and Expenditure Account (Schedule IX)</p>
-                            <InputField
-                              name="sch_income_shown"
-                              type="number"
-                              value={formData.sch_income_shown || ''}
-                              onChange={handleChange}
-                              placeholder="0.00"
-                              variant="default"
-                              size="inline"
-                              className="w-32"
-                            />
-                          </div>
-
-                          {/* Deduction items */}
-                          <div className="p-5 rounded-2xl border border-slate-50 bg-white/50 space-y-4">
-                            <p className="text-xs font-bold text-slate-700">(II) Items not chargeable to contribution under Section 58 and Rules 32</p>
-                            <div className="space-y-3 pl-4 border-l-2 border-blue-50">
-                              {scheduleIXItems.map((item) => (
-                                <div key={item.key} className="flex items-center justify-between gap-4 group">
-                                  <p className="text-[11px] text-slate-500 font-medium group-hover:text-slate-800 transition-colors flex-1">{item.label}</p>
-                                  <div className="flex items-center gap-2 shrink-0">
-                                    <InputField
-                                      name={item.key}
-                                      type="number"
-                                      value={formData[item.key] || ''}
-                                      onChange={handleChange}
-                                      placeholder="0"
-                                      variant="minimal"
-                                      size="compact"
-                                      className="w-28"
-                                    />
-                                    <button className="p-1 text-slate-300 hover:text-slate-500 transition-colors opacity-0 group-hover:opacity-100">
-                                      <MoreVertical size={12} />
-                                    </button>
-                                  </div>
-                                </div>
-                              ))}
+                      {/* Deduction items */}
+                      <div className="p-5 rounded-2xl border border-slate-50 bg-white/50 space-y-4">
+                        <p className="text-xs font-bold text-slate-700">(II) Items not chargeable to contribution under Section 58 and Rules 32</p>
+                        <div className="space-y-3 pl-4 border-l-2 border-blue-50">
+                          {scheduleIXItems.map((item) => (
+                            <div key={item.key} className="flex items-center justify-between gap-4 group">
+                              <p className="text-[11px] text-slate-500 font-medium group-hover:text-slate-800 transition-colors flex-1">{item.label}</p>
+                              <div className="flex items-center gap-2 shrink-0">
+                                <InputField
+                                  name={item.key}
+                                  type="number"
+                                  value={formData[item.key] || ''}
+                                  onChange={handleChange}
+                                  placeholder="0"
+                                  variant="minimal"
+                                  size="compact"
+                                  className="w-28"
+                                />
+                                {/* <button className="p-1 text-slate-300 hover:text-slate-500 transition-colors opacity-0 group-hover:opacity-100">
+                                  <MoreVertical size={12} />
+                                </button> */}
+                              </div>
                             </div>
-                          </div>
-
-                          {/* Gross Annual Income */}
-                          <div className="flex items-center justify-between p-4 rounded-2xl border border-blue-100 bg-blue-50/30">
-                            <p className="text-xs font-bold text-blue-700 uppercase tracking-wider">Gross Annual Income chargeable to contribution Rs.</p>
-                            <span className="text-xs font-bold text-blue-600 font-mono w-32 text-right">
-                              {(() => {
-                                const gross = parseFloat(formData.sch_income_shown || 0);
-                                const deductions = scheduleIXItems.reduce((s, item) => s + (parseFloat(formData[item.key]) || 0), 0);
-                                const net = gross - deductions;
-                                return net > 0 ? net.toLocaleString('en-IN', { minimumFractionDigits: 2 }) : '0.00';
-                              })()}
-                            </span>
-                          </div>
+                          ))}
                         </div>
                       </div>
-                    )}
 
-                    {subStep === 2 && (
-                      <div className="animate-in fade-in slide-in-from-right-4 duration-500">
-                        <div className="px-10 pt-10 pb-4">
-                          <h2 className="text-sm font-bold text-slate-800 uppercase tracking-widest">Step 3.2: Income & Expenditure A/C</h2>
-                          <p className="text-[11px] text-slate-400 font-medium">Detailed accounting for the current financial year</p>
-                        </div>
-                        <div className="border-t border-slate-100 bg-white">
-                          {/* Header */}
-                          <div className="grid grid-cols-4 bg-slate-50/50 border-b border-slate-100">
-                            <div className="p-4 text-center font-bold text-[10px] text-slate-400 uppercase tracking-widest border-r border-slate-100/50">Expenditure</div>
-                            <div className="p-4 text-center font-bold text-[10px] text-slate-400 uppercase tracking-widest border-r border-slate-100/50">Amount</div>
-                            <div className="p-4 text-center font-bold text-[10px] text-slate-400 uppercase tracking-widest border-r border-slate-100/50">Income</div>
-                            <div className="p-4 text-center font-bold text-[10px] text-slate-400 uppercase tracking-widest">Amount</div>
-                          </div>
-
-                          {/* Body */}
-                          <div className="grid grid-cols-2 divide-x divide-slate-100 bg-white">
-                            {/* Expenditure Column */}
-                            <div className="px-10 py-6 space-y-5">
-                              {expenditureItems.map((item) => (
-                                <AccountingRow key={item.key} item={item} formData={formData} onChange={handleChange} />
-                              ))}
-                            </div>
-
-                            {/* Income Column */}
-                            <div className="px-10 py-6 space-y-5">
-                              {incomeItems.map((item) => (
-                                <AccountingRow key={item.key} item={item} formData={formData} onChange={handleChange} />
-                              ))}
-                            </div>
-                          </div>
-
-                          {/* Footer Totals */}
-                          <div className="grid grid-cols-4 border-t-2 border-blue-100 bg-blue-50/30">
-                            <div className="p-4 flex items-center px-5 border-r border-blue-100">
-                              <span className="text-[10px] font-bold text-blue-600 uppercase tracking-wider">Total</span>
-                            </div>
-                            <div className="p-4 flex items-center justify-end px-5 border-r border-blue-100">
-                              <span className="text-xs font-bold text-blue-700 font-mono">{expTotal.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
-                            </div>
-                            <div className="p-4 flex items-center px-5 border-r border-blue-100">
-                              <span className="text-[10px] font-bold text-blue-600 uppercase tracking-wider">Total</span>
-                            </div>
-                            <div className="p-4 flex items-center justify-end px-5">
-                              <span className="text-xs font-bold text-blue-700 font-mono">{incTotal.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
-                            </div>
-                          </div>
-                        </div>
+                      {/* Gross Annual Income */}
+                      <div className="flex items-center justify-between p-4 rounded-2xl border border-blue-100 bg-blue-50/30">
+                        <p className="text-xs font-bold text-blue-700 uppercase tracking-wider">Gross Annual Income chargeable to contribution Rs.</p>
+                        <span className="text-xs font-bold text-blue-600 font-mono w-32 text-right">
+                          {(() => {
+                            const gross = parseFloat(formData.sch_income_shown || 0);
+                            const deductions = scheduleIXItems.reduce((s, item) => s + (parseFloat(formData[item.key]) || 0), 0);
+                            const net = gross - deductions;
+                            return net > 0 ? net.toLocaleString('en-IN', { minimumFractionDigits: 2 }) : '0.00';
+                          })()}
+                        </span>
                       </div>
-                    )}
-
+                    </div>
                   </motion.div>
                 )}
 
-                {/* ─── STEP 4: Balance Sheet ─── */}
+                {/* ─── STEP 4: Income & Expenditure ─── */}
                 {currentStep === 4 && (
                   <motion.div key="step4" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }}>
                     <div className="px-10 pt-10 pb-4">
-                      <h2 className="text-sm font-bold text-slate-800 uppercase tracking-widest">Step 4: Balance Sheet</h2>
+                      <h2 className="text-sm font-bold text-slate-800 uppercase tracking-widest">Step 4: Income & Expenditure A/C</h2>
+                      <p className="text-[11px] text-slate-400 font-medium">Detailed accounting for the current financial year</p>
+                    </div>
+                    <div className="border-t border-slate-100 bg-white">
+                      {/* Header */}
+                      <div className="grid grid-cols-4 bg-slate-50/50 border-b border-slate-100">
+                        <div className="p-4 text-center font-bold text-[10px] text-slate-400 uppercase tracking-widest border-r border-slate-100/50">Expenditure</div>
+                        <div className="p-4 text-center font-bold text-[10px] text-slate-400 uppercase tracking-widest border-r border-slate-100/50">Amount</div>
+                        <div className="p-4 text-center font-bold text-[10px] text-slate-400 uppercase tracking-widest border-r border-slate-100/50">Income</div>
+                        <div className="p-4 text-center font-bold text-[10px] text-slate-400 uppercase tracking-widest">Amount</div>
+                      </div>
+
+                      {/* Body */}
+                      <div className="grid grid-cols-2 divide-x divide-slate-100 bg-white">
+                        {/* Expenditure Column */}
+                        <div className="px-10 py-6 space-y-5">
+                          {expenditureItems.map((item) => (
+                            <AccountingRow key={item.key} item={item} formData={formData} onChange={handleChange} />
+                          ))}
+                        </div>
+
+                        {/* Income Column */}
+                        <div className="px-10 py-6 space-y-5">
+                          {incomeItems.map((item) => (
+                            <AccountingRow key={item.key} item={item} formData={formData} onChange={handleChange} />
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Footer Totals */}
+                      <div className="grid grid-cols-4 border-t-2 border-blue-100 bg-blue-50/30">
+                        <div className="p-4 flex items-center px-5 border-r border-blue-100">
+                          <span className="text-[10px] font-bold text-blue-600 uppercase tracking-wider">Total</span>
+                        </div>
+                        <div className="p-4 flex items-center justify-end px-5 border-r border-blue-100">
+                          <span className="text-xs font-bold text-blue-700 font-mono">{expTotal.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
+                        </div>
+                        <div className="p-4 flex items-center px-5 border-r border-blue-100">
+                          <span className="text-[10px] font-bold text-blue-600 uppercase tracking-wider">Total</span>
+                        </div>
+                        <div className="p-4 flex items-center justify-end px-5">
+                          <span className="text-xs font-bold text-blue-700 font-mono">{incTotal.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+
+                {/* ─── STEP 5: Balance Sheet ─── */}
+                {currentStep === 5 && (
+                  <motion.div key="step5" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }}>
+                    <div className="px-10 pt-10 pb-4">
+                      <h2 className="text-sm font-bold text-slate-800 uppercase tracking-widest">Step 5: Balance Sheet</h2>
                       <p className="text-[11px] text-slate-400 font-medium">Funds, Liabilities, Property & Assets statement</p>
                     </div>
                     <div className="border-t border-slate-100 bg-white">
@@ -460,15 +456,15 @@ const CreateReport = () => {
                           items={fundsLiabilitiesItems}
                           formData={formData}
                           onChange={handleChange}
-                          colorClass="text-blue-600"
-                          borderColor="border-blue-50"
+                          colorClass="text-black"
+                        // borderColor="border-blue-50"
                         />
                         <BalanceSheetColumn
                           items={propertyAssetsItems}
                           formData={formData}
                           onChange={handleChange}
-                          colorClass="text-indigo-600"
-                          borderColor="border-indigo-50"
+                          colorClass="text-black"
+                        // borderColor="border-indigo-50"
                         />
                       </div>
 
@@ -491,6 +487,215 @@ const CreateReport = () => {
                   </motion.div>
                 )}
 
+                {/* ─── STEP 6: Receipt & Payment Account ─── */}
+                {currentStep === 6 && (
+                  <motion.div key="step6" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }}>
+                    <div className="px-10 pt-10 pb-4">
+                      <h2 className="text-sm font-bold text-slate-800 uppercase tracking-widest">Step 6: Receipt & Payment Account</h2>
+                      <p className="text-[11px] text-slate-400 font-medium">Receipt and Payment details for the year</p>
+                    </div>
+                    <div className="border-t border-slate-100 bg-white">
+                      {/* Header */}
+                      <div className="grid grid-cols-4 bg-slate-50/50 border-b border-slate-100">
+                        <div className="p-4 text-center font-bold text-[10px] text-slate-400 uppercase tracking-widest border-r border-slate-100/50">Receipt</div>
+                        <div className="p-4 text-center font-bold text-[10px] text-slate-400 uppercase tracking-widest border-r border-slate-100/50">Amount</div>
+                        <div className="p-4 text-center font-bold text-[10px] text-slate-400 uppercase tracking-widest border-r border-slate-100/50">Payments</div>
+                        <div className="p-4 text-center font-bold text-[10px] text-slate-400 uppercase tracking-widest">Amount</div>
+                      </div>
+
+                      {/* Body */}
+                      <div className="grid grid-cols-2 divide-x divide-slate-100 bg-white">
+                        <div className="px-10 py-6 space-y-5">
+                          {/* Receipt Items would normally use AccountingRow or similar, but since we updated reportData we should manually map or use BalanceSheetColumn logic if nested. Let's use BalanceSheetColumn logic as they have nested amounts. */}
+                          <BalanceSheetColumn
+                            items={receiptItems}
+                            formData={formData}
+                            onChange={handleChange}
+                            colorClass="text-black"
+                          // borderColor="border-emerald-50"
+                          />
+                        </div>
+                        <div className="px-10 py-6 space-y-5">
+                          <BalanceSheetColumn
+                            items={paymentItems}
+                            formData={formData}
+                            onChange={handleChange}
+                            colorClass="text-black"
+                          // borderColor="border-rose-50"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+
+                {/* ─── STEP 7: Schedule 9-D (अनुसूची नऊ - ड) ─── */}
+                {currentStep === 7 && (
+                  <motion.div key="step7" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} className="p-10 space-y-8">
+                    <div>
+                      <h2 className="text-[11px] font-bold text-slate-400 mb-6 uppercase tracking-[0.2em]">Schedule 9-D (अनुसूची नऊ - ड)</h2>
+                      <div className="grid grid-cols-2 gap-x-8 gap-y-5">
+                        <InputField name="sch9d_trustNameMarathi" label="संस्थेचे नाव (Trust Name)" placeholder="Enter in Marathi" value={formData.sch9d_trustNameMarathi || ''} onChange={handleChange} />
+                        <InputField name="sch9d_registrationNoMarathi" label="नोंदणी क्रमांक (Reg No)" placeholder="Enter in Marathi" value={formData.sch9d_registrationNoMarathi || ''} onChange={handleChange} />
+                        <InputField name="sch9d_financialYearMarathi" label="आर्थिक वर्ष (Financial Year)" placeholder="उदा. सन 2025-26" value={formData.sch9d_financialYearMarathi || ''} onChange={handleChange} />
+                        <InputField name="sch9d_trustPan" label="विश्वस्त व्यवस्थेच्या स्थायी खाते क्रमांक (Trust PAN)" placeholder="Enter PAN" value={formData.sch9d_trustPan || ''} onChange={handleChange} />
+                        <div className="col-span-2">
+                          <InputField name="sch9d_incomeTaxRegistration" label="12AA नोंदणी क्रमांक व दिनांक (12AA Reg Details)" placeholder="Enter Details" value={formData.sch9d_incomeTaxRegistration || ''} onChange={handleChange} />
+                        </div>
+                      </div>
+
+                      {/* Previous 3 Years IT Returns */}
+                      <div className="mt-8">
+                        <div className="flex justify-between items-center mb-4">
+                          <h3 className="text-[11px] font-bold text-slate-400 uppercase tracking-[0.1em]">आधीच्या तीन वर्षाचे आयकर विवरण (Prev IT Returns)</h3>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const current = formData.sch9d_previousITReturns || [];
+                              setFormData(prev => ({
+                                ...prev,
+                                sch9d_previousITReturns: [...current, { receiptNo: '', year: '' }]
+                              }));
+                            }}
+                            className="text-xs text-blue-600 font-bold hover:text-blue-700"
+                          >
+                            + Add More
+                          </button>
+                        </div>
+                        <div className="space-y-3">
+                          {(formData.sch9d_previousITReturns || [{ receiptNo: '', year: '' }]).map((item, index) => (
+                            <div key={index} className="grid grid-cols-12 gap-4 items-end">
+                              <div className="col-span-1 text-center text-xs text-slate-500 pb-3">{index + 1}</div>
+                              <div className="col-span-5">
+                                <InputField
+                                  name={`sch9d_it_receipt_${index}`}
+                                  label="पोच पावती क्रमांक"
+                                  placeholder="Receipt No"
+                                  value={item.receiptNo}
+                                  onChange={(e) => {
+                                    const updated = [...(formData.sch9d_previousITReturns || [])];
+                                    updated[index] = { ...updated[index], receiptNo: e.target.value };
+                                    setFormData(prev => ({ ...prev, sch9d_previousITReturns: updated }));
+                                  }}
+                                />
+                              </div>
+                              <div className="col-span-5">
+                                <InputField
+                                  name={`sch9d_it_year_${index}`}
+                                  label="वर्ष"
+                                  placeholder="Year"
+                                  value={item.year}
+                                  onChange={(e) => {
+                                    const updated = [...(formData.sch9d_previousITReturns || [])];
+                                    updated[index] = { ...updated[index], year: e.target.value };
+                                    setFormData(prev => ({ ...prev, sch9d_previousITReturns: updated }));
+                                  }}
+                                />
+                              </div>
+                              <div className="col-span-1 pb-2">
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    const updated = (formData.sch9d_previousITReturns || []).filter((_, i) => i !== index);
+                                    setFormData(prev => ({ ...prev, sch9d_previousITReturns: updated }));
+                                  }}
+                                  className="text-red-500 hover:text-red-700 text-xs"
+                                >
+                                  Remove
+                                </button>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* All Trustees PAN */}
+                      <div className="mt-8">
+                        <div className="flex justify-between items-center mb-4">
+                          <h3 className="text-[11px] font-bold text-slate-400 uppercase tracking-[0.1em]">सर्व विश्वस्तांचे स्थायी खाते क्रमांक (All Trustees PAN)</h3>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const current = formData.sch9d_trusteesPan || [];
+                              setFormData(prev => ({
+                                ...prev,
+                                sch9d_trusteesPan: [...current, { name: '', pan: '' }]
+                              }));
+                            }}
+                            className="text-xs text-blue-600 font-bold hover:text-blue-700"
+                          >
+                            + Add More
+                          </button>
+                        </div>
+                        <div className="space-y-3">
+                          {(formData.sch9d_trusteesPan || [{ name: '', pan: '' }]).map((item, index) => (
+                            <div key={index} className="grid grid-cols-12 gap-4 items-end">
+                              <div className="col-span-1 text-center text-xs text-slate-500 pb-3">{index + 1}</div>
+                              <div className="col-span-5">
+                                <InputField
+                                  name={`sch9d_trustee_name_${index}`}
+                                  label="विश्वस्तांचे नांव"
+                                  placeholder="Name"
+                                  value={item.name}
+                                  onChange={(e) => {
+                                    const updated = [...(formData.sch9d_trusteesPan || [])];
+                                    updated[index] = { ...updated[index], name: e.target.value };
+                                    setFormData(prev => ({ ...prev, sch9d_trusteesPan: updated }));
+                                  }}
+                                />
+                              </div>
+                              <div className="col-span-5">
+                                <InputField
+                                  name={`sch9d_trustee_pan_${index}`}
+                                  label="स्थायी खाते क्रमांक"
+                                  placeholder="PAN"
+                                  value={item.pan}
+                                  onChange={(e) => {
+                                    const updated = [...(formData.sch9d_trusteesPan || [])];
+                                    updated[index] = { ...updated[index], pan: e.target.value };
+                                    setFormData(prev => ({ ...prev, sch9d_trusteesPan: updated }));
+                                  }}
+                                />
+                              </div>
+                              <div className="col-span-1 pb-2">
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    const updated = (formData.sch9d_trusteesPan || []).filter((_, i) => i !== index);
+                                    setFormData(prev => ({ ...prev, sch9d_trusteesPan: updated }));
+                                  }}
+                                  className="text-red-500 hover:text-red-700 text-xs"
+                                >
+                                  Remove
+                                </button>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+
+                {/* ─── STEP 8: Delay Exemption (विलंब माफीचा अर्ज) ─── */}
+                {currentStep === 8 && (
+                  <motion.div key="step8" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} className="p-10 space-y-8">
+                    <div>
+                      <h2 className="text-[11px] font-bold text-slate-400 mb-6 uppercase tracking-[0.2em]">Delay Exemption (विलंब माफीचा अर्ज)</h2>
+                      <div className="grid grid-cols-2 gap-x-8 gap-y-5">
+                        <InputField name="delay_applicantName" label="अर्जदाराचे नाव (Applicant Name)" placeholder="Enter Name" value={formData.delay_applicantName || ''} onChange={handleChange} />
+                        <InputField name="delay_applicantAge" label="वय (Age)" placeholder="Enter Age" value={formData.delay_applicantAge || ''} onChange={handleChange} />
+                        <InputField name="delay_applicantAddress" label="पत्ता (Address)" placeholder="Enter Address" value={formData.delay_applicantAddress || ''} onChange={handleChange} />
+                        <InputField name="delay_designation" label="हुद्दा (Designation)" placeholder="विश्वस्त / सचिव / अध्यक्ष" value={formData.delay_designation || ''} onChange={handleChange} />
+                        <InputField name="delay_trustRegistrationDate" label="न्यास नोंदणी दिनांक (Trust Reg Date)" type="date" placeholder="Date" value={formData.delay_trustRegistrationDate || ''} onChange={handleChange} />
+                        <InputField name="delay_financialYearMarathi" label="आर्थिक वर्ष (Financial Year for delay)" placeholder="2023-24" value={formData.delay_financialYearMarathi || ''} onChange={handleChange} />
+                        <InputField name="delay_place" label="स्थळ (Place)" placeholder="जालना" value={formData.delay_place || ''} onChange={handleChange} />
+                        <InputField name="delay_date" label="दिनांक (Date)" placeholder="Date" type="date" value={formData.delay_date || ''} onChange={handleChange} />
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+
               </AnimatePresence>
             </Card>
 
@@ -503,7 +708,7 @@ const CreateReport = () => {
                 <ChevronLeft size={20} />
                 Back
               </button>
-              {currentStep === 4 ? (
+              {currentStep === 9 ? (
                 <div className="flex items-center gap-4">
                   {isReportSaved && (
                     <button
@@ -535,7 +740,7 @@ const CreateReport = () => {
           </div>
 
           {/* Right: Live Preview */}
-          <LivePreview currentStep={currentStep} subStep={subStep} formData={formData} zoom={zoom} setZoom={setZoom} />
+          <LivePreview currentStep={currentStep} formData={formData} zoom={zoom} setZoom={setZoom} />
         </div>
       </main>
     </div>

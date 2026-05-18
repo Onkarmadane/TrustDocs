@@ -20,9 +20,9 @@ const AccountingRow = ({ item, formData, onChange }) => {
             size="compact"
             className="w-24"
           />
-          <button className="p-1 text-slate-300 hover:text-slate-500 transition-colors opacity-0 group-hover:opacity-100">
+          {/* <button className="p-1 text-slate-300 hover:text-slate-500 transition-colors opacity-0 group-hover:opacity-100">
             <MoreVertical size={14} />
-          </button>
+          </button> */}
         </div>
       </div>
       {hasSubItems && (
@@ -44,9 +44,9 @@ const AccountingRow = ({ item, formData, onChange }) => {
                     size="compact"
                     className="w-20"
                   />
-                  <button className="p-1 text-slate-300 hover:text-slate-500 transition-colors opacity-0 group-hover:opacity-100">
+                  {/* <button className="p-1 text-slate-300 hover:text-slate-500 transition-colors opacity-0 group-hover:opacity-100">
                     <MoreVertical size={12} />
-                  </button>
+                  </button> */}
                 </div>
               </div>
             );
