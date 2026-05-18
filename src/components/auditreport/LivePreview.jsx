@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Maximize2, Minimize2 } from 'lucide-react';
+import { Maximize2, Minimize2, Search, ChevronLeft, ChevronRight } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import {
   permissionsQuestions,
@@ -20,7 +20,7 @@ const fmt = (val) => {
 };
 
 /* ── Reusable A4 page wrapper ── */
-const A4Page = ({ children, pageLabel }) => (
+export const A4Page = ({ children, pageLabel }) => (
   <div className="bg-white border border-slate-200 shadow-[0_20px_50px_rgba(0,0,0,0.1)] relative w-full aspect-[1/1.414] shrink-0 rounded-[2px] transition-all duration-500 overflow-hidden group">
     {/* Subtle Paper Texture Overlay */}
     <div className="absolute inset-0 pointer-events-none opacity-[0.03] mix-blend-multiply bg-[url('https://www.transparenttextures.com/patterns/paper-fibers.png')]" />
@@ -685,6 +685,7 @@ const LivePreview = ({ currentStep, formData, zoom = 100, setZoom }) => {
   const viewportRef = React.useRef(null);
   const containerRef = React.useRef(null);
   const [isFullscreen, setIsFullscreen] = React.useState(false);
+  const [previewPage, setPreviewPage] = React.useState(1);
 
   const handleFit = React.useCallback(() => {
     if (!viewportRef.current) return;
@@ -717,8 +718,7 @@ const LivePreview = ({ currentStep, formData, zoom = 100, setZoom }) => {
       setTimeout(handleFit, 100);
     };
     document.addEventListener('fullscreenchange', handleFullscreenChange);
-    // Initial fit
-    handleFit();
+    // Removed initial handleFit() to default to 100% zoom
 
     return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
   }, [handleFit]);
@@ -761,9 +761,10 @@ const LivePreview = ({ currentStep, formData, zoom = 100, setZoom }) => {
   };
 
   const renderContent = () => {
+    const stepToRender = currentStep === 9 ? previewPage : currentStep;
     return (
       <motion.div
-        key={`${currentStep}`}
+        key={`${stepToRender}`}
         initial={{ opacity: 0, y: 10, scale: 0.98 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
         exit={{ opacity: 0, y: -10, scale: 0.98 }}
@@ -771,7 +772,7 @@ const LivePreview = ({ currentStep, formData, zoom = 100, setZoom }) => {
         className="w-full"
       >
         {(() => {
-          switch (currentStep) {
+          switch (stepToRender) {
             case 1: return <CoverPage formData={formData} />;
             case 2: return <PermissionsPage formData={formData} />;
             case 3: return <ScheduleIXPage formData={formData} />;
@@ -793,10 +794,49 @@ const LivePreview = ({ currentStep, formData, zoom = 100, setZoom }) => {
       className={cn(
         "lg:col-span-5 sticky top-8 transition-all duration-700 ease-in-out",
         isFullscreen
-          ? "fixed inset-0 z-[100] h-screen w-screen bg-slate-950 flex flex-col items-center justify-center p-0 overflow-hidden"
-          : "h-[calc(100vh-10rem)]"
+          ? "fixed inset-0 z-[100] h-auto w-screen bg-slate-950 flex flex-col items-center justify-center p-0 overflow-hidden"
+          : "h-auto "
       )}
     >
+      {/* Header and Controls */}
+      {!isFullscreen && (
+        <div className="flex items-center justify-between mb-4 bg-white/80 p-3 rounded-2xl border border-slate-100 shadow-sm backdrop-blur-md">
+          <div>
+            <h3 className="text-xs font-bold text-slate-800 uppercase tracking-widest">Live Preview</h3>
+            <p className="text-[10px] text-slate-400 mt-0.5 font-bold flex items-center gap-2">
+              <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+              A4 — Real Time
+            </p>
+          </div>
+          <div className="flex items-center gap-1">
+            <button
+              onClick={() => setZoom(prev => Math.max(30, prev - 10))}
+              className="p-2 hover:bg-slate-50 rounded-xl text-slate-400 hover:text-blue-600 transition-all active:scale-95"
+              title="Zoom Out"
+            >
+              <Search size={14} className="scale-x-[-1]" />
+            </button>
+            <div className="w-14 text-center">
+              <span className="text-[10px] font-bold text-slate-600 tabular-nums">{zoom}%</span>
+            </div>
+            <button
+              onClick={() => setZoom(prev => Math.min(250, prev + 10))}
+              className="p-2 hover:bg-slate-50 rounded-xl text-slate-400 hover:text-blue-600 transition-all active:scale-95"
+              title="Zoom In"
+            >
+              <Search size={14} />
+            </button>
+            <div className="w-px h-4 bg-slate-100 mx-1" />
+            <button
+              onClick={() => setZoom(100)}
+              className="p-2 hover:bg-slate-50 rounded-xl text-slate-400 hover:text-blue-600 transition-all active:scale-95"
+              title="Reset Zoom"
+            >
+              <Maximize2 size={14} />
+            </button>
+          </div>
+        </div>
+      )}
       {/* Background Decor for Fullscreen */}
       <AnimatePresence>
         {isFullscreen && (
@@ -854,10 +894,31 @@ const LivePreview = ({ currentStep, formData, zoom = 100, setZoom }) => {
         className={cn(
           "relative transition-all duration-500 flex flex-col items-center overflow-auto scrollbar-hide select-none w-full",
           isFullscreen
-            ? "h-full bg-transparent p-12 md:p-20"
-            : "h-full bg-slate-50 border border-slate-100 shadow-inner  rounded-3xl"
+            ? "h-auto bg-transparent p-12 md:p-20"
+            : "h-auto bg-slate-50 border border-slate-100 shadow-inner  rounded-3xl"
         )}
       >
+        {currentStep === 9 && (
+          <>
+            <button
+              onClick={() => setPreviewPage(prev => Math.max(1, prev - 1))}
+              className="absolute left-4 top-1/2 -translate-y-1/2 z-50 p-2 bg-white/80 rounded-full shadow-md hover:bg-white disabled:opacity-50"
+              disabled={previewPage === 1}
+            >
+              <ChevronLeft size={20} />
+            </button>
+            <button
+              onClick={() => setPreviewPage(prev => Math.min(8, prev + 1))}
+              className="absolute right-4 top-1/2 -translate-y-1/2 z-50 p-2 bg-white/80 rounded-full shadow-md hover:bg-white disabled:opacity-50"
+              disabled={previewPage === 8}
+            >
+              <ChevronRight size={20} />
+            </button>
+            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-white/80 px-3 py-1 rounded-full text-xs font-bold text-slate-600 z-50">
+              Page {previewPage} of 8
+            </div>
+          </>
+        )}
         {/* {!isFullscreen && (
           <button
             onClick={toggleFullscreen}

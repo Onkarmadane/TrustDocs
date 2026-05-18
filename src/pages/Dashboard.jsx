@@ -18,10 +18,10 @@ const Dashboard = () => {
     <div className="min-h-screen text-slate-900 pb-20">
       <Navbar />
 
-      <main className="max-w-[1600px] mx-auto px-8 pt-12 relative">
+      <main className="max-w-[1600px] mx-auto px-4 md:px-8 pt-12 relative">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
           {/* Left Section - Heading & Illustration */}
-          <div className="lg:col-span-5 flex flex-col justify-between min-h-[600px]">
+          <div className="lg:col-span-5 flex flex-col justify-between lg:min-h-[600px]">
             <div>
               <Heading
                 title="Dashboard"
@@ -59,7 +59,7 @@ const Dashboard = () => {
       </main>
 
       {/* Premium Circular Floating Button */}
-      <div className="fixed bottom-10 right-10 z-50 group">
+      <div className="fixed bottom-6 right-6 md:bottom-10 md:right-10 z-50 group">
         <motion.div
           whileHover={{ scale: 1.05 }}
           className="relative w-20 h-20 flex items-center justify-center"

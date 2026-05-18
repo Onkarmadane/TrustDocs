@@ -130,12 +130,12 @@ const SavedReports = () => {
     <div className="min-h-screen pb-20">
       <Navbar />
 
-      <main className="max-w-[1600px] mx-auto px-8 pt-12">
+      <main className="max-w-[1600px] mx-auto px-4 md:px-8 pt-12">
         <Heading
           title="Saved Reports"
           subtitle="All Drafts and finalized reports"
           actions={
-            <div className="flex items-center gap-4">
+            <div className="flex  items-center gap-4 ">
               <div className="relative group">
                 <Search size={18} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-500 transition-colors" />
                 <input
@@ -146,7 +146,7 @@ const SavedReports = () => {
                     setSearchTerm(e.target.value);
                     setCurrentPage(1);
                   }}
-                  className="pl-11 pr-4 py-2 bg-white border border-slate-200 rounded-xl text-sm font-medium text-slate-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-500 transition-all w-64"
+                  className="pl-11 pr-4 py-2 bg-white border border-slate-200 rounded-xl text-sm font-medium text-slate-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-500 transition-all w-full sm:w-[140px] md:w-[120px] lg:w-[220px]"
                 />
               </div>
 

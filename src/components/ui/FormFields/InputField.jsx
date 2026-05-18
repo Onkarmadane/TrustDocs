@@ -30,56 +30,61 @@ const InputField = ({
   };
 
   const variantStyles = {
-    default: 'border-slate-100 bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500',
-    minimal: 'border-slate-50 bg-slate-50/30 focus:bg-white',
+    default: 'border-slate-200 bg-white',
+    minimal: 'border-slate-100 bg-slate-50/30',
     highlight: 'border-blue-200 bg-white text-blue-600',
-    glass: 'border-white/40 bg-white/50 backdrop-blur-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500',
+    glass: 'border-white/40 bg-white/50 backdrop-blur-sm',
   };
 
   return (
-    <div className={cn("relative group", className)}>
-      {label && (
-        <label className={cn(
-          "block text-[11px] font-bold uppercase tracking-wide mb-2 transition-colors",
-          error ? 'text-red-500' : 'text-slate-500 group-focus-within:text-blue-600'
-        )}>
-          {label}
-          {required && <span className="text-red-500 ml-0.5">*</span>}
-        </label>
-      )}
-      <div className="flex items-center relative">
-        {iconLeft && (
-          <span className="absolute left-4 text-slate-300 z-10">{iconLeft}</span>
+    <div className={cn("relative group mt-3", className)}>
+      <div className={cn(
+        "relative rounded-2xl border transition-all focus-within:border-blue-900/50 focus-within:ring-2 focus-within:ring-blue-900/10",
+        variantStyles[variant],
+        error ? 'border-red-500 focus-within:ring-red-500' : '',
+        disabled && 'opacity-50 cursor-not-allowed',
+        readOnly && 'bg-slate-50'
+      )}>
+        {label && (
+          <label className={cn(
+            "absolute -top-2.5 left-5 bg-white px-2 text-[12px] font-bold tracking-wide transition-colors z-10",
+            error ? 'text-red-500' : 'text-blue-900 group-focus-within:text-blue-900'
+          )}>
+            {label}
+            {required && <span className="text-red-500 ml-0.5">*</span>}
+          </label>
         )}
-        <input
-          type={type}
-          name={name}
-          value={value}
-          onChange={onChange}
-          placeholder={placeholder}
-          id={id || name}
-          className={cn(
-            "w-full rounded-2xl border font-bold text-slate-800 focus:outline-none transition-all",
-            sizeStyles[size],
-            variantStyles[variant],
-            disabled && 'opacity-50 cursor-not-allowed',
-            error && 'border-red-500 focus:ring-red-500',
-            readOnly && 'cursor-default bg-slate-50',
-            iconLeft && 'pl-10',
-            iconRight && 'pr-10',
+        <div className="flex items-center relative">
+          {iconLeft && (
+            <span className="absolute left-4 text-slate-300 z-10">{iconLeft}</span>
           )}
-          disabled={disabled}
-          readOnly={readOnly}
-          required={required}
-          aria-invalid={error ? 'true' : 'false'}
-          {...props}
-        />
-        {iconRight && (
-          <span className="absolute right-4 text-slate-300">{iconRight}</span>
-        )}
+          <input
+            type={type}
+            name={name}
+            value={value}
+            onChange={onChange}
+            placeholder={placeholder}
+            id={id || name}
+            className={cn(
+              "w-full bg-transparent border-none font-bold text-slate-800 focus:outline-none focus:ring-0 transition-all rounded-2xl",
+              sizeStyles[size],
+              iconLeft && 'pl-12',
+              iconRight && 'pr-12',
+              readOnly && 'cursor-default',
+            )}
+            disabled={disabled}
+            readOnly={readOnly}
+            required={required}
+            aria-invalid={error ? 'true' : 'false'}
+            {...props}
+          />
+          {iconRight && (
+            <span className="absolute right-4 text-slate-300">{iconRight}</span>
+          )}
+        </div>
       </div>
       {error && (
-        <span className="text-[10px] text-red-500 mt-1 block">{error}</span>
+        <span className="text-[10px] text-red-500 mt-1 block ml-2">{error}</span>
       )}
     </div>
   );

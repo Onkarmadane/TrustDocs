@@ -4,7 +4,7 @@ import { InputField } from '../ui/FormFields';
 import { cn } from '../../lib/utils';
 
 const BalanceSheetColumn = ({ items, formData, onChange, colorClass = 'text-blue-600', borderColor = 'border-blue-50' }) => (
-  <div className="px-10 py-6 space-y-5">
+  <div className="px-4 md:px-10 py-6 space-y-5">
     {items.map((item) => (
       <div key={item.key} className="space-y-3">
         <div className="flex items-center justify-between">

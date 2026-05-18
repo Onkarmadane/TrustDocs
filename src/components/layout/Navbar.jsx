@@ -59,7 +59,8 @@ const Navbar = () => {
 
   return (
     <nav className={cn(
-      "sticky top-0 z-50 transition-all duration-300",
+      "sticky top-0 transition-all duration-300",
+      isMenuOpen ? "z-[100]" : "z-50",
       scrolled ? "bg-white shadow-sm" : "bg-transparent"
     )}>
       <div className="flex items-center justify-between px-6 lg:px-12 py-6">
@@ -68,7 +69,7 @@ const Navbar = () => {
           <div className="bg-gradient-to-br from-blue-600 to-indigo-700 p-2.5 rounded-xl shadow-lg shadow-blue-500/20">
             <FileText className="text-white w-6 h-6" />
           </div>
-          <span className="text-xl font-bold tracking-tight text-slate-800 hidden sm:block">TrustDOCS</span>
+          <span className="text-xl font-bold tracking-tight text-slate-800">TrustDOCS</span>
         </div>
 
         {/* Center: Links (Desktop) */}
@@ -134,29 +135,54 @@ const Navbar = () => {
         </div>
       </div>
 
-      {/* Mobile Menu (Overlay) */}
+      {/* Mobile Menu (Fullscreen) */}
       <AnimatePresence>
         {isMenuOpen && (
           <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            className="absolute top-full left-0 right-0 p-6 lg:hidden"
+            initial={{ opacity: 0, x: '100%' }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: '100%' }}
+            transition={{ type: 'tween', duration: 0.3 }}
+            className="fixed inset-0 bg-white z-[100] lg:hidden flex flex-col"
           >
-            <div className="bg-white/90 backdrop-blur-2xl rounded-[2rem] border border-white/60 shadow-2xl p-6 space-y-4">
-              <NavLinks mobile />
-              <div className="pt-4 border-t border-slate-100 flex items-center justify-between">
+            {/* Header inside menu */}
+            <div className="flex items-center justify-between px-6 py-6 border-b border-slate-100">
+              <div className="flex items-center gap-3">
+                <div className="bg-gradient-to-br from-blue-600 to-indigo-700 p-2.5 rounded-xl">
+                  <FileText className="text-white w-6 h-6" />
+                </div>
+                <span className="text-xl font-bold tracking-tight text-slate-800">TrustDOCS</span>
+              </div>
+              <button
+                onClick={() => setIsMenuOpen(false)}
+                className="w-11 h-11 rounded-full bg-slate-50 flex items-center justify-center text-slate-600"
+              >
+                <X size={24} />
+              </button>
+            </div>
+
+            {/* Content */}
+            <div className="flex-1 flex flex-col justify-between p-6">
+              <div className="flex flex-col items-center justify-center flex-1">
+                <NavLinks mobile />
+              </div>
+
+              {/* User info at bottom */}
+              <div className="pt-6 border-t border-slate-100 flex items-center justify-between">
                 <div className="flex items-center gap-4">
                   <div className="w-12 h-12 rounded-full bg-blue-50 flex items-center justify-center text-blue-600">
                     <User size={24} />
                   </div>
                   <div>
-                    <p className="font-bold text-slate-800">{user?.fullName}</p>
-                    <p className="text-sm text-slate-500">{user?.email}</p>
+                    <p className="font-bold text-slate-800">{user?.fullName || 'Admin'}</p>
+                    <p className="text-sm text-slate-500">{user?.email || 'admin@gmail.com'}</p>
                   </div>
                 </div>
                 <button 
-                  onClick={() => logout()}
+                  onClick={() => {
+                    logout();
+                    setIsMenuOpen(false);
+                  }}
                   className="w-11 h-11 rounded-full bg-red-50 flex items-center justify-center text-red-600"
                 >
                   <LogOut size={20} />

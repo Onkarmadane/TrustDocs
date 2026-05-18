@@ -44,7 +44,7 @@ const Templates = () => {
 
       <Navbar />
 
-      <main className="max-w-[1600px] mx-auto px-8 lg:px-16 pt-12 relative z-10">
+      <main className="max-w-[1600px] mx-auto px-4 md:px-8 lg:px-16 pt-12 relative z-10">
         <Heading
           title="Report Templates"
           subtitle="Choose a template to begin."
@@ -65,7 +65,7 @@ const Templates = () => {
                   ease: [0.23, 1, 0.32, 1]
                 }}
               >
-                <Card className="p-5 h-[230px] w-[350px] flex flex-col justify-between group border border-slate-200 cursor-pointer hover:shadow-[0_30px_60px_-15px_rgba(0,0,0,0.08)] transition-all duration-500  bg-white">
+                <Card className="p-5 min-h-[230px] w-full max-w-[350px] flex flex-col justify-between group border border-slate-200 cursor-pointer hover:shadow-[0_30px_60px_-15px_rgba(0,0,0,0.08)] transition-all duration-500  bg-white">
                   {/* Top-Right Accent Glow (Matching design exactly) */}
                   <div className={`absolute -top-24 -right-24 w-80 h-80 blur-[80px] rounded-full opacity-40 group-hover:opacity-70 transition-opacity duration-700 ${template.accent}`} />
 

@@ -10,7 +10,7 @@ const StatCard = ({ title, count, icon: Icon, variant = 'default' }) => {
   };
 
   return (
-    <Card className={cn("p-6 group relative overflow-hidden w-[350px] h-[130px] justify-center", variants[variant])}>
+    <Card className={cn("p-6 group relative overflow-hidden w-full max-w-[350px] h-[130px] justify-center", variants[variant])}>
       <div className="flex justify-between items-start relative z-10">
         <div>
           <h3 className={cn(

@@ -35,7 +35,7 @@ const CustomTooltip = ({ active, payload }) => {
 
 const ReportChart = () => {
   return (
-    <Card className="p-8 h-[400px] bg-white border-slate-100 shadow-sm relative overflow-hidden">
+    <Card className="p-4 md:p-8 h-[400px] bg-white border-slate-100 shadow-sm relative overflow-hidden">
       {/* Dotted Grid Background */}
       <div className="absolute inset-0 pointer-events-none opacity-[0.08]">
         <div className="absolute inset-0" style={{ backgroundImage: 'radial-gradient(#000 1px, transparent 1px)', backgroundSize: '20px 20px' }} />

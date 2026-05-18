@@ -16,6 +16,7 @@ import UploadBox from '../components/auditreport/UploadBox';
 import AccountingRow from '../components/auditreport/AccountingRow';
 import BalanceSheetColumn from '../components/auditreport/BalanceSheetColumn';
 import { steps } from '../components/auditreport/steps';
+import Step9Preview from '../components/auditreport/Step9Preview';
 
 import {
   permissionsQuestions,
@@ -27,10 +28,6 @@ import {
   receiptItems,
   paymentItems,
 } from '../components/auditreport/reportData';
-
-
-
-
 
 
 /*                    MAIN COMPONENT                      */
@@ -98,11 +95,11 @@ const CreateReport = () => {
       if (result.success && result.data?.url) {
         const url = result.data.url;
         setFormData(prev => ({ ...prev, [key]: url }));
-        
+
         // Save draft immediately after image upload to ensure it's in the payload
         const newData = { ...formDataRef.current, [key]: url };
         saveDraft(newData);
-        
+
         toast.success('Image uploaded');
       }
     } catch (error) {
@@ -159,7 +156,7 @@ const CreateReport = () => {
     setIsDownloading(true);
     try {
       const id = await saveDraft();
-      
+
       if (!id) {
         toast.error("Please save the report first");
         setIsDownloading(false);
@@ -188,53 +185,15 @@ const CreateReport = () => {
     <div className="min-h-screen pb-20">
       <Navbar />
 
-      <main className="max-w-[1600px] mx-auto px-8 pt-8 space-y-8">
-        {/* Header Row: Steps + Live Preview Header */}
-        <div className="grid grid-cols-12 gap-8 items-center">
-          <div className="col-span-7">
-            <StepIndicator currentStep={currentStep} />
-          </div>
-          <div className="col-span-5 flex items-center justify-between">
-            <div>
-              <h3 className="text-xs font-bold text-slate-800 uppercase tracking-widest">Live Preview</h3>
-              <p className="text-[10px] text-slate-400 mt-0.5 font-bold flex items-center gap-2">
-                <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
-                A4 — Real Time
-              </p>
-            </div>
-            <div className="flex items-center gap-1 bg-white/80 p-1.5 rounded-2xl border border-slate-100 shadow-sm backdrop-blur-md">
-              <button
-                onClick={() => setZoom(prev => Math.max(30, prev - 10))}
-                className="p-2 hover:bg-slate-50 rounded-xl text-slate-400 hover:text-blue-600 transition-all active:scale-95"
-                title="Zoom Out"
-              >
-                <Search size={14} className="scale-x-[-1]" />
-              </button>
-              <div className="w-14 text-center">
-                <span className="text-[10px] font-bold text-slate-600 tabular-nums">{zoom}%</span>
-              </div>
-              <button
-                onClick={() => setZoom(prev => Math.min(250, prev + 10))}
-                className="p-2 hover:bg-slate-50 rounded-xl text-slate-400 hover:text-blue-600 transition-all active:scale-95"
-                title="Zoom In"
-              >
-                <Search size={14} />
-              </button>
-              <div className="w-px h-4 bg-slate-100 mx-1" />
-              <button
-                onClick={() => setZoom(100)}
-                className="p-2 hover:bg-slate-50 rounded-xl text-slate-400 hover:text-blue-600 transition-all active:scale-95"
-                title="Reset Zoom"
-              >
-                <Maximize2 size={14} />
-              </button>
-            </div>
-          </div>
+      <main className="max-w-[1600px] mx-auto px-4 md:px-8 pt-8 space-y-8">
+        {/* Header Row: Steps */}
+        <div className="w-full">
+          <StepIndicator currentStep={currentStep} />
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
           {/* Left: Form Area */}
-          <div className="lg:col-span-7 space-y-6">
+          <div className={cn("space-y-6", currentStep === 9 ? "lg:col-span-12" : "lg:col-span-7")}>
             <Card className="p-0 border-slate-100 bg-white shadow-xl shadow-slate-200/50 overflow-hidden">
               <AnimatePresence mode="wait">
 
@@ -242,7 +201,7 @@ const CreateReport = () => {
                 {currentStep === 1 && (
                   <motion.div key="step1" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} className="space-y-8 p-10">
                     <div>
-                      <h2 className="text-[11px] font-bold text-slate-400 mb-6 uppercase tracking-[0.2em]">Report Type</h2>
+                      <h2 className="input-headings">Report Type</h2>
                       <SelectField
                         name="reportType"
                         value={formData.reportType || ''}
@@ -256,22 +215,22 @@ const CreateReport = () => {
                     </div>
 
                     <div>
-                      <h2 className="text-[11px] font-bold text-slate-400 mb-6 uppercase tracking-[0.2em]">Global Information</h2>
-                      <div className="grid grid-cols-2 gap-x-8 gap-y-5">
+                      <h2 className="input-headings">Global Information</h2>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-5">
                         <InputField name="trustName" label="Trust Name" placeholder="Enter" value={formData.trustName || ''} onChange={handleChange} />
                         <InputField name="registrationNo" label="Registration No" placeholder="Enter" value={formData.registrationNo || ''} onChange={handleChange} />
                         <InputField name="date" label="Date" placeholder="Select" type="date" value={formData.date || ''} onChange={handleChange} />
                         <InputField name="place" label="Place" placeholder="Enter Place" value={formData.place || ''} onChange={handleChange} />
                         <InputField name="financialYear" label="Financial Year" placeholder="2025-26" value={formData.financialYear || ''} onChange={handleChange} />
-                        <div className="col-span-2">
+                        <div className="sm:col-span-2">
                           <InputField name="address" label="Address" placeholder="Enter" value={formData.address || ''} onChange={handleChange} />
                         </div>
                       </div>
                     </div>
 
-                    <div className="pt-8 border-t border-slate-50">
-                      <h2 className="text-[11px] font-bold text-slate-400 mb-6 uppercase tracking-[0.2em]">Upload Stamp & Signature</h2>
-                      <div className="grid grid-cols-2 gap-x-8 gap-y-5">
+                    <div className="border-t border-slate-50">
+                      <h2 className="input-headings">Upload Stamp & Signature</h2>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-5">
                         <UploadBox
                           label="Signature 1"
                           value={formData.signature_1}
@@ -304,7 +263,7 @@ const CreateReport = () => {
                     <div className="space-y-3">
                       {permissionsQuestions.map((question, i) => (
                         <div key={i} className="p-4 rounded-2xl border border-slate-50 bg-white/50 space-y-3 hover:border-blue-100 transition-colors">
-                          <p className="text-sm text-slate-700 leading-relaxed font-medium">{question}</p>
+                          <p className="text-[13px] text-slate-700 leading-relaxed font-medium">{question}</p>
                           <RadioGroup
                             name={`perm_${i}`}
                             value={formData[`perm_${i}`] || ''}
@@ -325,7 +284,7 @@ const CreateReport = () => {
                   <motion.div key="step3" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} className="p-10 space-y-4">
                     <div className="space-y-4">
                       {/* Income as shown */}
-                      <div className="flex items-center justify-between p-4 rounded-2xl border border-slate-100 bg-white/50">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-2xl border border-slate-100 bg-white/50 gap-4">
                         <p className="text-xs font-bold text-slate-700">(I) Income as shown in the Income and Expenditure Account (Schedule IX)</p>
                         <InputField
                           name="sch_income_shown"
@@ -335,7 +294,7 @@ const CreateReport = () => {
                           placeholder="0.00"
                           variant="default"
                           size="inline"
-                          className="w-32"
+                          className="w-full sm:w-32"
                         />
                       </div>
 
@@ -344,9 +303,9 @@ const CreateReport = () => {
                         <p className="text-xs font-bold text-slate-700">(II) Items not chargeable to contribution under Section 58 and Rules 32</p>
                         <div className="space-y-3 pl-4 border-l-2 border-blue-50">
                           {scheduleIXItems.map((item) => (
-                            <div key={item.key} className="flex items-center justify-between gap-4 group">
+                            <div key={item.key} className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 group">
                               <p className="text-[11px] text-slate-500 font-medium group-hover:text-slate-800 transition-colors flex-1">{item.label}</p>
-                              <div className="flex items-center gap-2 shrink-0">
+                              <div className="flex items-center gap-2 shrink-0 w-full sm:w-auto">
                                 <InputField
                                   name={item.key}
                                   type="number"
@@ -355,7 +314,7 @@ const CreateReport = () => {
                                   placeholder="0"
                                   variant="minimal"
                                   size="compact"
-                                  className="w-28"
+                                  className="w-full sm:w-28"
                                 />
                                 {/* <button className="p-1 text-slate-300 hover:text-slate-500 transition-colors opacity-0 group-hover:opacity-100">
                                   <MoreVertical size={12} />
@@ -385,49 +344,51 @@ const CreateReport = () => {
                 {/* ─── STEP 4: Income & Expenditure ─── */}
                 {currentStep === 4 && (
                   <motion.div key="step4" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }}>
-                    <div className="px-10 pt-10 pb-4">
+                    {/* <div className="px-10 pt-10 pb-4">
                       <h2 className="text-sm font-bold text-slate-800 uppercase tracking-widest">Step 4: Income & Expenditure A/C</h2>
-                      <p className="text-[11px] text-slate-400 font-medium">Detailed accounting for the current financial year</p>
-                    </div>
-                    <div className="border-t border-slate-100 bg-white">
-                      {/* Header */}
-                      <div className="grid grid-cols-4 bg-slate-50/50 border-b border-slate-100">
-                        <div className="p-4 text-center font-bold text-[10px] text-slate-400 uppercase tracking-widest border-r border-slate-100/50">Expenditure</div>
-                        <div className="p-4 text-center font-bold text-[10px] text-slate-400 uppercase tracking-widest border-r border-slate-100/50">Amount</div>
-                        <div className="p-4 text-center font-bold text-[10px] text-slate-400 uppercase tracking-widest border-r border-slate-100/50">Income</div>
-                        <div className="p-4 text-center font-bold text-[10px] text-slate-400 uppercase tracking-widest">Amount</div>
-                      </div>
-
-                      {/* Body */}
-                      <div className="grid grid-cols-2 divide-x divide-slate-100 bg-white">
-                        {/* Expenditure Column */}
-                        <div className="px-10 py-6 space-y-5">
-                          {expenditureItems.map((item) => (
-                            <AccountingRow key={item.key} item={item} formData={formData} onChange={handleChange} />
-                          ))}
+                      <p className="text-[11px] text-black font-medium">Detailed accounting for the current financial year</p>
+                    </div> */}
+                    <div className="border-t border-slate-100 bg-white overflow-x-auto">
+                      <div className="min-w-[750px]">
+                        {/* Header */}
+                        <div className="grid grid-cols-4 bg-slate-50/50 border-b border-slate-100">
+                          <div className="p-4 text-center font-bold text-[10px] text-black uppercase tracking-widest border-r border-slate-100/50">Expenditure</div>
+                          <div className="p-4 text-center font-bold text-[10px] text-black uppercase tracking-widest border-r border-slate-100/50">Amount</div>
+                          <div className="p-4 text-center font-bold text-[10px] text-black uppercase tracking-widest border-r border-slate-100/50">Income</div>
+                          <div className="p-4 text-center font-bold text-[10px] text-black uppercase tracking-widest">Amount</div>
                         </div>
 
-                        {/* Income Column */}
-                        <div className="px-10 py-6 space-y-5">
-                          {incomeItems.map((item) => (
-                            <AccountingRow key={item.key} item={item} formData={formData} onChange={handleChange} />
-                          ))}
-                        </div>
-                      </div>
+                        {/* Body */}
+                        <div className="grid grid-cols-2 divide-x divide-slate-100 bg-white">
+                          {/* Expenditure Column */}
+                          <div className="px-10 py-6 space-y-5">
+                            {expenditureItems.map((item) => (
+                              <AccountingRow key={item.key} item={item} formData={formData} onChange={handleChange} />
+                            ))}
+                          </div>
 
-                      {/* Footer Totals */}
-                      <div className="grid grid-cols-4 border-t-2 border-blue-100 bg-blue-50/30">
-                        <div className="p-4 flex items-center px-5 border-r border-blue-100">
-                          <span className="text-[10px] font-bold text-blue-600 uppercase tracking-wider">Total</span>
+                          {/* Income Column */}
+                          <div className="px-10 py-6 space-y-5">
+                            {incomeItems.map((item) => (
+                              <AccountingRow key={item.key} item={item} formData={formData} onChange={handleChange} />
+                            ))}
+                          </div>
                         </div>
-                        <div className="p-4 flex items-center justify-end px-5 border-r border-blue-100">
-                          <span className="text-xs font-bold text-blue-700 font-mono">{expTotal.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
-                        </div>
-                        <div className="p-4 flex items-center px-5 border-r border-blue-100">
-                          <span className="text-[10px] font-bold text-blue-600 uppercase tracking-wider">Total</span>
-                        </div>
-                        <div className="p-4 flex items-center justify-end px-5">
-                          <span className="text-xs font-bold text-blue-700 font-mono">{incTotal.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
+
+                        {/* Footer Totals */}
+                        <div className="grid grid-cols-4 border-t-2 border-blue-100 bg-blue-50/30">
+                          <div className="p-4 flex items-center px-5 border-r border-blue-100">
+                            <span className="text-[10px] font-bold text-blue-600 uppercase tracking-wider">Total</span>
+                          </div>
+                          <div className="p-4 flex items-center justify-end px-5 border-r border-blue-100">
+                            <span className="text-xs font-bold text-blue-700 font-mono">{expTotal.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
+                          </div>
+                          <div className="p-4 flex items-center px-5 border-r border-blue-100">
+                            <span className="text-[10px] font-bold text-blue-600 uppercase tracking-wider">Total</span>
+                          </div>
+                          <div className="p-4 flex items-center justify-end px-5">
+                            <span className="text-xs font-bold text-blue-700 font-mono">{incTotal.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -437,50 +398,52 @@ const CreateReport = () => {
                 {/* ─── STEP 5: Balance Sheet ─── */}
                 {currentStep === 5 && (
                   <motion.div key="step5" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }}>
-                    <div className="px-10 pt-10 pb-4">
+                    {/* <div className="px-10 pt-10 pb-4">
                       <h2 className="text-sm font-bold text-slate-800 uppercase tracking-widest">Step 5: Balance Sheet</h2>
-                      <p className="text-[11px] text-slate-400 font-medium">Funds, Liabilities, Property & Assets statement</p>
-                    </div>
-                    <div className="border-t border-slate-100 bg-white">
-                      {/* Header */}
-                      <div className="grid grid-cols-4 bg-slate-50/50 border-b border-slate-100">
-                        <div className="p-4 text-center font-bold text-[10px] text-slate-400 uppercase tracking-widest border-r border-slate-100/50">Funds & Liabilities</div>
-                        <div className="p-4 text-center font-bold text-[10px] text-slate-400 uppercase tracking-widest border-r border-slate-100/50">Amount</div>
-                        <div className="p-4 text-center font-bold text-[10px] text-slate-400 uppercase tracking-widest border-r border-slate-100/50">Property & Assets</div>
-                        <div className="p-4 text-center font-bold text-[10px] text-slate-400 uppercase tracking-widest">Amount</div>
-                      </div>
+                      <p className="text-[11px] text-black font-medium">Funds, Liabilities, Property & Assets statement</p>
+                    </div> */}
+                    <div className="border-t border-slate-100 bg-white overflow-x-auto">
+                      <div className="min-w-[750px]">
+                        {/* Header */}
+                        <div className="grid grid-cols-4 bg-slate-50/50 border-b border-slate-100">
+                          <div className="p-4 text-center font-bold text-[10px] text-black uppercase tracking-widest border-r border-slate-100/50">Funds & Liabilities</div>
+                          <div className="p-4 text-center font-bold text-[10px] text-black uppercase tracking-widest border-r border-slate-100/50">Amount</div>
+                          <div className="p-4 text-center font-bold text-[10px] text-black uppercase tracking-widest border-r border-slate-100/50">Property & Assets</div>
+                          <div className="p-4 text-center font-bold text-[10px] text-black uppercase tracking-widest">Amount</div>
+                        </div>
 
-                      {/* Body */}
-                      <div className="grid grid-cols-2 divide-x divide-slate-100 bg-white">
-                        <BalanceSheetColumn
-                          items={fundsLiabilitiesItems}
-                          formData={formData}
-                          onChange={handleChange}
-                          colorClass="text-black"
-                        // borderColor="border-blue-50"
-                        />
-                        <BalanceSheetColumn
-                          items={propertyAssetsItems}
-                          formData={formData}
-                          onChange={handleChange}
-                          colorClass="text-black"
-                        // borderColor="border-indigo-50"
-                        />
-                      </div>
+                        {/* Body */}
+                        <div className="grid grid-cols-2 divide-x divide-slate-100 bg-white">
+                          <BalanceSheetColumn
+                            items={fundsLiabilitiesItems}
+                            formData={formData}
+                            onChange={handleChange}
+                            colorClass="text-black"
+                          // borderColor="border-blue-50"
+                          />
+                          <BalanceSheetColumn
+                            items={propertyAssetsItems}
+                            formData={formData}
+                            onChange={handleChange}
+                            colorClass="text-black"
+                          // borderColor="border-indigo-50"
+                          />
+                        </div>
 
-                      {/* Footer Totals */}
-                      <div className="grid grid-cols-4 border-t border-slate-100 bg-slate-50/30">
-                        <div className="p-5 flex items-center px-10 border-r border-slate-100/50">
-                          <span className="text-[10px] font-bold text-blue-600 uppercase tracking-wider">Total</span>
-                        </div>
-                        <div className="p-5 flex items-center justify-end px-10 border-r border-slate-100/50">
-                          <span className="text-xs font-bold text-blue-700 font-mono">{flTotal.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
-                        </div>
-                        <div className="p-5 flex items-center px-10 border-r border-slate-100/50">
-                          <span className="text-[10px] font-bold text-blue-600 uppercase tracking-wider">Total</span>
-                        </div>
-                        <div className="p-5 flex items-center justify-end px-10">
-                          <span className="text-xs font-bold text-blue-700 font-mono">{paTotal.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
+                        {/* Footer Totals */}
+                        <div className="grid grid-cols-4 border-t border-slate-100 bg-slate-50/30">
+                          <div className="p-5 flex items-center px-10 border-r border-slate-100/50">
+                            <span className="text-[10px] font-bold text-blue-600 uppercase tracking-wider">Total</span>
+                          </div>
+                          <div className="p-5 flex items-center justify-end px-10 border-r border-slate-100/50">
+                            <span className="text-xs font-bold text-blue-700 font-mono">{flTotal.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
+                          </div>
+                          <div className="p-5 flex items-center px-10 border-r border-slate-100/50">
+                            <span className="text-[10px] font-bold text-blue-600 uppercase tracking-wider">Total</span>
+                          </div>
+                          <div className="p-5 flex items-center justify-end px-10">
+                            <span className="text-xs font-bold text-blue-700 font-mono">{paTotal.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -492,37 +455,39 @@ const CreateReport = () => {
                   <motion.div key="step6" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }}>
                     <div className="px-10 pt-10 pb-4">
                       <h2 className="text-sm font-bold text-slate-800 uppercase tracking-widest">Step 6: Receipt & Payment Account</h2>
-                      <p className="text-[11px] text-slate-400 font-medium">Receipt and Payment details for the year</p>
+                      <p className="text-[11px] text-black font-medium">Receipt and Payment details for the year</p>
                     </div>
-                    <div className="border-t border-slate-100 bg-white">
-                      {/* Header */}
-                      <div className="grid grid-cols-4 bg-slate-50/50 border-b border-slate-100">
-                        <div className="p-4 text-center font-bold text-[10px] text-slate-400 uppercase tracking-widest border-r border-slate-100/50">Receipt</div>
-                        <div className="p-4 text-center font-bold text-[10px] text-slate-400 uppercase tracking-widest border-r border-slate-100/50">Amount</div>
-                        <div className="p-4 text-center font-bold text-[10px] text-slate-400 uppercase tracking-widest border-r border-slate-100/50">Payments</div>
-                        <div className="p-4 text-center font-bold text-[10px] text-slate-400 uppercase tracking-widest">Amount</div>
-                      </div>
-
-                      {/* Body */}
-                      <div className="grid grid-cols-2 divide-x divide-slate-100 bg-white">
-                        <div className="px-10 py-6 space-y-5">
-                          {/* Receipt Items would normally use AccountingRow or similar, but since we updated reportData we should manually map or use BalanceSheetColumn logic if nested. Let's use BalanceSheetColumn logic as they have nested amounts. */}
-                          <BalanceSheetColumn
-                            items={receiptItems}
-                            formData={formData}
-                            onChange={handleChange}
-                            colorClass="text-black"
-                          // borderColor="border-emerald-50"
-                          />
+                    <div className="border-t border-slate-100 bg-white overflow-x-auto">
+                      <div className="min-w-[750px]">
+                        {/* Header */}
+                        <div className="grid grid-cols-4 bg-slate-50/50 border-b border-slate-100">
+                          <div className="p-4 text-center font-bold text-[10px] text-black uppercase tracking-widest border-r border-slate-100/50">Receipt</div>
+                          <div className="p-4 text-center font-bold text-[10px] text-black uppercase tracking-widest border-r border-slate-100/50">Amount</div>
+                          <div className="p-4 text-center font-bold text-[10px] text-black uppercase tracking-widest border-r border-slate-100/50">Payments</div>
+                          <div className="p-4 text-center font-bold text-[10px] text-black uppercase tracking-widest">Amount</div>
                         </div>
-                        <div className="px-10 py-6 space-y-5">
-                          <BalanceSheetColumn
-                            items={paymentItems}
-                            formData={formData}
-                            onChange={handleChange}
-                            colorClass="text-black"
-                          // borderColor="border-rose-50"
-                          />
+
+                        {/* Body */}
+                        <div className="grid grid-cols-2 divide-x divide-slate-100 bg-white">
+                          <div className="px-10 py-6 space-y-5">
+                            {/* Receipt Items would normally use AccountingRow or similar, but since we updated reportData we should manually map or use BalanceSheetColumn logic if nested. Let's use BalanceSheetColumn logic as they have nested amounts. */}
+                            <BalanceSheetColumn
+                              items={receiptItems}
+                              formData={formData}
+                              onChange={handleChange}
+                              colorClass="text-black"
+                            // borderColor="border-emerald-50"
+                            />
+                          </div>
+                          <div className="px-10 py-6 space-y-5">
+                            <BalanceSheetColumn
+                              items={paymentItems}
+                              formData={formData}
+                              onChange={handleChange}
+                              colorClass="text-black"
+                            // borderColor="border-rose-50"
+                            />
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -533,8 +498,8 @@ const CreateReport = () => {
                 {currentStep === 7 && (
                   <motion.div key="step7" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} className="p-10 space-y-8">
                     <div>
-                      <h2 className="text-[11px] font-bold text-slate-400 mb-6 uppercase tracking-[0.2em]">Schedule 9-D (अनुसूची नऊ - ड)</h2>
-                      <div className="grid grid-cols-2 gap-x-8 gap-y-5">
+                      <h2 className="text-[11px] font-bold text-black mb-6 uppercase ">Schedule 9-D (अनुसूची नऊ - ड)</h2>
+                      <div className="grid grid-cols-2 md:grid-cols-2 sm:grid-cols-1 gap-x-8 gap-y-5">
                         <InputField name="sch9d_trustNameMarathi" label="संस्थेचे नाव (Trust Name)" placeholder="Enter in Marathi" value={formData.sch9d_trustNameMarathi || ''} onChange={handleChange} />
                         <InputField name="sch9d_registrationNoMarathi" label="नोंदणी क्रमांक (Reg No)" placeholder="Enter in Marathi" value={formData.sch9d_registrationNoMarathi || ''} onChange={handleChange} />
                         <InputField name="sch9d_financialYearMarathi" label="आर्थिक वर्ष (Financial Year)" placeholder="उदा. सन 2025-26" value={formData.sch9d_financialYearMarathi || ''} onChange={handleChange} />
@@ -547,7 +512,7 @@ const CreateReport = () => {
                       {/* Previous 3 Years IT Returns */}
                       <div className="mt-8">
                         <div className="flex justify-between items-center mb-4">
-                          <h3 className="text-[11px] font-bold text-slate-400 uppercase tracking-[0.1em]">आधीच्या तीन वर्षाचे आयकर विवरण (Prev IT Returns)</h3>
+                          <h3 className="text-[11px] font-bold text-black uppercase tracking-[0.1em]">आधीच्या तीन वर्षाचे आयकर विवरण (Prev IT Returns)</h3>
                           <button
                             type="button"
                             onClick={() => {
@@ -564,9 +529,9 @@ const CreateReport = () => {
                         </div>
                         <div className="space-y-3">
                           {(formData.sch9d_previousITReturns || [{ receiptNo: '', year: '' }]).map((item, index) => (
-                            <div key={index} className="grid grid-cols-12 gap-4 items-end">
-                              <div className="col-span-1 text-center text-xs text-slate-500 pb-3">{index + 1}</div>
-                              <div className="col-span-5">
+                            <div key={index} className="grid grid-cols-1 md:grid-cols-12 gap-4 items-end">
+                              <div className="col-span-1 hidden md:block text-center text-xs text-slate-500 pb-3">{index + 1}</div>
+                              <div className="col-span-12 md:col-span-5">
                                 <InputField
                                   name={`sch9d_it_receipt_${index}`}
                                   label="पोच पावती क्रमांक"
@@ -579,7 +544,7 @@ const CreateReport = () => {
                                   }}
                                 />
                               </div>
-                              <div className="col-span-5">
+                              <div className="col-span-12 md:col-span-5">
                                 <InputField
                                   name={`sch9d_it_year_${index}`}
                                   label="वर्ष"
@@ -592,7 +557,7 @@ const CreateReport = () => {
                                   }}
                                 />
                               </div>
-                              <div className="col-span-1 pb-2">
+                              <div className="col-span-12 md:col-span-1 pb-2">
                                 <button
                                   type="button"
                                   onClick={() => {
@@ -612,7 +577,7 @@ const CreateReport = () => {
                       {/* All Trustees PAN */}
                       <div className="mt-8">
                         <div className="flex justify-between items-center mb-4">
-                          <h3 className="text-[11px] font-bold text-slate-400 uppercase tracking-[0.1em]">सर्व विश्वस्तांचे स्थायी खाते क्रमांक (All Trustees PAN)</h3>
+                          <h3 className="text-[11px] font-bold text-black uppercase tracking-[0.1em]">सर्व विश्वस्तांचे स्थायी खाते क्रमांक (All Trustees PAN)</h3>
                           <button
                             type="button"
                             onClick={() => {
@@ -629,9 +594,9 @@ const CreateReport = () => {
                         </div>
                         <div className="space-y-3">
                           {(formData.sch9d_trusteesPan || [{ name: '', pan: '' }]).map((item, index) => (
-                            <div key={index} className="grid grid-cols-12 gap-4 items-end">
-                              <div className="col-span-1 text-center text-xs text-slate-500 pb-3">{index + 1}</div>
-                              <div className="col-span-5">
+                            <div key={index} className="grid grid-cols-1 md:grid-cols-12 gap-4 items-end">
+                              <div className="col-span-1 hidden md:block text-center text-xs text-slate-500 pb-3">{index + 1}</div>
+                              <div className="col-span-12 md:col-span-5">
                                 <InputField
                                   name={`sch9d_trustee_name_${index}`}
                                   label="विश्वस्तांचे नांव"
@@ -644,7 +609,7 @@ const CreateReport = () => {
                                   }}
                                 />
                               </div>
-                              <div className="col-span-5">
+                              <div className="col-span-12 md:col-span-5">
                                 <InputField
                                   name={`sch9d_trustee_pan_${index}`}
                                   label="स्थायी खाते क्रमांक"
@@ -657,7 +622,7 @@ const CreateReport = () => {
                                   }}
                                 />
                               </div>
-                              <div className="col-span-1 pb-2">
+                              <div className="col-span-12 md:col-span-1 pb-2">
                                 <button
                                   type="button"
                                   onClick={() => {
@@ -681,8 +646,8 @@ const CreateReport = () => {
                 {currentStep === 8 && (
                   <motion.div key="step8" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} className="p-10 space-y-8">
                     <div>
-                      <h2 className="text-[11px] font-bold text-slate-400 mb-6 uppercase tracking-[0.2em]">Delay Exemption (विलंब माफीचा अर्ज)</h2>
-                      <div className="grid grid-cols-2 gap-x-8 gap-y-5">
+                      <h2 className="text-[11px] font-bold text-black mb-6 uppercase ">Delay Exemption (विलंब माफीचा अर्ज)</h2>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-5">
                         <InputField name="delay_applicantName" label="अर्जदाराचे नाव (Applicant Name)" placeholder="Enter Name" value={formData.delay_applicantName || ''} onChange={handleChange} />
                         <InputField name="delay_applicantAge" label="वय (Age)" placeholder="Enter Age" value={formData.delay_applicantAge || ''} onChange={handleChange} />
                         <InputField name="delay_applicantAddress" label="पत्ता (Address)" placeholder="Enter Address" value={formData.delay_applicantAddress || ''} onChange={handleChange} />
@@ -693,6 +658,13 @@ const CreateReport = () => {
                         <InputField name="delay_date" label="दिनांक (Date)" placeholder="Date" type="date" value={formData.delay_date || ''} onChange={handleChange} />
                       </div>
                     </div>
+                  </motion.div>
+                )}
+
+                {/* ─── STEP 9: Preview & Save ─── */}
+                {currentStep === 9 && (
+                  <motion.div key="step9" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }}>
+                    <Step9Preview formData={formData} />
                   </motion.div>
                 )}
 
@@ -740,7 +712,9 @@ const CreateReport = () => {
           </div>
 
           {/* Right: Live Preview */}
-          <LivePreview currentStep={currentStep} formData={formData} zoom={zoom} setZoom={setZoom} />
+          {currentStep !== 9 && (
+            <LivePreview currentStep={currentStep} formData={formData} zoom={zoom} setZoom={setZoom} />
+          )}
         </div>
       </main>
     </div>

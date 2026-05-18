@@ -44,3 +44,10 @@
 html {
   font-family: 'Mona Sans', sans-serif !important;
 }
+
+.input-headings {
+  font-size: 15px;
+  font-weight: 600;
+  color: black;
+  margin-bottom: 24px;
+}
