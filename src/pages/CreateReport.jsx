@@ -2,7 +2,7 @@ import React, { useState, useCallback, useEffect, useRef } from 'react';
 import Navbar from '../components/layout/Navbar';
 import Card from '../components/ui/Card';
 import { InputField, RadioGroup, SelectField } from '../components/ui/FormFields';
-import { ChevronLeft, ChevronRight, MoreVertical, Search, Maximize2, Upload, Download } from 'lucide-react';
+import { ChevronLeft, ChevronRight, MoreVertical, Search, Maximize2, Upload, Download, ChevronUp } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import toast from 'react-hot-toast';
 import { cn } from '../lib/utils';
@@ -39,6 +39,7 @@ const CreateReport = () => {
   const [reportId, setReportId] = useState(null);
   const [isReportSaved, setIsReportSaved] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
+  const [showBackToTop, setShowBackToTop] = useState(false);
 
   const lastSavedData = useRef({});
   const formDataRef = useRef(formData);
@@ -63,6 +64,21 @@ const CreateReport = () => {
   useEffect(() => {
     window.scrollTo(0, 0);
   }, [currentStep]);
+
+  useEffect(() => {
+    let ticking = false;
+    const handleScroll = () => {
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          setShowBackToTop(window.scrollY > 300);
+          ticking = false;
+        });
+        ticking = true;
+      }
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   const saveDraft = async (data) => {
     const currentData = data || formDataRef.current;
@@ -294,7 +310,7 @@ const CreateReport = () => {
 
                 {/* ─── STEP 3: Schedule IX ─── */}
                 {currentStep === 3 && (
-                  <motion.div key="step3" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} className="p-10 space-y-4">
+                  <motion.div key="step3" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} className="p-1 space-y-4">
                     <div className="space-y-4">
                       {/* Income as shown */}
                       <div className="flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-2xl border border-slate-100 bg-white/50 gap-4">
@@ -374,14 +390,14 @@ const CreateReport = () => {
                         {/* Body */}
                         <div className="grid grid-cols-2 divide-x divide-slate-100 bg-white">
                           {/* Expenditure Column */}
-                          <div className="px-10 py-6 space-y-5">
+                          <div className="px-5 py-6 space-y-5">
                             {expenditureItems.map((item) => (
                               <AccountingRow key={item.key} item={item} formData={formData} onChange={handleChange} />
                             ))}
                           </div>
 
                           {/* Income Column */}
-                          <div className="px-10 py-6 space-y-5">
+                          <div className="px-5 py-6 space-y-5">
                             {incomeItems.map((item) => (
                               <AccountingRow key={item.key} item={item} formData={formData} onChange={handleChange} />
                             ))}
@@ -482,7 +498,7 @@ const CreateReport = () => {
 
                         {/* Body */}
                         <div className="grid grid-cols-2 divide-x divide-slate-100 bg-white">
-                          <div className="px-10 py-6 space-y-5">
+                          <div className="px-5 py-6 space-y-5">
                             {/* Receipt Items would normally use AccountingRow or similar, but since we updated reportData we should manually map or use BalanceSheetColumn logic if nested. Let's use BalanceSheetColumn logic as they have nested amounts. */}
                             <BalanceSheetColumn
                               items={receiptItems}
@@ -492,7 +508,7 @@ const CreateReport = () => {
                             // borderColor="border-emerald-50"
                             />
                           </div>
-                          <div className="px-10 py-6 space-y-5">
+                          <div className="px-5 py-6 space-y-5">
                             <BalanceSheetColumn
                               items={paymentItems}
                               formData={formData}
@@ -729,11 +745,63 @@ const CreateReport = () => {
           </div>
 
           {/* Right: Live Preview */}
-            {currentStep !== 9 && (
-              <LivePreview currentStep={currentStep} formData={debouncedFormData} zoom={zoom} setZoom={setZoom} />
-            )}
+          {currentStep !== 9 && (
+            <LivePreview currentStep={currentStep} formData={debouncedFormData} zoom={zoom} setZoom={setZoom} />
+          )}
         </div>
       </main>
+
+      {/* Premium Back to Top Button */}
+      <AnimatePresence>
+        {showBackToTop && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.8 }}
+            className="fixed bottom-6 right-6 md:bottom-10 md:right-10 z-50 group"
+          >
+            <motion.div
+              whileHover={{ scale: 1.05 }}
+              className="relative w-20 h-20 flex items-center justify-center"
+            >
+              {/* Rotating Text */}
+              <motion.div
+                whileHover={{ rotate: 360 }}
+                transition={{ duration: 2, ease: "easeInOut" }}
+                className="absolute inset-0"
+              >
+                <svg viewBox="0 0 100 100" className="w-full h-full">
+                  <path
+                    id="circlePathTop"
+                    d="M 50, 50 m -38, 0 a 38,38 0 1,1 76,0 a 38,38 0 1,1 -76,0"
+                    fill="none"
+                  />
+                  <text className="text-[9px] font-bold fill-indigo-600/60 uppercase tracking-[0.15em]">
+                    <textPath href="#circlePathTop">
+                      BACK TO TOP • BACK TO TOP • BACK TO TOP • BACK TO TOP •
+                    </textPath>
+                  </text>
+                </svg>
+              </motion.div>
+
+              {/* Central Button */}
+              <motion.button
+                whileTap={{ scale: 0.9 }}
+                className="w-10 h-10 bg-gradient-to-tr from-indigo-900 to-blue-600 text-white rounded-full flex items-center justify-center shadow-xl shadow-blue-500/30 relative z-10 overflow-hidden"
+                onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+              >
+                <div className="absolute inset-0 bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity" />
+
+                <ChevronUp
+                  size={22}
+                  className="group-hover:scale-110 transition-transform"
+                  strokeWidth={2}
+                />
+              </motion.button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

@@ -46,45 +46,45 @@ const ReportChart = () => {
           <AreaChart data={data} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
             <defs>
               <linearGradient id="colorCreated" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#2563eb" stopOpacity={0.1}/>
-                <stop offset="95%" stopColor="#2563eb" stopOpacity={0}/>
+                <stop offset="5%" stopColor="#2563eb" stopOpacity={0.1} />
+                <stop offset="95%" stopColor="#2563eb" stopOpacity={0} />
               </linearGradient>
               <linearGradient id="colorDraft" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#94a3b8" stopOpacity={0.1}/>
-                <stop offset="95%" stopColor="#94a3b8" stopOpacity={0}/>
+                <stop offset="5%" stopColor="#94a3b8" stopOpacity={0.1} />
+                <stop offset="95%" stopColor="#94a3b8" stopOpacity={0} />
               </linearGradient>
             </defs>
             <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
-            <XAxis 
-              dataKey="name" 
-              axisLine={false} 
-              tickLine={false} 
+            <XAxis
+              dataKey="name"
+              axisLine={false}
+              tickLine={false}
               tick={{ fill: '#64748b', fontSize: 12, fontWeight: 500 }}
               dy={10}
             />
-            <YAxis 
-              axisLine={false} 
-              tickLine={false} 
+            <YAxis
+              axisLine={false}
+              tickLine={false}
               tick={{ fill: '#64748b', fontSize: 12, fontWeight: 500 }}
             />
             <Tooltip content={<CustomTooltip />} cursor={{ stroke: '#e2e8f0', strokeWidth: 2 }} />
-            <Area 
-              type="monotone" 
-              dataKey="created" 
+            <Area
+              type="monotone"
+              dataKey="created"
               name="Created Reports"
-              stroke="#2563eb" 
+              stroke="#2563eb"
               strokeWidth={3}
-              fillOpacity={1} 
-              fill="url(#colorCreated)" 
+              fillOpacity={1}
+              fill="url(#colorCreated)"
             />
-            <Area 
-              type="monotone" 
-              dataKey="draft" 
+            <Area
+              type="monotone"
+              dataKey="draft"
               name="Draft Reports"
-              stroke="#94a3b8" 
+              stroke="#94a3b8"
               strokeWidth={3}
-              fillOpacity={1} 
-              fill="url(#colorDraft)" 
+              fillOpacity={1}
+              fill="url(#colorDraft)"
             />
           </AreaChart>
         </ResponsiveContainer>

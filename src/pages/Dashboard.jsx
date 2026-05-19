@@ -67,8 +67,8 @@ const Dashboard = () => {
         >
           {/* Rotating Text */}
           <motion.div
-            animate={{ rotate: 360 }}
-            transition={{ duration: 15, repeat: Infinity, ease: "linear" }}
+            whileHover={{ rotate: 360 }}
+            transition={{ duration: 2, ease: "easeInOut" }}
             className="absolute inset-0"
           >
             <svg viewBox="0 0 100 100" className="w-full h-full">
