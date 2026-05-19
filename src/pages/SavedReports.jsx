@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import Navbar from '../components/layout/Navbar';
 import Heading from '../components/ui/Heading';
 import { Table, TableRow, TableCell } from '../components/ui/Table';
 import Modal from '../components/ui/Modal';
@@ -9,6 +8,8 @@ import toast from 'react-hot-toast';
 import { reportService } from '../services/reportService';
 import { CoverPage, PermissionsPage, ScheduleIXPage, IncomeExpPage, BalanceSheetPage } from '../components/auditreport/LivePreview';
 import { mapBackendPayloadToFormData } from '../utils/reportMapper';
+import SavedReportsSkeleton from '../components/ui/SavedReportsSkeleton';
+import useDocumentTitle from '../utils/useDocumentTitle';
 
 const StatusBadge = ({ status }) => {
   const styles = {
@@ -26,6 +27,7 @@ const StatusBadge = ({ status }) => {
 };
 
 const SavedReports = () => {
+  useDocumentTitle('Saved Reports');
   const [reports, setReports] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedReport, setSelectedReport] = useState(null);
@@ -128,7 +130,6 @@ const SavedReports = () => {
 
   return (
     <div className="min-h-screen pb-20">
-      <Navbar />
 
       <main className="max-w-[1600px] mx-auto px-4 md:px-8 pt-12">
         <Heading
@@ -196,7 +197,7 @@ const SavedReports = () => {
           animate={{ opacity: 1, y: 0 }}
         >
           {isLoading ? (
-            <div className="text-center py-20 text-slate-400 font-medium">Loading reports...</div>
+            <SavedReportsSkeleton />
           ) : reports.length === 0 ? (
             <div className="text-center py-20 text-slate-400 font-medium bg-white rounded-2xl border border-slate-100 shadow-sm">No reports found. Create one to get started!</div>
           ) : (

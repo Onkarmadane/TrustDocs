@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
+import useDocumentTitle from '../utils/useDocumentTitle';
 
 const AuditForm = () => {
+    useDocumentTitle('Audit Report Form');
 
     const [loading, setLoading] = useState(false);
 

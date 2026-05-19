@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import Navbar from '../components/layout/Navbar';
 import StatCard from '../components/dashboard/StatCard';
 import ReportChart from '../components/dashboard/ReportChart';
 import { FileText, CheckCircle, Clock, Layout, MousePointer2 } from 'lucide-react';
@@ -9,15 +8,16 @@ import Image from '../components/ui/Image';
 import Heading from '../components/ui/Heading';
 import { useNavigate } from 'react-router-dom';
 import dashboardImg from '../assets/dashboard.png';
+import useDocumentTitle from '../utils/useDocumentTitle';
 
 const Dashboard = () => {
+  useDocumentTitle('Dashboard');
   const [isDownloading, setIsDownloading] = useState(false);
   const navigate = useNavigate();
 
 
   return (
     <div className="min-h-screen text-slate-900 pb-20">
-      <Navbar />
 
       <main className="max-w-[1600px] mx-auto px-4 md:px-8 pt-12 relative">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">

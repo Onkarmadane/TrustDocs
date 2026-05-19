@@ -4,8 +4,10 @@ import { useNavigate } from 'react-router-dom';
 import { FileText, Mail, Lock, Loader2, ArrowRight } from 'lucide-react';
 import { motion } from 'framer-motion';
 import toast from 'react-hot-toast';
+import useDocumentTitle from '../utils/useDocumentTitle';
 
 const LoginPage = () => {
+  useDocumentTitle('Sign In');
   const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);

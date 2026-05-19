@@ -8,6 +8,8 @@ import LoginPage from './pages/LoginPage';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { Toaster } from 'react-hot-toast';
 
+import AppLayout from './components/layout/AppLayout';
+
 const ProtectedRoute = ({ children }) => {
   const { user, isLoading } = useAuth();
   
@@ -38,11 +40,13 @@ function App() {
       <Router>
         <Routes>
           <Route path="/login" element={<LoginPage />} />
-          <Route path="/" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-          <Route path="/all-reports" element={<ProtectedRoute><SavedReports /></ProtectedRoute>} />
-          <Route path="/templates" element={<ProtectedRoute><Templates /></ProtectedRoute>} />
-          <Route path="/create-report" element={<ProtectedRoute><CreateReport /></ProtectedRoute>} />
-          <Route path="/add" element={<ProtectedRoute><AuditForm /></ProtectedRoute>} />
+          <Route element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
+            <Route path="/" element={<Dashboard />} />
+            <Route path="/all-reports" element={<SavedReports />} />
+            <Route path="/templates" element={<Templates />} />
+            <Route path="/create-report" element={<CreateReport />} />
+            <Route path="/add" element={<AuditForm />} />
+          </Route>
         </Routes>
       </Router>
     </AuthProvider>

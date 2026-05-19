@@ -1,5 +1,4 @@
 import React, { useState, useCallback, useEffect, useRef } from 'react';
-import Navbar from '../components/layout/Navbar';
 import Card from '../components/ui/Card';
 import { InputField, RadioGroup, SelectField } from '../components/ui/FormFields';
 import { ChevronLeft, ChevronRight, MoreVertical, Search, Maximize2, Upload, Download, ChevronUp } from 'lucide-react';
@@ -9,6 +8,7 @@ import { cn } from '../lib/utils';
 import LivePreview from '../components/auditreport/LivePreview';
 import { reportService } from '../services/reportService';
 import { mapFormDataToBackendPayload } from '../utils/reportMapper';
+import useDocumentTitle from '../utils/useDocumentTitle';
 
 // Import subcomponents
 import StepIndicator from '../components/auditreport/StepIndicator';
@@ -33,6 +33,7 @@ import {
 /*                    MAIN COMPONENT                      */
 
 const CreateReport = () => {
+  useDocumentTitle('Create Audit Report');
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState({});
   const [zoom, setZoom] = useState(100);
@@ -212,7 +213,6 @@ const CreateReport = () => {
 
   return (
     <div className="min-h-screen pb-20">
-      <Navbar />
 
       <main className="max-w-[1600px] mx-auto px-4 md:px-8 pt-8 space-y-8">
         {/* Header Row: Steps */}
