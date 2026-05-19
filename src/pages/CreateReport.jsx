@@ -51,6 +51,10 @@ const CreateReport = () => {
     reportIdRef.current = reportId;
   }, [formData, currentStep, reportId]);
 
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [currentStep]);
+
   const saveDraft = async (data) => {
     const currentData = data || formDataRef.current;
     const step = currentStepRef.current;
@@ -499,12 +503,12 @@ const CreateReport = () => {
                   <motion.div key="step7" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} className="p-10 space-y-8">
                     <div>
                       <h2 className="text-[11px] font-bold text-black mb-6 uppercase ">Schedule 9-D (अनुसूची नऊ - ड)</h2>
-                      <div className="grid grid-cols-2 md:grid-cols-2 sm:grid-cols-1 gap-x-8 gap-y-5">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-5">
                         <InputField name="sch9d_trustNameMarathi" label="संस्थेचे नाव (Trust Name)" placeholder="Enter in Marathi" value={formData.sch9d_trustNameMarathi || ''} onChange={handleChange} />
                         <InputField name="sch9d_registrationNoMarathi" label="नोंदणी क्रमांक (Reg No)" placeholder="Enter in Marathi" value={formData.sch9d_registrationNoMarathi || ''} onChange={handleChange} />
                         <InputField name="sch9d_financialYearMarathi" label="आर्थिक वर्ष (Financial Year)" placeholder="उदा. सन 2025-26" value={formData.sch9d_financialYearMarathi || ''} onChange={handleChange} />
                         <InputField name="sch9d_trustPan" label="विश्वस्त व्यवस्थेच्या स्थायी खाते क्रमांक (Trust PAN)" placeholder="Enter PAN" value={formData.sch9d_trustPan || ''} onChange={handleChange} />
-                        <div className="col-span-2">
+                        <div className="sm:col-span-2">
                           <InputField name="sch9d_incomeTaxRegistration" label="12AA नोंदणी क्रमांक व दिनांक (12AA Reg Details)" placeholder="Enter Details" value={formData.sch9d_incomeTaxRegistration || ''} onChange={handleChange} />
                         </div>
                       </div>
@@ -673,13 +677,17 @@ const CreateReport = () => {
 
             {/* Navigation Buttons */}
             <div className="flex items-center justify-between pt-4">
-              <button
-                onClick={handleBack}
-                className="px-8 py-3 rounded-2xl bg-blue-50 text-blue-600 font-bold flex items-center gap-2 hover:bg-blue-100 transition-all"
-              >
-                <ChevronLeft size={20} />
-                Back
-              </button>
+              {currentStep > 1 ? (
+                <button
+                  onClick={handleBack}
+                  className="px-8 py-3 rounded-2xl bg-blue-50 text-blue-600 font-bold flex items-center gap-2 hover:bg-blue-100 transition-all"
+                >
+                  <ChevronLeft size={20} />
+                  Back
+                </button>
+              ) : (
+                <div />
+              )}
               {currentStep === 9 ? (
                 <div className="flex items-center gap-4">
                   {isReportSaved && (
