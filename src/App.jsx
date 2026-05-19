@@ -12,9 +12,10 @@ import AppLayout from './components/layout/AppLayout';
 
 const ProtectedRoute = ({ children }) => {
   const { user, isLoading } = useAuth();
+  const token = localStorage.getItem('token');
   
   if (isLoading) return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
-  if (!user) return <Navigate to="/login" />;
+  if (!user || !token) return <Navigate to="/login" replace />;
   
   return children;
 };

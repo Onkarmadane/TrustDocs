@@ -16,6 +16,11 @@ export const apiClient = async (endpoint, { method = 'GET', data, ...customConfi
     headers['Content-Type'] = 'application/json';
   }
 
+  const token = localStorage.getItem('token');
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
+
   const config = {
     method,
     headers: {
@@ -32,6 +37,14 @@ export const apiClient = async (endpoint, { method = 'GET', data, ...customConfi
   const response = await fetch(`${API_BASE_URL}${endpoint}`, config);
 
   if (!response.ok) {
+    if (response.status === 401) {
+      localStorage.removeItem('user');
+      localStorage.removeItem('token');
+      if (window.location.pathname !== '/login') {
+        window.location.href = '/login';
+      }
+    }
+
     let errorData = {};
     try {
       errorData = await response.json();

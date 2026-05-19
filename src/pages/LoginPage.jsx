@@ -37,7 +37,7 @@ const LoginPage = () => {
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col justify-center items-center p-6">
-      <motion.div 
+      <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         className="w-full max-w-md"
@@ -54,7 +54,7 @@ const LoginPage = () => {
 
           <form onSubmit={handleSubmit} className="space-y-6">
             {error && (
-              <motion.div 
+              <motion.div
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 className="bg-red-50 border border-red-100 text-red-600 px-4 py-3 rounded-xl text-sm font-medium"
@@ -105,11 +105,11 @@ const LoginPage = () => {
             </button>
           </form>
 
-          <div className="mt-10 text-center">
+          {/* <div className="mt-10 text-center">
             <p className="text-slate-400 text-sm font-medium">
               Forgot password? <a href="#" className="text-blue-600 hover:underline">Reset here</a>
             </p>
-          </div>
+          </div> */}
         </div>
 
         <p className="text-center mt-8 text-slate-400 text-sm font-medium">
