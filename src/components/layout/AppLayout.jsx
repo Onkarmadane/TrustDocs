@@ -9,7 +9,7 @@ const AppLayout = () => {
 
   return (
     <div className={cn(
-      "min-h-screen pb-20 relative",
+      "min-h-screen pb-5 relative",
       isTemplatesPage ? "bg-[#F8FAFF]" : "text-slate-900"
     )}>
       {/* Background Decorative Gradients for Templates page wrapped in a bounded absolute layer to prevent horizontal scroll */}
