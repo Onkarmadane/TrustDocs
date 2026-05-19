@@ -287,7 +287,7 @@ const CreateReport = () => {
 
                 {/* ─── STEP 2: Permissions ─── */}
                 {currentStep === 2 && (
-                  <motion.div key="step2" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} className="space-y-4 p-10">
+                  <motion.div key="step2" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} className="space-y-4 p-1">
                     {/* <h2 className="text-sm font-bold text-slate-800 mb-8 uppercase tracking-widest">Permissions & Disclosures</h2> */}
                     <div className="space-y-3">
                       {permissionsQuestions.map((question, i) => (
