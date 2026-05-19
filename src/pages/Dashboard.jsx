@@ -8,6 +8,7 @@ import Button from '../components/ui/Button';
 import Image from '../components/ui/Image';
 import Heading from '../components/ui/Heading';
 import { useNavigate } from 'react-router-dom';
+import dashboardImg from '../assets/dashboard.png';
 
 const Dashboard = () => {
   const [isDownloading, setIsDownloading] = useState(false);
@@ -37,9 +38,9 @@ const Dashboard = () => {
               transition={{ duration: 0.5 }}
               className="relative group flex-1"
             >
-              <div className="absolute inset-0 bg-brand-primary/10 blur-[120px] rounded-full group-hover:bg-brand-primary/20 transition-colors duration-700" />
+              <div className="absolute inset-0 bg-brand-primary/10 blur-[60px] rounded-full group-hover:bg-brand-primary/20 transition-colors duration-700 will-change-transform" />
               <div className="relative z-10 h-full flex items-center justify-center p-8">
-                <Image src="/dashboard.png" alt="Dashboard Hero" className="w-full h-auto object-contain max-h-[500px]" />
+                <img src={dashboardImg} alt="Dashboard Hero" className="w-full h-auto object-contain max-h-[500px]" />
               </div>
             </motion.div>
           </div>

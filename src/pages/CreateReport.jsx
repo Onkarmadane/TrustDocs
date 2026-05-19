@@ -51,6 +51,15 @@ const CreateReport = () => {
     reportIdRef.current = reportId;
   }, [formData, currentStep, reportId]);
 
+  const [debouncedFormData, setDebouncedFormData] = useState(formData);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedFormData(formData);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [formData]);
+
   useEffect(() => {
     window.scrollTo(0, 0);
   }, [currentStep]);
@@ -720,9 +729,9 @@ const CreateReport = () => {
           </div>
 
           {/* Right: Live Preview */}
-          {currentStep !== 9 && (
-            <LivePreview currentStep={currentStep} formData={formData} zoom={zoom} setZoom={setZoom} />
-          )}
+            {currentStep !== 9 && (
+              <LivePreview currentStep={currentStep} formData={debouncedFormData} zoom={zoom} setZoom={setZoom} />
+            )}
         </div>
       </main>
     </div>

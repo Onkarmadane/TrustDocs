@@ -13,8 +13,15 @@ const Navbar = () => {
   const location = useLocation();
 
   useEffect(() => {
+    let ticking = false;
     const handleScroll = () => {
-      setScrolled(window.scrollY > 20);
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          setScrolled(window.scrollY > 20);
+          ticking = false;
+        });
+        ticking = true;
+      }
     };
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
@@ -59,18 +66,18 @@ const Navbar = () => {
 
   return (
     <nav className={cn(
-      "sticky top-0 transition-all duration-300",
+      "sticky top-0 transition-[background-color,box-shadow] duration-300",
       isMenuOpen ? "z-[100]" : "z-50",
       scrolled ? "bg-white shadow-sm" : "bg-transparent"
     )}>
       <div className="flex items-center justify-between px-6 lg:px-12 py-6">
         {/* Left: Logo */}
-        <div className="flex items-center gap-3 w-1/4">
+        <Link to="/" className="flex items-center gap-3 w-1/4">
           <div className="bg-gradient-to-br from-blue-600 to-indigo-700 p-2.5 rounded-xl shadow-lg shadow-blue-500/20">
             <FileText className="text-white w-6 h-6" />
           </div>
           <span className="text-xl font-bold tracking-tight text-slate-800">TrustDOCS</span>
-        </div>
+        </Link>
 
         {/* Center: Links (Desktop) */}
         <div className="hidden lg:flex items-center gap-3 p-1.5 rounded-full ">

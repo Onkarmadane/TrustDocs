@@ -4,6 +4,7 @@ import Card from '../components/ui/Card';
 import Image from '../components/ui/Image';
 import { FileText, ArrowRight } from 'lucide-react';
 import { motion } from 'framer-motion';
+import dashboardImg from '../assets/dashboard.png';
 
 const templates = [
   {
@@ -65,7 +66,7 @@ const Templates = () => {
                   ease: [0.23, 1, 0.32, 1]
                 }}
               >
-                <Card className="p-5 min-h-[230px] w-full max-w-[350px] flex flex-col justify-between group border border-slate-200 cursor-pointer hover:shadow-[0_30px_60px_-15px_rgba(0,0,0,0.08)] transition-all duration-500  bg-white">
+                <Card className="p-5 min-h-[230px] w-full max-w-[350px] mx-auto flex flex-col justify-between group border border-slate-200 cursor-pointer hover:shadow-[0_30px_60px_-15px_rgba(0,0,0,0.08)] transition-all duration-500  bg-white">
                   {/* Top-Right Accent Glow (Matching design exactly) */}
                   <div className={`absolute -top-24 -right-24 w-80 h-80 blur-[80px] rounded-full opacity-40 group-hover:opacity-70 transition-opacity duration-700 ${template.accent}`} />
 
@@ -96,10 +97,10 @@ const Templates = () => {
             transition={{ duration: 0.8, delay: 0.3 }}
             className="lg:col-span-5 relative hidden lg:block"
           >
-            <div className="absolute inset-0 bg-blue-500/15 blur-[120px] rounded-full scale-110 animate-pulse" />
+            <div className="absolute inset-0 bg-blue-500/15 blur-[120px] rounded-full scale-110" />
             <div className="relative z-10 flex items-center justify-center p-8">
               <Image
-                src="/dashboard.png"
+                src={dashboardImg}
                 alt="Templates Hero"
                 className="w-full h-auto object-contain drop-shadow-[0_35px_35px_rgba(0,0,0,0.1)]"
               />
