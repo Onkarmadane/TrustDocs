@@ -39,7 +39,7 @@ const InputField = ({
   return (
     <div className={cn("relative group mt-3", className)}>
       <div className={cn(
-        "relative rounded-2xl border transition-all focus-within:border-blue-900/50 focus-within:ring-2 focus-within:ring-blue-900/10",
+        "relative rounded border transition-all focus-within:border-blue-900/50 focus-within:ring-2 focus-within:ring-blue-900/10",
         variantStyles[variant],
         error ? 'border-red-500 focus-within:ring-red-500' : '',
         disabled && 'opacity-50 cursor-not-allowed',
@@ -66,7 +66,7 @@ const InputField = ({
             placeholder={placeholder}
             id={id || name}
             className={cn(
-              "w-full bg-transparent border-none font-bold text-slate-800 focus:outline-none focus:ring-0 transition-all rounded-2xl",
+              "w-full bg-transparent border-none font-bold text-slate-800 focus:outline-none focus:ring-0 transition-all rounded",
               sizeStyles[size],
               iconLeft && 'pl-12',
               iconRight && 'pr-12',

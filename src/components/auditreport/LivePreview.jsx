@@ -19,6 +19,40 @@ const fmt = (val) => {
   return n.toLocaleString('en-IN', { minimumFractionDigits: 2 });
 };
 
+// ── Helpers to format addresses from the new Step 1 fields ──
+const formatAddress = (prefix, formData) => {
+  const parts = [
+    formData[`${prefix}_buildingName`],
+    formData[`${prefix}_streetName`],
+    formData[`${prefix}_landmark`],
+    formData[`${prefix}_village`],
+    formData[`${prefix}_taluka`],
+    formData[`${prefix}_district`],
+  ].filter(Boolean);
+  const pin = formData[`${prefix}_pin`];
+  return parts.join(', ') + (pin ? ` - ${pin}` : '');
+};
+
+const getTrustName = (formData) => formData.trust_trustName || formData.trustName || 'Trust Name';
+const getRegistrationNo = (formData) => formData.trust_trustNumber || formData.registrationNo || 'F-XXXX/Jalna';
+const getFinancialYear = (formData) => formData.accountingYear || formData.financialYear || '31.03.2025';
+const getTrustAddress = (formData) => formatAddress('trust_addr', formData) || formData.address || 'Address';
+const getDate = (formData) => {
+  if (!formData.date) return '__.__.____';
+  const parts = formData.date.split('-');
+  if (parts.length === 3) return `${parts[2]}.${parts[1]}.${parts[0]}`;
+  return formData.date;
+};
+
+const getAuditorFirm = (formData) => formData.aud_nameOfFirm || '';
+const getAuditorStatus = (formData) => formData.aud_status || '';
+const getAuditorName = (formData) => formData.aud_auditorName || '';
+const getAuditorMembershipNo = (formData) => formData.aud_membershipNumber || '';
+const getAuditorRegistrationNo = (formData) => formData.aud_registrationNumber || '';
+const getAuditorAddress = (formData) => formatAddress('audaddr', formData) || '';
+const getAuditorEmail = (formData) => formData.audaddr_emailId || '';
+const getAuditorMobile = (formData) => formData.audaddr_mobileNumber || '';
+
 /* ── Reusable A4 page wrapper ── */
 export const A4Page = ({ children, pageLabel }) => (
   <div className="bg-white border border-slate-200 shadow-[0_20px_50px_rgba(0,0,0,0.1)] relative w-full aspect-[1/1.414] shrink-0 rounded-[2px] transition-all duration-500 overflow-hidden group">
@@ -56,31 +90,39 @@ export const CoverPage = ({ formData }) => (
 
         <div className="space-y-1 pt-4">
           <p className="text-[7px] font-bold uppercase tracking-widest text-slate-700">
-            For the year ended {formData.financialYear || '31.03.2025'}
+            For the year ended {getFinancialYear(formData)}
           </p>
           <p className="text-[7px] text-slate-600 italic mt-2">
-            {formData.trustName || 'Trust Name'}
+            {getTrustName(formData)}
           </p>
           <p className="text-[6px] text-slate-500">
-            {formData.address || 'Address'}
+            {getTrustAddress(formData)}
           </p>
         </div>
 
         <div className="pt-6">
           <p className="text-[8px] font-bold text-slate-800">
-            Registration No :- {formData.registrationNo || 'F-XXXX/Jalna'}
+            Registration No :- {getRegistrationNo(formData)}
           </p>
           <p className="text-[8px] font-bold text-slate-800 mt-1">
-            Date :- {formData.date || '__.__.____'}
+            Date :- {getDate(formData)}
           </p>
         </div>
       </div>
 
       <div className="mt-auto pb-4 space-y-0.5">
-        <p className="text-[8px] font-bold uppercase tracking-wide">THE RVD & ASSOCIATES</p>
-        <p className="text-[6px] text-slate-500 font-bold uppercase">Certified Auditor</p>
-        <p className="text-[5px] text-slate-400">Address :- Shop No-07, Ambika Complex Near</p>
-        <p className="text-[5px] text-slate-400">Shani Mandir Old Jalna, Jalna(M.S) 431203</p>
+        <p className="text-[8px] font-bold uppercase tracking-wide">{getAuditorFirm(formData)}</p>
+        <p className="text-[6px] text-slate-500 font-bold uppercase">{getAuditorStatus(formData)}</p>
+        <div className="text-[5px] text-slate-400 pt-0.5">
+          {getAuditorName(formData) && <p className="font-bold text-slate-600">{getAuditorName(formData)}</p>}
+          <p>
+            {getAuditorMembershipNo(formData) ? `M.No: ${getAuditorMembershipNo(formData)}` : ''}
+            {getAuditorRegistrationNo(formData) ? ` | F.R.No: ${getAuditorRegistrationNo(formData)}` : ''}
+          </p>
+          <p>Address :- {getAuditorAddress(formData)}</p>
+          <p>Email. Id- {getAuditorEmail(formData)}</p>
+          <p>Mob.No- {getAuditorMobile(formData)}</p>
+        </div>
       </div>
     </div>
   </A4Page>
@@ -99,12 +141,12 @@ export const PermissionsPage = ({ formData }) => (
         </p>
         <div className="flex justify-between text-[5px] text-slate-600 mt-2 px-1">
           <div className="text-left space-y-0.5">
-            <p><span className="font-bold">Name of the trust:</span> {formData.trustName || '—'}</p>
-            <p><span className="font-bold">Registration No:</span> {formData.registrationNo || '—'}</p>
+            <p><span className="font-bold">Name of the trust:</span> {getTrustName(formData)}</p>
+            <p><span className="font-bold">Registration No:</span> {getRegistrationNo(formData)}</p>
           </div>
           <div className="text-right space-y-0.5">
-            <p>{formData.address || '—'}</p>
-            <p><span className="font-bold">For the Year Ending:</span> {formData.financialYear || '31.03.2025'}</p>
+            <p>{getTrustAddress(formData)}</p>
+            <p><span className="font-bold">For the Year Ending:</span> {getFinancialYear(formData)}</p>
           </div>
         </div>
       </div>
@@ -140,10 +182,10 @@ export const PermissionsPage = ({ formData }) => (
 
       {/* Footer */}
       <div className="mt-3 flex justify-between items-end px-1">
-        <p className="text-[5px] text-slate-500">Date :- {formData.date || '__.__.____'}</p>
+        <p className="text-[5px] text-slate-500">Date :- {getDate(formData)}</p>
         <div className="text-right text-[5px] space-y-0.5">
-          <p className="font-bold text-[6px]">THE RVD & ASSOCIATES</p>
-          <p className="text-slate-400">Certified Auditor</p>
+          <p className="font-bold text-[6px]">{getAuditorFirm(formData)}</p>
+          <p className="text-slate-400">{getAuditorStatus(formData)}</p>
         </div>
       </div>
     </div>
@@ -168,10 +210,10 @@ export const ScheduleIXPage = ({ formData }) => {
           <p className="font-bold text-[6px]">SCHEDULE - IX C</p>
           <p className="text-[5px] text-slate-500">( VIDE RULE 32 )</p>
           <p className="text-[5px] mt-1">
-            STATEMENT OF INCOME TO CONTRIBUTION FOR THE YEAR ENDING :- {formData.financialYear || '31.03.2025'}
+            STATEMENT OF INCOME TO CONTRIBUTION FOR THE YEAR ENDING :- {getFinancialYear(formData)}
           </p>
           <p className="text-[5px] text-slate-600">
-            Name of the Trust — {formData.trustName || '—'} | Reg. No:- {formData.registrationNo || '—'}
+            Name of the Trust — {getTrustName(formData)} | Reg. No:- {getRegistrationNo(formData)}
           </p>
         </div>
 
@@ -206,12 +248,12 @@ export const ScheduleIXPage = ({ formData }) => {
         {/* Footer */}
         <div className="mt-3 flex justify-between items-end px-1">
           <div className="text-[5px] text-slate-500">
-            <p>Date :- {formData.date || '__.__.____'}</p>
-            <p>Trust Address: {formData.address || '—'}</p>
+            <p>Date :- {getDate(formData)}</p>
+            <p>Trust Address: {getTrustAddress(formData)}</p>
           </div>
           <div className="text-right text-[5px] space-y-0.5">
-            <p className="font-bold text-[6px]">THE RVD & ASSOCIATES</p>
-            <p className="text-slate-400">Certified Auditor</p>
+            <p className="font-bold text-[6px]">{getAuditorFirm(formData)}</p>
+            <p className="text-slate-400">{getAuditorStatus(formData)}</p>
           </div>
         </div>
       </div>
@@ -223,9 +265,130 @@ export const ScheduleIXPage = ({ formData }) => {
 /*  PAGE 3.2 — Income & Expenditure Account Table             */
 /* ═══════════════════════════════════════════════════════════ */
 export const IncomeExpPage = ({ formData }) => {
-  const expTotal = expenditureItems.reduce((s, item) => s + (parseFloat(formData[item.key]) || 0), 0);
-  const incTotal = incomeItems.reduce((s, item) => s + (parseFloat(formData[item.key]) || 0), 0);
-  const maxRows = Math.max(expenditureItems.length, incomeItems.length);
+  const getNum = (key) => parseFloat(formData[key] || 0);
+
+  const subTotalExpProperties =
+    getNum("exp_rates_taxes") + getNum("exp_repairs_maintenance") +
+    getNum("exp_salaries_honorarium") + getNum("exp_insurance") +
+    getNum("exp_depreciation_prop") + getNum("exp_other_expenses");
+  const subTotalWrittenOff =
+    getNum("exp_bad_debts") + getNum("exp_loan_scholarships") +
+    getNum("exp_irrecoverable_rents") + getNum("exp_other_items");
+  const subTotalObjectsTrust =
+    getNum("exp_obj_religious") + getNum("exp_obj_educational") +
+    getNum("exp_obj_medical") + getNum("exp_obj_poverty") +
+    getNum("exp_obj_other_charitable");
+
+  const baseExpenditureTotal =
+    subTotalExpProperties + getNum("exp_establishment") + getNum("exp_remuneration_trustees") +
+    getNum("exp_remuneration_head") + getNum("exp_legal") + getNum("exp_audit") +
+    getNum("exp_contribution_fees") + subTotalWrittenOff + getNum("exp_misc") +
+    getNum("exp_depreciations") + getNum("exp_transfer_reserve") + subTotalObjectsTrust;
+
+  const subTotalIncRent = getNum("inc_rent_accrued_inner") + getNum("inc_rent_realised_inner");
+  const subTotalIncInterest =
+    getNum("inc_interest_accrued_inner") + getNum("inc_interest_realised_inner") +
+    getNum("inc_interest_securities_inner") + getNum("inc_interest_loan_inner") +
+    getNum("inc_interest_bank_inner");
+
+  const baseIncomeTotal =
+    subTotalIncRent + subTotalIncInterest + getNum("inc_dividend_outer") +
+    getNum("inc_donations_outer") + getNum("inc_grants_outer") +
+    getNum("inc_other_sources_outer") + getNum("inc_transfer_reserve_outer");
+
+  const netBalance = baseIncomeTotal - baseExpenditureTotal;
+  const autoCalculatedSurplus = netBalance > 0 ? netBalance : 0;
+  const surplus = formData["exp_surplus_override"] !== undefined && formData["exp_surplus_override"] !== ""
+    ? getNum("exp_surplus_override")
+    : autoCalculatedSurplus;
+  const deficit = netBalance < 0 ? Math.abs(netBalance) : 0;
+
+  const expTotal = baseExpenditureTotal + surplus;
+  const incTotal = baseIncomeTotal + deficit;
+
+  // Build flattened rows to match 6-column table layout perfectly
+  const expRows = [];
+  expenditureItems.forEach((exp) => {
+    if (exp.type === 'standalone') {
+      expRows.push({
+        label: <span className="font-bold">{exp.label}</span>,
+        inner: formData[`${exp.key}_inner`],
+        outer: formData[exp.key],
+        isLastNested: true
+      });
+    } else if (exp.type === 'nested') {
+      expRows.push({ label: <span className="font-bold">{exp.label}</span>, inner: '', outer: '' });
+      exp.subFields.forEach((sub, idx) => {
+        const isLast = idx === exp.subFields.length - 1;
+        let subTotal = "";
+        if (isLast) {
+          if (exp.key === "exp_properties") subTotal = subTotalExpProperties;
+          if (exp.key === "exp_amount_written_off") subTotal = subTotalWrittenOff;
+          if (exp.key === "exp_objects_of_trust") subTotal = subTotalObjectsTrust;
+        }
+        expRows.push({
+          label: <span className="pl-2 text-slate-700">{sub.label}</span>,
+          inner: formData[sub.key],
+          outer: subTotal,
+          isLastNested: isLast
+        });
+      });
+    }
+  });
+  expRows.push({
+    label: <span className="font-bold">To Surplus Carried Over To Balance Sheet</span>,
+    inner: '',
+    outer: surplus,
+    isLastNested: true
+  });
+
+  const incRows = [];
+  incomeItems.forEach((inc) => {
+    if (inc.key === 'inc_deficit_row') return; // Skip, will add explicitly at the bottom
+
+    if (inc.type === 'nested') {
+      incRows.push({ label: <span className="font-bold">{inc.label}</span>, inner: '', outer: '' });
+      inc.subFields.forEach((sub, idx) => {
+        const isLast = idx === inc.subFields.length - 1;
+        let outerVal = '';
+        if (sub.type === "double_field" || isLast) {
+          if (formData[sub.outerKey]) {
+            outerVal = formData[sub.outerKey];
+          } else if (isLast) {
+            outerVal = inc.key === "inc_rent_header" ? subTotalIncRent : subTotalIncInterest;
+          }
+        }
+        incRows.push({
+          label: <span className="pl-2 text-slate-700">{sub.label}</span>,
+          inner: formData[sub.innerKey],
+          outer: outerVal,
+          isLastNested: isLast
+        });
+      });
+    } else if (inc.type === 'double_field') {
+      incRows.push({
+        label: <span className="font-bold">{inc.label}</span>,
+        inner: formData[inc.innerKey],
+        outer: formData[inc.outerKey],
+        isLastNested: true
+      });
+    } else {
+      incRows.push({
+        label: <span className="font-bold">{inc.label}</span>,
+        inner: '',
+        outer: inc.outerKey ? formData[inc.outerKey] : '',
+        isLastNested: true
+      });
+    }
+  });
+  incRows.push({
+    label: <span className="font-bold">By Deficit Carried Over To Balance Sheet</span>,
+    inner: '',
+    outer: deficit,
+    isLastNested: true
+  });
+
+  const maxRows = Math.max(expRows.length, incRows.length);
 
   return (
     <A4Page pageLabel="Page 3.2 — Income & Expenditure">
@@ -235,49 +398,44 @@ export const IncomeExpPage = ({ formData }) => {
           <p className="font-bold text-[7px]">The Bombay Public Trusts Act 1950</p>
           <p className="font-bold text-[6px]">SCHEDULE IX (VIDE RULE 17(1))</p>
           <p className="text-[5px] mt-1">
-            INCOME AND EXPENDITURE A/C FOR THE YEAR {formData.financialYear || '31.03.2025'}
+            INCOME AND EXPENDITURE A/C FOR THE YEAR {getFinancialYear(formData)}
           </p>
-          <p className="text-[5px] text-slate-500">{formData.trustName || '—'}</p>
+          <p className="text-[5px] text-slate-500">{getTrustName(formData)}</p>
         </div>
 
         {/* Table */}
         <table className="w-full border-collapse border border-slate-300 text-[5px]">
           <thead>
             <tr className="bg-slate-100">
-              <th className="border border-slate-300 p-1 text-left w-[35%]">EXPENDITURE</th>
-              <th className="border border-slate-300 p-1 text-right w-[15%]">AMOUNT</th>
-              <th className="border border-slate-300 p-1 text-left w-[35%]">INCOME</th>
-              <th className="border border-slate-300 p-1 text-right w-[15%]">AMOUNT</th>
+              <th className="border border-slate-300 p-1 text-left w-[26%]">EXPENDITURE</th>
+              <th className="border border-slate-300 p-1 text-right w-[12%]">Rs.</th>
+              <th className="border border-slate-300 p-1 text-right w-[12%]">Rs.</th>
+              <th className="border border-slate-300 p-1 text-left w-[26%]">INCOME</th>
+              <th className="border border-slate-300 p-1 text-right w-[12%]">Rs.</th>
+              <th className="border border-slate-300 p-1 text-right w-[12%]">Rs.</th>
             </tr>
           </thead>
           <tbody>
             {Array.from({ length: maxRows }).map((_, i) => {
-              const exp = expenditureItems[i];
-              const inc = incomeItems[i];
+              const eRow = expRows[i];
+              const iRow = incRows[i];
+
               return (
-                <tr key={i} className={i % 2 === 0 ? '' : 'bg-slate-50/40'}>
-                  <td className="border border-slate-200 p-1 leading-tight">
-                    {exp && (
-                      <div>
-                        <span className="font-bold">{exp.label}</span>
-                        {exp.subItems && (
-                          <div className="pl-1.5 text-slate-500 text-[4.5px] mt-0.5">
-                            {exp.subItems.map((s, j) => (
-                              <div key={j}>{typeof s === 'string' ? s : s.label}</div>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    )}
+                <tr key={i} className="hover:bg-slate-50/50">
+                  <td className="border-l border-r border-slate-300 p-1 leading-tight">{eRow?.label}</td>
+                  <td className={`border-r border-slate-300 p-1 text-right font-mono align-bottom ${eRow?.isLastNested && eRow?.inner ? 'border-b' : ''}`}>
+                    {eRow && fmt(eRow.inner)}
                   </td>
-                  <td className="border border-slate-200 p-1 text-right font-mono align-top">
-                    {exp && fmt(formData[exp.key])}
+                  <td className={`border-r border-slate-300 p-1 text-right font-mono align-bottom ${eRow?.isLastNested ? 'border-b' : ''}`}>
+                    {eRow && fmt(eRow.outer)}
                   </td>
-                  <td className="border border-slate-200 p-1 leading-tight">
-                    {inc && <span className="font-bold">{inc.label}</span>}
+
+                  <td className="border-r border-slate-300 p-1 leading-tight">{iRow?.label}</td>
+                  <td className={`border-r border-slate-300 p-1 text-right font-mono align-bottom ${iRow?.isLastNested && iRow?.inner ? 'border-b' : ''}`}>
+                    {iRow && fmt(iRow.inner)}
                   </td>
-                  <td className="border border-slate-200 p-1 text-right font-mono align-top">
-                    {inc && fmt(formData[inc.key])}
+                  <td className={`border-r border-slate-300 p-1 text-right font-mono align-bottom ${iRow?.isLastNested ? 'border-b' : ''}`}>
+                    {iRow && fmt(iRow.outer)}
                   </td>
                 </tr>
               );
@@ -286,8 +444,10 @@ export const IncomeExpPage = ({ formData }) => {
           <tfoot>
             <tr className="bg-blue-50 font-bold">
               <td className="border border-blue-200 p-1.5 text-blue-800">TOTAL</td>
+              <td className="border border-blue-200 p-1.5 text-right font-mono"></td>
               <td className="border border-blue-200 p-1.5 text-right font-mono text-blue-700">{fmt(expTotal) || '0.00'}</td>
               <td className="border border-blue-200 p-1.5 text-blue-800">TOTAL</td>
+              <td className="border border-blue-200 p-1.5 text-right font-mono"></td>
               <td className="border border-blue-200 p-1.5 text-right font-mono text-blue-700">{fmt(incTotal) || '0.00'}</td>
             </tr>
           </tfoot>
@@ -297,8 +457,8 @@ export const IncomeExpPage = ({ formData }) => {
         <div className="mt-2 flex justify-between items-end px-1 text-[5px]">
           <p className="text-slate-500">As per our report of even date.</p>
           <div className="text-right space-y-0.5">
-            <p className="font-bold text-[6px]">THE RVD & ASSOCIATES</p>
-            <p className="text-slate-400">Certified Auditor</p>
+            <p className="font-bold text-[6px]">{getAuditorFirm(formData)}</p>
+            <p className="text-slate-400">{getAuditorStatus(formData)}</p>
           </div>
         </div>
       </div>
@@ -310,32 +470,59 @@ export const IncomeExpPage = ({ formData }) => {
 /*  PAGE 4 — Balance Sheet                                    */
 /* ═══════════════════════════════════════════════════════════ */
 export const BalanceSheetPage = ({ formData }) => {
-  const flTotal = Object.entries(formData).filter(([k]) => k.startsWith('fl_')).reduce((s, [, v]) => s + (parseFloat(v) || 0), 0);
-  const paTotal = Object.entries(formData).filter(([k]) => k.startsWith('pa_')).reduce((s, [, v]) => s + (parseFloat(v) || 0), 0);
+  const getNum = (key) => parseFloat(formData[key] || 0);
 
-  const renderColumn = (items) =>
-    items.map((item) => (
-      <React.Fragment key={item.key}>
-        <tr className="bg-slate-50/60">
-          <td className="border border-slate-200 p-1 font-bold text-[5.5px]" colSpan={1}>
-            {item.label}
-          </td>
-          <td className="border border-slate-200 p-1 text-right font-mono">{fmt(formData[item.key])}</td>
-          <td className="border border-slate-200 p-1 text-right font-mono">{fmt(formData[`${item.key}_total`])}</td>
-        </tr>
-        {item.subItems && item.subItems.map((sub) => {
-          const sk = typeof sub === 'string' ? `${item.key}_s` : sub.key;
-          const sl = typeof sub === 'string' ? sub : sub.label;
-          return (
-            <tr key={sk}>
-              <td className="border border-slate-100 p-0.5 pl-2 text-slate-600">{sl}</td>
-              <td className="border border-slate-100 p-0.5 text-right font-mono">{fmt(formData[sk])}</td>
-              <td className="border border-slate-100 p-0.5"></td>
-            </tr>
-          );
-        })}
-      </React.Fragment>
-    ));
+  let flTotal = 0;
+  fundsLiabilitiesItems.forEach(item => {
+    if (item.type === 'nested') {
+      item.subFields.forEach(sub => {
+        if (sub.type === 'double_field' || sub.outerKey) flTotal += getNum(sub.outerKey);
+      });
+    } else if (item.type === 'double_field' || item.outerKey) {
+      flTotal += getNum(item.outerKey);
+    }
+  });
+
+  let paTotal = 0;
+  propertyAssetsItems.forEach(item => {
+    if (item.type === 'nested') {
+      item.subFields.forEach(sub => {
+        if (sub.type === 'double_field' || sub.outerKey) paTotal += getNum(sub.outerKey);
+      });
+    } else if (item.type === 'double_field' || item.outerKey) {
+      paTotal += getNum(item.outerKey);
+    }
+  });
+
+  const buildRows = (items) => {
+    const rows = [];
+    items.forEach(item => {
+      if (item.type === 'nested') {
+        rows.push({ label: item.label, inner: null, outer: null, isHeader: true });
+        item.subFields.forEach((sub, idx) => {
+          const isLast = idx === item.subFields.length - 1;
+          const innerKey = sub.innerKey || sub.key;
+          rows.push({
+            label: sub.label,
+            inner: formData[innerKey],
+            outer: sub.outerKey ? formData[sub.outerKey] : null,
+            isLast,
+            isSubItem: true
+          });
+        });
+      } else if (item.type === 'double_field') {
+        rows.push({ label: item.label, inner: formData[item.innerKey], outer: formData[item.outerKey], isHeader: true, isLast: true });
+      } else {
+        rows.push({ label: item.label, inner: null, outer: formData[item.outerKey || item.key], isHeader: true, isLast: true });
+      }
+    });
+    return rows;
+  };
+
+  const flRows = buildRows(fundsLiabilitiesItems);
+  const paRows = buildRows(propertyAssetsItems);
+  const maxRows = Math.max(flRows.length, paRows.length);
+
 
   return (
     <A4Page pageLabel="Page 4 — Balance Sheet">
@@ -345,59 +532,70 @@ export const BalanceSheetPage = ({ formData }) => {
           <p className="font-bold text-[7px]">The Bombay Public Trusts Act 1950.</p>
           <p className="font-bold text-[6px]">SCHEDULE VII (VIDE RULE 17(1))</p>
           <p className="text-[5px] mt-1">
-            Name of the Trust :- {formData.trustName || '—'} | Reg. No:- {formData.registrationNo || '—'}
+            Name of the Trust :- {getTrustName(formData)} | Reg. No:- {getRegistrationNo(formData)}
           </p>
-          <p className="font-bold text-[6px] mt-1">BALANCE SHEET AS ON {formData.financialYear || '31.03.2025'}</p>
+          <p className="font-bold text-[6px] mt-1">BALANCE SHEET AS ON {getFinancialYear(formData)}</p>
         </div>
 
-        {/* Two-column tables side by side */}
-        <div className="grid grid-cols-2 gap-0.5">
-          {/* Funds & Liabilities */}
-          <table className="border-collapse border border-slate-300 text-[4.5px] w-full">
-            <thead>
-              <tr className="bg-slate-100">
-                <th className="border border-slate-300 p-1 text-left">Funds & Liabilities</th>
-                <th className="border border-slate-300 p-0.5 text-center w-[22%]">Amount</th>
-                <th className="border border-slate-300 p-0.5 text-center w-[22%]">Amount</th>
-              </tr>
-            </thead>
-            <tbody>
-              {renderColumn(fundsLiabilitiesItems)}
-            </tbody>
-            <tfoot>
-              <tr className="bg-blue-50 font-bold">
-                <td className="border border-blue-200 p-1">TOTAL</td>
-                <td className="border border-blue-200 p-1 text-right font-mono" colSpan={2}>{fmt(flTotal) || '0.00'}</td>
-              </tr>
-            </tfoot>
-          </table>
-
-          {/* Property & Assets */}
-          <table className="border-collapse border border-slate-300 text-[4.5px] w-full">
-            <thead>
-              <tr className="bg-slate-100">
-                <th className="border border-slate-300 p-1 text-left">Property & Assets</th>
-                <th className="border border-slate-300 p-0.5 text-center w-[22%]">Amount</th>
-                <th className="border border-slate-300 p-0.5 text-center w-[22%]">Amount</th>
-              </tr>
-            </thead>
-            <tbody>
-              {renderColumn(propertyAssetsItems)}
-            </tbody>
-            <tfoot>
-              <tr className="bg-blue-50 font-bold">
-                <td className="border border-blue-200 p-1">TOTAL</td>
-                <td className="border border-blue-200 p-1 text-right font-mono" colSpan={2}>{fmt(paTotal) || '0.00'}</td>
-              </tr>
-            </tfoot>
-          </table>
-        </div>
+        {/* 6-column table matching live form */}
+        <table className="w-full border-collapse border border-slate-300 text-[4.5px]">
+          <thead>
+            <tr className="bg-slate-100">
+              <th className="border border-slate-300 p-1 text-left w-[26%]">Funds &amp; Liabilities</th>
+              <th className="border border-slate-300 p-0.5 text-center w-[10%]">Rs.</th>
+              <th className="border border-slate-300 p-0.5 text-center w-[10%]">Rs.</th>
+              <th className="border border-slate-300 p-1 text-left w-[26%]">Property &amp; Assets</th>
+              <th className="border border-slate-300 p-0.5 text-center w-[10%]">Rs.</th>
+              <th className="border border-slate-300 p-0.5 text-center w-[10%]">Rs.</th>
+            </tr>
+          </thead>
+          <tbody>
+            {Array.from({ length: maxRows }).map((_, i) => {
+              const fl = flRows[i];
+              const pa = paRows[i];
+              return (
+                <tr key={i}>
+                  {/* FL side */}
+                  <td className="border-l border-r border-slate-200 p-0.5 leading-tight">
+                    {fl && <span className={fl.isSubItem ? 'pl-2 text-slate-600' : 'font-bold text-black'}>{fl.label}</span>}
+                  </td>
+                  <td className={`border-r border-slate-200 p-0.5 text-right font-mono align-bottom ${fl?.isLast && fl?.inner != null ? 'border-b border-slate-400' : ''}`}>
+                    {fl && fl.inner != null ? fmt(fl.inner) : ''}
+                  </td>
+                  <td className={`border-r border-slate-200 p-0.5 text-right font-mono align-bottom ${fl?.isLast && fl?.outer != null ? 'border-b border-slate-400' : ''}`}>
+                    {fl && fl.outer != null ? fmt(fl.outer) : ''}
+                  </td>
+                  {/* PA side */}
+                  <td className="border-r border-slate-200 p-0.5 leading-tight">
+                    {pa && <span className={pa.isSubItem ? 'pl-2 text-slate-600' : 'font-bold text-black'}>{pa.label}</span>}
+                  </td>
+                  <td className={`border-r border-slate-200 p-0.5 text-right font-mono align-bottom ${pa?.isLast && pa?.inner != null ? 'border-b border-slate-400' : ''}`}>
+                    {pa && pa.inner != null ? fmt(pa.inner) : ''}
+                  </td>
+                  <td className={`border-r border-slate-200 p-0.5 text-right font-mono align-bottom ${pa?.isLast && pa?.outer != null ? 'border-b border-slate-400' : ''}`}>
+                    {pa && pa.outer != null ? fmt(pa.outer) : ''}
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+          <tfoot>
+            <tr className="bg-blue-50 font-bold">
+              <td className="border border-blue-200 p-1 text-blue-800">TOTAL</td>
+              <td className="border border-blue-200 p-1 text-right font-mono"></td>
+              <td className="border border-blue-200 p-1 text-right font-mono text-blue-700">{fmt(flTotal) || '0.00'}</td>
+              <td className="border border-blue-200 p-1 text-blue-800">TOTAL</td>
+              <td className="border border-blue-200 p-1 text-right font-mono"></td>
+              <td className="border border-blue-200 p-1 text-right font-mono text-blue-700">{fmt(paTotal) || '0.00'}</td>
+            </tr>
+          </tfoot>
+        </table>
 
         <div className="mt-2 flex justify-between items-end px-1 text-[5px]">
           <p className="text-slate-500">As per our report of even date.</p>
           <div className="text-right space-y-0.5">
-            <p className="font-bold text-[6px]">THE RVD & ASSOCIATES</p>
-            <p className="text-slate-400">Certified Auditor</p>
+            <p className="font-bold text-[6px]">{getAuditorFirm(formData)}</p>
+            <p className="text-slate-400">{getAuditorStatus(formData)}</p>
           </div>
         </div>
       </div>
@@ -441,10 +639,10 @@ export const ReceiptPaymentPage = ({ formData }) => {
       <div className="text-[5px]">
         {/* Header */}
         <div className="text-center mb-2 space-y-0.5">
-          <p className="font-bold text-[7px]">Name of the Trust :- {formData.trustName || '—'}</p>
-          <p className="text-[5px] mt-1">{formData.address || '—'}</p>
+          <p className="font-bold text-[7px]">Name of the Trust :- {getTrustName(formData)}</p>
+          <p className="text-[5px] mt-1">{getTrustAddress(formData)}</p>
           <p className="font-bold text-[6px] mt-1">Receipt & Payment Account</p>
-          <p className="text-[5px] mt-1">For the Period from 01.04.2025 to {formData.financialYear || '31.03.2026'}</p>
+          <p className="text-[5px] mt-1">For the Period from 01.04.2025 to {getFinancialYear(formData)}</p>
         </div>
 
         {/* Two-column tables side by side */}
@@ -497,8 +695,8 @@ export const ReceiptPaymentPage = ({ formData }) => {
           </div>
         </div>
         <div className="mt-4 px-1 text-[5px] space-y-0.5">
-          <p>Registration No- {formData.registrationNo || '—'}</p>
-          <p>Date :- {formData.date || '__.__.____'}</p>
+          <p>Registration No- {getRegistrationNo(formData)}</p>
+          <p>Date :- {getDate(formData)}</p>
         </div>
       </div>
     </A4Page>
@@ -526,17 +724,17 @@ export const Schedule9DPage = ({ formData }) => {
             <tr>
               <td className="border border-slate-400 p-1 font-bold w-6 text-center">1)</td>
               <td className="border border-slate-400 p-1 font-bold w-1/3">संस्थेचे नाव</td>
-              <td className="border border-slate-400 p-1">{formData.sch9d_trustNameMarathi || formData.trustName}</td>
+              <td className="border border-slate-400 p-1">{formData.sch9d_trustNameMarathi || getTrustName(formData)}</td>
             </tr>
             <tr>
               <td className="border border-slate-400 p-1 font-bold text-center">2)</td>
               <td className="border border-slate-400 p-1 font-bold">नोंदणी क्रमांक</td>
-              <td className="border border-slate-400 p-1">{formData.sch9d_registrationNoMarathi || formData.registrationNo}</td>
+              <td className="border border-slate-400 p-1">{formData.sch9d_registrationNoMarathi || getRegistrationNo(formData)}</td>
             </tr>
             <tr>
               <td className="border border-slate-400 p-1 font-bold text-center">3)</td>
               <td className="border border-slate-400 p-1 font-bold">आर्थिक वर्ष</td>
-              <td className="border border-slate-400 p-1 font-bold text-center">सन {formData.sch9d_financialYearMarathi || formData.financialYear}</td>
+              <td className="border border-slate-400 p-1 font-bold text-center">सन {formData.sch9d_financialYearMarathi || getFinancialYear(formData)}</td>
             </tr>
           </tbody>
         </table>
@@ -629,8 +827,9 @@ export const DelayExemptionPage = ({ formData }) => {
         </p>
 
         <p>
-          1) मी {formData.delay_applicantName || '__________________'} {formData.sch9d_trustNameMarathi || formData.trustName || '__________________'} {formData.delay_applicantAddress || '__________________'} या सार्वजनिक न्यास नोंदणी क्रमांक {formData.sch9d_registrationNoMarathi || formData.registrationNo || '__________________'} या न्यासाचा {formData.delay_designation || 'विश्वस्त / सचिव / अध्यक्ष'} आहे.
+          1) मी {formData.delay_applicantName || '__________________'} {formData.sch9d_trustNameMarathi || getTrustName(formData)} {formData.delay_applicantAddress || '__________________'} या सार्वजनिक न्यास नोंदणी क्रमांक {formData.sch9d_registrationNoMarathi || getRegistrationNo(formData)} या न्यासाचा {formData.delay_designation || 'विश्वस्त / सचिव / अध्यक्ष'} आहे.
         </p>
+
         <p className="pl-4">
           सदर न्यास हा दिनांक {formData.delay_trustRegistrationDate || '-  /  /20  '} रोजी नोंदविण्यात आलेला आहे.
         </p>

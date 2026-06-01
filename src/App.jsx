@@ -3,7 +3,7 @@ import Dashboard from './pages/Dashboard';
 import SavedReports from './pages/SavedReports';
 import Templates from './pages/Templates';
 import CreateReport from './pages/CreateReport';
-import AuditForm from './pages/AuditForm';
+// import AuditForm from './pages/AuditForm';
 import LoginPage from './pages/LoginPage';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { Toaster } from 'react-hot-toast';
@@ -46,7 +46,7 @@ function App() {
             <Route path="/all-reports" element={<SavedReports />} />
             <Route path="/templates" element={<Templates />} />
             <Route path="/create-report" element={<CreateReport />} />
-            <Route path="/add" element={<AuditForm />} />
+            {/* <Route path="/add" element={<AuditForm />} /> */}
           </Route>
         </Routes>
       </Router>

@@ -70,7 +70,7 @@ const Navbar = () => {
       isMenuOpen ? "z-[100]" : "z-50",
       scrolled ? "bg-white shadow-sm" : "bg-transparent"
     )}>
-      <div className="flex items-center justify-between px-6 lg:px-12 py-6">
+      <div className="flex items-center justify-between px-6 lg:px-12 py-3">
         {/* Left: Logo */}
         <Link to="/" className="flex items-center gap-3 w-1/4">
           <div className="bg-gradient-to-br from-blue-600 to-indigo-700 p-2.5 rounded-xl shadow-lg shadow-blue-500/20">
