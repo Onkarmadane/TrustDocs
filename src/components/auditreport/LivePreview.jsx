@@ -172,7 +172,7 @@ export const PermissionsPage = ({ formData }) => (
                   {val === 'yes' && <span className="text-green-600 font-bold">✓</span>}
                 </td>
                 <td className="border border-slate-200 p-1 text-center">
-                  {val === 'no' && <span className="text-red-500 font-bold">✓</span>}
+                  {val === 'no' && <span className="text-red-500 font-bold">X</span>}
                 </td>
               </tr>
             );
