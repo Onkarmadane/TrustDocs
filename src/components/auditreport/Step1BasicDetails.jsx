@@ -30,13 +30,13 @@ const AddressBlock = ({ prefix, formData, onChange }) => (
       value={formData[`${prefix}_buildingName`] || ''}
       onChange={onChange}
     />
-    <InputField
+    {/* <InputField
       name={`${prefix}_buildingNameMarathi`}
       label="इमारतीचे / कार्यालयाचे नाव"
       placeholder="मराठीत प्रविष्ट करा"
       value={formData[`${prefix}_buildingNameMarathi`] || ''}
       onChange={onChange}
-    />
+    /> */}
 
     {/* Street Name */}
     <InputField
@@ -46,13 +46,13 @@ const AddressBlock = ({ prefix, formData, onChange }) => (
       value={formData[`${prefix}_streetName`] || ''}
       onChange={onChange}
     />
-    <InputField
+    {/* <InputField
       name={`${prefix}_streetNameMarathi`}
       label="रस्त्याचे नाव"
       placeholder="मराठीत प्रविष्ट करा"
       value={formData[`${prefix}_streetNameMarathi`] || ''}
       onChange={onChange}
-    />
+    /> */}
 
     {/* LandMark */}
     <InputField
@@ -62,13 +62,13 @@ const AddressBlock = ({ prefix, formData, onChange }) => (
       value={formData[`${prefix}_landmark`] || ''}
       onChange={onChange}
     />
-    <InputField
+    {/* <InputField
       name={`${prefix}_landmarkMarathi`}
       label="खूण"
       placeholder="मराठीत प्रविष्ट करा"
       value={formData[`${prefix}_landmarkMarathi`] || ''}
       onChange={onChange}
-    />
+    /> */}
 
     {/* Pin */}
     <InputField
