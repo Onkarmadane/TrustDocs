@@ -4,7 +4,6 @@ import { scheduleIXItems } from './reportData';
 const Step3ScheduleIX = ({ formData, onChange }) => {
   const getNum = (key) => parseFloat(formData[key] || 0);
 
-  // Flat list of all keys for total calculation
   const getAllKeys = () => {
     const keys = [];
     scheduleIXItems.forEach(item => {
@@ -36,16 +35,13 @@ const Step3ScheduleIX = ({ formData, onChange }) => {
     <div className="bg-white overflow-x-auto text-[11px] text-slate-800 font-sans p-4">
       <div className="min-w-[700px]">
 
-        {/* Title */}
         <h2 className="text-base font-bold text-black border-b border-slate-300 pb-2 mb-4">
           Statement Of Income With Contribution
         </h2>
 
-        {/* Table */}
         <table className="w-full border-collapse text-[11px]">
           <tbody>
 
-            {/* Row I — Income */}
             <tr className="border-b border-slate-200">
               <td className="py-2 pr-4 text-slate-800 font-medium w-[75%]">
                 <span className="font-bold">I. Income As Shown In The Income And Expenditure Account (Schedule IX):</span>
@@ -55,14 +51,12 @@ const Step3ScheduleIX = ({ formData, onChange }) => {
               </td>
             </tr>
 
-            {/* Row II Header */}
             <tr className="border-b border-slate-200 bg-slate-50/50">
               <td className="py-2 pr-4 font-bold text-slate-800" colSpan={2}>
                 II. Items Not Chargeable To Contribution Under Section 58 And Rule 32 -
               </td>
             </tr>
 
-            {/* Deduction items */}
             {scheduleIXItems.map((item) => {
               if (item.type === 'group') {
                 return (
@@ -95,7 +89,6 @@ const Step3ScheduleIX = ({ formData, onChange }) => {
               );
             })}
 
-            {/* Total row */}
             <tr className="border-t-2 border-slate-300 border-b border-slate-200">
               <td className="py-2 pr-4 text-right font-bold text-slate-800">Total</td>
               <td className="py-2 text-right">
@@ -105,10 +98,8 @@ const Step3ScheduleIX = ({ formData, onChange }) => {
               </td>
             </tr>
 
-            {/* Spacer */}
             <tr><td colSpan={2} className="py-2" /></tr>
 
-            {/* Gross Annual Income */}
             <tr className="border-t border-slate-200 bg-slate-50/30">
               <td className="py-2.5 pr-4 font-bold text-slate-800">
                 Gross Annual Income Chargeable To Contribution

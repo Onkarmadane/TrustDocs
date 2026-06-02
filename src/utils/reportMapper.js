@@ -9,7 +9,7 @@ import {
   paymentItems,
 } from '../components/auditreport/reportData';
 
-// ─── Label Lookup Helpers ────────────────────────────────────────────────────
+// Label Lookup Helpers
 
 /** Build a key→label map from expenditureItems */
 const buildExpenditureLabelMap = () => {
@@ -66,16 +66,15 @@ const buildBalanceSheetLabelMap = (items) => {
 
 // Pre-build maps (once)
 const EXPENDITURE_LABEL_MAP = buildExpenditureLabelMap();
-const INCOME_LABEL_MAP      = buildIncomeLabelMap();
-const FL_LABEL_MAP          = buildBalanceSheetLabelMap(fundsLiabilitiesItems);
-const PA_LABEL_MAP          = buildBalanceSheetLabelMap(propertyAssetsItems);
+const INCOME_LABEL_MAP = buildIncomeLabelMap();
+const FL_LABEL_MAP = buildBalanceSheetLabelMap(fundsLiabilitiesItems);
+const PA_LABEL_MAP = buildBalanceSheetLabelMap(propertyAssetsItems);
 
-// ─── Schedule IX helpers ─────────────────────────────────────────────────────
+// Schedule IX helpers 
 
-/**
- * Returns a FLAT deductions array with groups expanded into their sub-items.
- * Group header rows are included (amount: 0) so the PDF can show section titles.
- */
+// Returns a FLAT deductions array with groups expanded into their sub-items.
+// Group header rows are included (amount: 0) so the PDF can show section titles.
+
 const buildScheduleIXDeductions = (formData) => {
   const rows = [];
   scheduleIXItems.forEach(item => {
@@ -92,9 +91,9 @@ const buildScheduleIXDeductions = (formData) => {
   return rows;
 };
 
-/**
- * Correctly sums all deductions including group sub-items.
- */
+
+// Correctly sums all deductions including group sub-items.
+
 const calcTotalDeductions = (formData) =>
   scheduleIXItems.reduce((sum, item) => {
     if (item.type === 'group') {
@@ -103,12 +102,12 @@ const calcTotalDeductions = (formData) =>
     return sum + (Number(formData[item.key]) || 0);
   }, 0);
 
-// ─── Income & Expenditure helpers ────────────────────────────────────────────
+// Income & Expenditure helpers
 
-/**
- * Flat list of expenditure rows with proper labels.
- * Nested-header rows are included (amount: 0) for PDF section structure.
- */
+
+//Flat list of expenditure rows with proper labels.
+// Nested-header rows are included (amount: 0) for PDF section structure.
+
 const buildExpenditureRows = (formData, surplus) => {
   const getNum = (k) => parseFloat(formData[k] || 0);
   const rows = [];
@@ -135,7 +134,6 @@ const buildExpenditureRows = (formData, surplus) => {
     }
   });
 
-  // Surplus row
   rows.push({
     key: 'exp_surplus_override',
     label: 'To Surplus Carried Over to Balance Sheet',
@@ -145,9 +143,8 @@ const buildExpenditureRows = (formData, surplus) => {
   return rows;
 };
 
-/**
- * Flat list of income rows with proper labels.
- */
+
+// Flat list of income rows with proper labels.
 const buildIncomeRows = (formData, deficit) => {
   const getNum = (k) => parseFloat(formData[k] || 0);
   const rows = [];
@@ -169,7 +166,6 @@ const buildIncomeRows = (formData, deficit) => {
       rows.push({ key: item.innerKey, label: item.label + ' (Detail)', amount: getNum(item.innerKey) });
       rows.push({ key: item.outerKey, label: item.label, amount: getNum(item.outerKey) });
     } else if (item.type === 'single_outer') {
-      // auto-calculated deficit placeholder; store real calc value
       rows.push({
         key: item.outerKey || item.key,
         label: item.label,
@@ -178,7 +174,6 @@ const buildIncomeRows = (formData, deficit) => {
     }
   });
 
-  // Deficit row (auto-calculated)
   rows.push({
     key: 'inc_deficit_calc',
     label: 'By Deficit Carried Over to Balance Sheet',
@@ -188,11 +183,9 @@ const buildIncomeRows = (formData, deficit) => {
   return rows;
 };
 
-// ─── Balance Sheet helpers ────────────────────────────────────────────────────
+//Balance Sheet helpers 
 
-/**
- * Flat list of balance sheet rows (fundsLiabilities or propertyAssets) with labels.
- */
+// Flat list of balance sheet rows (fundsLiabilities or propertyAssets) with labels.
 const buildBalanceSheetRows = (items, formData, labelMap) => {
   const getNum = (k) => (k ? parseFloat(formData[k] || 0) : 0);
   const rows = [];
@@ -235,19 +228,17 @@ const buildBalanceSheetRows = (items, formData, labelMap) => {
   return rows;
 };
 
-// ─── Receipt & Payment helpers ────────────────────────────────────────────────
+// Receipt & Payment helpers
 
-/**
- * Flat list of receipt/payment rows, expanding subItems so cash/bank entries
- * under "Opening Balance" / "Closing Balance" are individually stored.
- */
+//Flat list of receipt/payment rows, expanding subItems so cash/bank entries
+//under "Opening Balance" / "Closing Balance" are individually stored.
+
 const buildAccountingRows = (items, formData) => {
   const getNum = (k) => parseFloat(formData[k] || 0);
   const rows = [];
 
   items.forEach(item => {
     if (item.subItems && item.subItems.length > 0) {
-      // Parent header – no direct amount
       rows.push({ key: item.key, label: item.label, amount: null, total: null });
       item.subItems.forEach(sub => {
         rows.push({ key: sub.key, label: sub.label, amount: getNum(sub.key), total: null });
@@ -271,12 +262,12 @@ const calcAccountingTotal = (items, formData) => {
   }, 0);
 };
 
-// ─── MAIN EXPORT: mapFormDataToBackendPayload ─────────────────────────────────
+//MAIN EXPORT: mapFormDataToBackendPayload
 
 export const mapFormDataToBackendPayload = (formData, currentStep, status = 'draft') => {
   const getNum = (key) => parseFloat(formData[key] || 0);
 
-  // ── Step 4: Expenditure sub-totals ─────────────────────────────────────────
+  // Step 4: Expenditure sub-totals 
   const subTotalExpProperties =
     getNum('exp_rates_taxes') + getNum('exp_repairs_maintenance') +
     getNum('exp_salaries_honorarium') + getNum('exp_insurance') +
@@ -300,7 +291,7 @@ export const mapFormDataToBackendPayload = (formData, currentStep, status = 'dra
     getNum('exp_misc') + getNum('exp_depreciations') +
     getNum('exp_transfer_reserve') + subTotalObjectsTrust;
 
-  // ── Step 4: Income sub-totals ───────────────────────────────────────────────
+  //Step 4: Income sub-totals
   const subTotalIncRent =
     getNum('inc_rent_accrued_inner') + getNum('inc_rent_realised_inner');
 
@@ -326,7 +317,7 @@ export const mapFormDataToBackendPayload = (formData, currentStep, status = 'dra
   const expTotal = baseExpenditureTotal + surplus;
   const incTotal = baseIncomeTotal + deficit;
 
-  // ── Step 5: Balance sheet totals ───────────────────────────────────────────
+  //Step 5: Balance sheet totals
   let flTotal = 0;
   fundsLiabilitiesItems.forEach(item => {
     if (item.type === 'nested') {
@@ -349,78 +340,77 @@ export const mapFormDataToBackendPayload = (formData, currentStep, status = 'dra
     }
   });
 
-  // ── Schedule IX ─────────────────────────────────────────────────────────────
-  const totalDeductions      = calcTotalDeductions(formData);
-  const grossAnnualIncome    = Math.max(0, (Number(formData.sch_income_shown) || 0) - totalDeductions);
+  // ── Schedule IX
+  const totalDeductions = calcTotalDeductions(formData);
+  const grossAnnualIncome = Math.max(0, (Number(formData.sch_income_shown) || 0) - totalDeductions);
 
-  // ── Receipt & Payment totals ────────────────────────────────────────────────
+  // Receipt & Payment totals 
   const recTotal = calcAccountingTotal(receiptItems, formData);
   const payTotal = calcAccountingTotal(paymentItems, formData);
 
-  // ─────────────────────────────────────────────────────────────────────────────
   return {
     reportType: formData.reportType || 'audit',
 
-    // ── Trust Details (Step 1) ────────────────────────────────────────────────
+    // ── Trust Details (Step 1)
     trustDetails: {
       trustNumber: formData.trust_trustNumber || '',
-      trustName:   formData.trust_trustName   || '',
+      trustName: formData.trust_trustName || '',
       address: {
-        buildingName:        formData.trust_addr_buildingName        || '',
+        buildingName: formData.trust_addr_buildingName || '',
         buildingNameMarathi: formData.trust_addr_buildingNameMarathi || '',
-        streetName:          formData.trust_addr_streetName          || '',
-        streetNameMarathi:   formData.trust_addr_streetNameMarathi   || '',
-        landmark:            formData.trust_addr_landmark            || '',
-        landmarkMarathi:     formData.trust_addr_landmarkMarathi     || '',
-        pin:                 formData.trust_addr_pin                 || '',
-        district:            formData.trust_addr_district            || '',
-        taluka:              formData.trust_addr_taluka              || '',
-        village:             formData.trust_addr_village             || '',
+        streetName: formData.trust_addr_streetName || '',
+        streetNameMarathi: formData.trust_addr_streetNameMarathi || '',
+        landmark: formData.trust_addr_landmark || '',
+        landmarkMarathi: formData.trust_addr_landmarkMarathi || '',
+        pin: formData.trust_addr_pin || '',
+        district: formData.trust_addr_district || '',
+        taluka: formData.trust_addr_taluka || '',
+        village: formData.trust_addr_village || '',
       },
     },
 
-    // ── Auditor Master Details (Step 1) ──────────────────────────────────────
+    // Auditor Master Details 
     auditorDetails: {
-      auditorName:        formData.aud_auditorName        || '',
-      nameOfFirm:         formData.aud_nameOfFirm         || '',
-      status:             formData.aud_status             || '',
-      district:           formData.aud_district           || '',
-      membershipNumber:   formData.aud_membershipNumber   || '',
+      auditorName: formData.aud_auditorName || '',
+      nameOfFirm: formData.aud_nameOfFirm || '',
+      status: formData.aud_status || '',
+      district: formData.aud_district || '',
+      membershipNumber: formData.aud_membershipNumber || '',
       registrationNumber: formData.aud_registrationNumber || '',
     },
 
     accountingYear: formData.accountingYear || '',
 
-    // ── Auditor Address (Step 1) ──────────────────────────────────────────────
+    // Auditor Address
     auditorAddress: {
       address: {
-        buildingName:        formData.audaddr_buildingName        || '',
+        buildingName: formData.audaddr_buildingName || '',
         buildingNameMarathi: formData.audaddr_buildingNameMarathi || '',
-        streetName:          formData.audaddr_streetName          || '',
-        streetNameMarathi:   formData.audaddr_streetNameMarathi   || '',
-        landmark:            formData.audaddr_landmark            || '',
-        landmarkMarathi:     formData.audaddr_landmarkMarathi     || '',
-        pin:                 formData.audaddr_pin                 || '',
-        district:            formData.audaddr_district            || '',
-        taluka:              formData.audaddr_taluka              || '',
-        village:             formData.audaddr_village             || '',
+        streetName: formData.audaddr_streetName || '',
+        streetNameMarathi: formData.audaddr_streetNameMarathi || '',
+        landmark: formData.audaddr_landmark || '',
+        landmarkMarathi: formData.audaddr_landmarkMarathi || '',
+        pin: formData.audaddr_pin || '',
+        district: formData.audaddr_district || '',
+        taluka: formData.audaddr_taluka || '',
+        village: formData.audaddr_village || '',
       },
       mobileNumber: formData.audaddr_mobileNumber || '',
-      emailId:      formData.audaddr_emailId      || '',
+      emailId: formData.audaddr_emailId || '',
     },
 
-    // ── Legacy / global fields ────────────────────────────────────────────────
-    trustName:      formData.trust_trustName || formData.trustName || '',
-    registrationNo: formData.registrationNo  || '',
-    financialYear:  formData.financialYear   || '',
-    address:        formData.address         || '',
-    date:           formData.date            || '',
-    place:          formData.place           || '',
+    //Legacy / global fields 
+    trustName: formData.trust_trustName || formData.trustName || '',
+    registrationNo: formData.registrationNo || '',
+    financialYear: formData.financialYear || '',
+    address: formData.address || '',
+    date: formData.date || '',
+    place: formData.place || '',
 
     currentStep,
     status,
 
-    // ── Signatures & Stamps ───────────────────────────────────────────────────
+    //Signatures & Stamps
     signatures: [
       { label: 'Signature 1', file: formData.signature_1 },
       { label: 'Signature 2', file: formData.signature_2 },
@@ -431,151 +421,145 @@ export const mapFormDataToBackendPayload = (formData, currentStep, status = 'dra
       { label: 'Stamp 2', file: formData.stamp_2 },
     ].filter(s => s.file),
 
-    // ── Step 2: Permissions ───────────────────────────────────────────────────
+    // Step 2: Permissions
     permissions: permissionsQuestions.map((q, i) => ({
       question: q,
-      answer:   formData[`perm_${i}`] || '',
+      answer: formData[`perm_${i}`] || '',
     })),
 
-    // ── Step 3: Schedule IX ───────────────────────────────────────────────────
+    // Step 3: Schedule IX 
     scheduleIX: {
-      incomeShown:       Number(formData.sch_income_shown)   || 0,
-      deductions:        buildScheduleIXDeductions(formData),
+      incomeShown: Number(formData.sch_income_shown) || 0,
+      deductions: buildScheduleIXDeductions(formData),
       grossAnnualIncome: grossAnnualIncome,
-      contribution:      Number(formData.sch_contribution)   || 0,
+      contribution: Number(formData.sch_contribution) || 0,
     },
 
-    // ── Step 4: Income & Expenditure ─────────────────────────────────────────
+    // Step 4: Income & Expenditure
     incomeExpenditure: {
-      expenditures:     buildExpenditureRows(formData, surplus),
-      incomes:          buildIncomeRows(formData, deficit),
+      expenditures: buildExpenditureRows(formData, surplus),
+      incomes: buildIncomeRows(formData, deficit),
       totalExpenditure: expTotal,
-      totalIncome:      incTotal,
+      totalIncome: incTotal,
     },
 
-    // ── Step 5: Balance Sheet ─────────────────────────────────────────────────
+    //Step 5: Balance Sheet
     balanceSheet: {
-      fundsLiabilities:      buildBalanceSheetRows(fundsLiabilitiesItems, formData, FL_LABEL_MAP),
-      propertyAssets:        buildBalanceSheetRows(propertyAssetsItems,   formData, PA_LABEL_MAP),
+      fundsLiabilities: buildBalanceSheetRows(fundsLiabilitiesItems, formData, FL_LABEL_MAP),
+      propertyAssets: buildBalanceSheetRows(propertyAssetsItems, formData, PA_LABEL_MAP),
       totalFundsLiabilities: flTotal,
-      totalPropertyAssets:   paTotal,
+      totalPropertyAssets: paTotal,
     },
 
-    // ── Step 6: Receipt & Payment ─────────────────────────────────────────────
+    //Step 6: Receipt & Payment
     receiptPayment: {
-      receipts:      buildAccountingRows(receiptItems, formData),
-      payments:      buildAccountingRows(paymentItems, formData),
+      receipts: buildAccountingRows(receiptItems, formData),
+      payments: buildAccountingRows(paymentItems, formData),
       totalReceipts: recTotal,
       totalPayments: payTotal,
     },
 
-    // ── Step 7: Schedule 9-D ──────────────────────────────────────────────────
+    //Step 7: Schedule 9-D
     schedule9D: {
-      trustNameMarathi:      formData.sch9d_trustNameMarathi      || '',
+      trustNameMarathi: formData.sch9d_trustNameMarathi || '',
       registrationNoMarathi: formData.sch9d_registrationNoMarathi || '',
-      financialYearMarathi:  formData.sch9d_financialYearMarathi  || '',
-      trustPan:              formData.sch9d_trustPan              || '',
+      financialYearMarathi: formData.sch9d_financialYearMarathi || '',
+      trustPan: formData.sch9d_trustPan || '',
       incomeTaxRegistration: formData.sch9d_incomeTaxRegistration || '',
       previousITReturns: (formData.sch9d_previousITReturns || []).map((item, i) => ({
-        srNo:      (i + 1).toString(),
+        srNo: (i + 1).toString(),
         receiptNo: item.receiptNo || '',
-        year:      item.year      || '',
+        year: item.year || '',
       })),
       trusteesPan: (formData.sch9d_trusteesPan || []).map((item, i) => ({
         srNo: (i + 1).toString(),
         name: item.name || '',
-        pan:  item.pan  || '',
+        pan: item.pan || '',
       })),
     },
 
-    // ── Step 8: Delay Exemption ───────────────────────────────────────────────
+    // Step 8: Delay Exemption
     delayExemption: {
-      applicantName:         formData.delay_applicantName         || '',
-      applicantAge:          formData.delay_applicantAge          || '',
-      applicantAddress:      formData.delay_applicantAddress      || '',
-      designation:           formData.delay_designation           || '',
+      applicantName: formData.delay_applicantName || '',
+      applicantAge: formData.delay_applicantAge || '',
+      applicantAddress: formData.delay_applicantAddress || '',
+      designation: formData.delay_designation || '',
       trustRegistrationDate: formData.delay_trustRegistrationDate || '',
-      financialYearMarathi:  formData.delay_financialYearMarathi  || '',
-      place:                 formData.delay_place                 || '',
-      date:                  formData.delay_date                  || '',
+      financialYearMarathi: formData.delay_financialYearMarathi || '',
+      place: formData.delay_place || '',
+      date: formData.delay_date || '',
     },
   };
 };
 
-// ─── MAIN EXPORT: mapBackendPayloadToFormData ─────────────────────────────────
 
 export const mapBackendPayloadToFormData = (report) => {
   const formData = {
-    reportType:    report.reportType    || 'audit',
-    // Legacy
-    trustName:      report.trustName      || '',
+    reportType: report.reportType || 'audit',
+    trustName: report.trustName || '',
     registrationNo: report.registrationNo || '',
-    financialYear:  report.financialYear  || '',
-    address:        report.address        || '',
-    date:           report.date           || '',
-    signature_1:    report.signatures?.[0]?.file || '',
-    signature_2:    report.signatures?.[1]?.file || '',
-    stamp_1:        report.stamps?.[0]?.file     || '',
-    stamp_2:        report.stamps?.[1]?.file     || '',
+    financialYear: report.financialYear || '',
+    address: report.address || '',
+    date: report.date || '',
+    signature_1: report.signatures?.[0]?.file || '',
+    signature_2: report.signatures?.[1]?.file || '',
+    stamp_1: report.stamps?.[0]?.file || '',
+    stamp_2: report.stamps?.[1]?.file || '',
 
-    // ── Trust Details ─────────────────────────────────────────────────────────
     trust_trustNumber: report.trustDetails?.trustNumber || '',
-    trust_trustName:   report.trustDetails?.trustName   || report.trustName || '',
+    trust_trustName: report.trustDetails?.trustName || report.trustName || '',
 
-    trust_addr_buildingName:        report.trustDetails?.address?.buildingName        || '',
+    trust_addr_buildingName: report.trustDetails?.address?.buildingName || '',
     trust_addr_buildingNameMarathi: report.trustDetails?.address?.buildingNameMarathi || '',
-    trust_addr_streetName:          report.trustDetails?.address?.streetName          || '',
-    trust_addr_streetNameMarathi:   report.trustDetails?.address?.streetNameMarathi   || '',
-    trust_addr_landmark:            report.trustDetails?.address?.landmark            || '',
-    trust_addr_landmarkMarathi:     report.trustDetails?.address?.landmarkMarathi     || '',
-    trust_addr_pin:                 report.trustDetails?.address?.pin                 || '',
-    trust_addr_district:            report.trustDetails?.address?.district            || '',
-    trust_addr_taluka:              report.trustDetails?.address?.taluka              || '',
-    trust_addr_village:             report.trustDetails?.address?.village             || '',
+    trust_addr_streetName: report.trustDetails?.address?.streetName || '',
+    trust_addr_streetNameMarathi: report.trustDetails?.address?.streetNameMarathi || '',
+    trust_addr_landmark: report.trustDetails?.address?.landmark || '',
+    trust_addr_landmarkMarathi: report.trustDetails?.address?.landmarkMarathi || '',
+    trust_addr_pin: report.trustDetails?.address?.pin || '',
+    trust_addr_district: report.trustDetails?.address?.district || '',
+    trust_addr_taluka: report.trustDetails?.address?.taluka || '',
+    trust_addr_village: report.trustDetails?.address?.village || '',
 
-    // ── Auditor Details ───────────────────────────────────────────────────────
-    aud_auditorName:        report.auditorDetails?.auditorName        || '',
-    aud_nameOfFirm:         report.auditorDetails?.nameOfFirm         || '',
-    aud_status:             report.auditorDetails?.status             || '',
-    aud_district:           report.auditorDetails?.district           || '',
-    aud_membershipNumber:   report.auditorDetails?.membershipNumber   || '',
+    aud_auditorName: report.auditorDetails?.auditorName || '',
+    aud_nameOfFirm: report.auditorDetails?.nameOfFirm || '',
+    aud_status: report.auditorDetails?.status || '',
+    aud_district: report.auditorDetails?.district || '',
+    aud_membershipNumber: report.auditorDetails?.membershipNumber || '',
     aud_registrationNumber: report.auditorDetails?.registrationNumber || '',
 
-    // ── Accounting Year ────────────────────────────────────────────────────────
     accountingYear: report.accountingYear || '',
 
-    // ── Auditor Address ────────────────────────────────────────────────────────
-    audaddr_buildingName:        report.auditorAddress?.address?.buildingName        || '',
+    audaddr_buildingName: report.auditorAddress?.address?.buildingName || '',
     audaddr_buildingNameMarathi: report.auditorAddress?.address?.buildingNameMarathi || '',
-    audaddr_streetName:          report.auditorAddress?.address?.streetName          || '',
-    audaddr_streetNameMarathi:   report.auditorAddress?.address?.streetNameMarathi   || '',
-    audaddr_landmark:            report.auditorAddress?.address?.landmark            || '',
-    audaddr_landmarkMarathi:     report.auditorAddress?.address?.landmarkMarathi     || '',
-    audaddr_pin:                 report.auditorAddress?.address?.pin                 || '',
-    audaddr_district:            report.auditorAddress?.address?.district            || '',
-    audaddr_taluka:              report.auditorAddress?.address?.taluka              || '',
-    audaddr_village:             report.auditorAddress?.address?.village             || '',
-    audaddr_mobileNumber:        report.auditorAddress?.mobileNumber                 || '',
-    audaddr_emailId:             report.auditorAddress?.emailId                      || '',
+    audaddr_streetName: report.auditorAddress?.address?.streetName || '',
+    audaddr_streetNameMarathi: report.auditorAddress?.address?.streetNameMarathi || '',
+    audaddr_landmark: report.auditorAddress?.address?.landmark || '',
+    audaddr_landmarkMarathi: report.auditorAddress?.address?.landmarkMarathi || '',
+    audaddr_pin: report.auditorAddress?.address?.pin || '',
+    audaddr_district: report.auditorAddress?.address?.district || '',
+    audaddr_taluka: report.auditorAddress?.address?.taluka || '',
+    audaddr_village: report.auditorAddress?.address?.village || '',
+    audaddr_mobileNumber: report.auditorAddress?.mobileNumber || '',
+    audaddr_emailId: report.auditorAddress?.emailId || '',
   };
 
-  // ── Step 2: Permissions ─────────────────────────────────────────────────────
+  //Step 2: Permissions
   if (report.permissions) {
     report.permissions.forEach((p, i) => {
       formData[`perm_${i}`] = p.answer || '';
     });
   }
 
-  // ── Step 3: Schedule IX ─────────────────────────────────────────────────────
+  //Step 3: Schedule IX 
   if (report.scheduleIX) {
-    formData.sch_income_shown = report.scheduleIX.incomeShown  || 0;
+    formData.sch_income_shown = report.scheduleIX.incomeShown || 0;
     formData.sch_contribution = report.scheduleIX.contribution || 0;
     (report.scheduleIX.deductions || []).forEach(d => {
       if (d.key) formData[d.key] = d.amount || 0;
     });
   }
 
-  // ── Step 4: Income & Expenditure ────────────────────────────────────────────
+  // Step 4: Income & Expenditure
   if (report.incomeExpenditure) {
     (report.incomeExpenditure.expenditures || []).forEach(e => {
       if (e.key) formData[e.key] = e.amount || 0;
@@ -585,7 +569,7 @@ export const mapBackendPayloadToFormData = (report) => {
     });
   }
 
-  // ── Step 5: Balance Sheet ───────────────────────────────────────────────────
+  //Step 5: Balance Sheet
   if (report.balanceSheet) {
     (report.balanceSheet.fundsLiabilities || []).forEach(fl => {
       if (fl.key) formData[fl.key] = fl.amount || 0;
@@ -595,7 +579,7 @@ export const mapBackendPayloadToFormData = (report) => {
     });
   }
 
-  // ── Step 6: Receipt & Payment ────────────────────────────────────────────────
+  // Step 6: Receipt & Payment 
   if (report.receiptPayment) {
     (report.receiptPayment.receipts || []).forEach(r => {
       if (r.key) formData[r.key] = r.amount || 0;
@@ -605,27 +589,27 @@ export const mapBackendPayloadToFormData = (report) => {
     });
   }
 
-  // ── Step 7: Schedule 9-D ────────────────────────────────────────────────────
+  // Step 7: Schedule 9-D
   if (report.schedule9D) {
-    formData.sch9d_trustNameMarathi      = report.schedule9D.trustNameMarathi      || '';
+    formData.sch9d_trustNameMarathi = report.schedule9D.trustNameMarathi || '';
     formData.sch9d_registrationNoMarathi = report.schedule9D.registrationNoMarathi || '';
-    formData.sch9d_financialYearMarathi  = report.schedule9D.financialYearMarathi  || '';
-    formData.sch9d_trustPan              = report.schedule9D.trustPan              || '';
+    formData.sch9d_financialYearMarathi = report.schedule9D.financialYearMarathi || '';
+    formData.sch9d_trustPan = report.schedule9D.trustPan || '';
     formData.sch9d_incomeTaxRegistration = report.schedule9D.incomeTaxRegistration || '';
-    formData.sch9d_previousITReturns     = report.schedule9D.previousITReturns     || [];
-    formData.sch9d_trusteesPan           = report.schedule9D.trusteesPan           || [];
+    formData.sch9d_previousITReturns = report.schedule9D.previousITReturns || [];
+    formData.sch9d_trusteesPan = report.schedule9D.trusteesPan || [];
   }
 
-  // ── Step 8: Delay Exemption ──────────────────────────────────────────────────
+  // Step 8: Delay Exemption
   if (report.delayExemption) {
-    formData.delay_applicantName         = report.delayExemption.applicantName         || '';
-    formData.delay_applicantAge          = report.delayExemption.applicantAge          || '';
-    formData.delay_applicantAddress      = report.delayExemption.applicantAddress      || '';
-    formData.delay_designation           = report.delayExemption.designation           || '';
+    formData.delay_applicantName = report.delayExemption.applicantName || '';
+    formData.delay_applicantAge = report.delayExemption.applicantAge || '';
+    formData.delay_applicantAddress = report.delayExemption.applicantAddress || '';
+    formData.delay_designation = report.delayExemption.designation || '';
     formData.delay_trustRegistrationDate = report.delayExemption.trustRegistrationDate || '';
-    formData.delay_financialYearMarathi  = report.delayExemption.financialYearMarathi  || '';
-    formData.delay_place                 = report.delayExemption.place                 || '';
-    formData.delay_date                  = report.delayExemption.date                  || '';
+    formData.delay_financialYearMarathi = report.delayExemption.financialYearMarathi || '';
+    formData.delay_place = report.delayExemption.place || '';
+    formData.delay_date = report.delayExemption.date || '';
   }
 
   return formData;

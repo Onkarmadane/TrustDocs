@@ -53,7 +53,6 @@ const getAuditorAddress = (formData) => formatAddress('audaddr', formData) || ''
 const getAuditorEmail = (formData) => formData.audaddr_emailId || '';
 const getAuditorMobile = (formData) => formData.audaddr_mobileNumber || '';
 
-/* ── Reusable A4 page wrapper ── */
 export const A4Page = ({ children, pageLabel }) => (
   <div className="bg-white border border-slate-200 shadow-[0_20px_50px_rgba(0,0,0,0.1)] relative w-full aspect-[1/1.414] shrink-0 rounded-[2px] transition-all duration-500 overflow-hidden group">
     {/* Subtle Paper Texture Overlay */}
@@ -76,9 +75,7 @@ export const A4Page = ({ children, pageLabel }) => (
   </div>
 );
 
-/* ═══════════════════════════════════════════════════════════ */
-/*  PAGE 1 — Cover Page                                       */
-/* ═══════════════════════════════════════════════════════════ */
+// Cover page
 export const CoverPage = ({ formData }) => (
   <A4Page pageLabel="Page 1 — Cover">
     <div className="h-full flex flex-col items-center justify-center text-center px-4">
@@ -128,9 +125,7 @@ export const CoverPage = ({ formData }) => (
   </A4Page>
 );
 
-/* ═══════════════════════════════════════════════════════════ */
-/*  PAGE 2 — Permissions & Disclosures                        */
-/* ═══════════════════════════════════════════════════════════ */
+// Permissions and Disclosures
 export const PermissionsPage = ({ formData }) => (
   <A4Page pageLabel="Page 2 — Permissions">
     <div className="text-[5.5px] leading-relaxed">
@@ -151,7 +146,6 @@ export const PermissionsPage = ({ formData }) => (
         </div>
       </div>
 
-      {/* Table */}
       <table className="w-full border-collapse border border-slate-300 text-[5px]">
         <thead>
           <tr className="bg-slate-100">
@@ -180,7 +174,6 @@ export const PermissionsPage = ({ formData }) => (
         </tbody>
       </table>
 
-      {/* Footer */}
       <div className="mt-3 flex justify-between items-end px-1">
         <p className="text-[5px] text-slate-500">Date :- {getDate(formData)}</p>
         <div className="text-right text-[5px] space-y-0.5">
@@ -192,10 +185,7 @@ export const PermissionsPage = ({ formData }) => (
   </A4Page>
 );
 
-/* ═══════════════════════════════════════════════════════════ */
-/*  PAGE 3.1 — Schedule IX (Deductions)                       */
-/* ═══════════════════════════════════════════════════════════ */
-
+// Schedule & Deductions IX
 export const ScheduleIXPage = ({ formData }) => {
   const grossIncome = parseFloat(formData.sch_income_shown || 0);
   const totalDeductions = scheduleIXItems.reduce((s, item) => s + (parseFloat(formData[item.key]) || 0), 0);
@@ -204,7 +194,6 @@ export const ScheduleIXPage = ({ formData }) => {
   return (
     <A4Page pageLabel="Page 3.1 — Schedule IX">
       <div className="text-[5.5px] leading-relaxed">
-        {/* Header */}
         <div className="text-center mb-3 space-y-0.5">
           <p className="font-bold text-[7px]">The Bombay Public Trusts Act 1950</p>
           <p className="font-bold text-[6px]">SCHEDULE - IX C</p>
@@ -217,20 +206,16 @@ export const ScheduleIXPage = ({ formData }) => {
           </p>
         </div>
 
-        {/* Items */}
         <div className="border border-slate-300 text-[5px]">
-          {/* Row: Income shown */}
           <div className="flex items-center justify-between border-b border-slate-200 p-1.5 bg-slate-50">
             <p className="font-bold flex-1">I. Income as shown in the Income and Expenditure Account (Schedule IX)</p>
             <span className="font-bold font-mono w-16 text-right">{fmt(formData.sch_income_shown)}</span>
           </div>
 
-          {/* Row: Section header */}
           <div className="p-1.5 border-b border-slate-200 bg-white">
             <p className="font-bold">II. Items not chargeable to contribution under Section 58 and Rules 32</p>
           </div>
 
-          {/* Sub-items */}
           {scheduleIXItems.map((item) => (
             <div key={item.key} className="flex items-center justify-between border-b border-slate-100 px-2 py-1 hover:bg-blue-50/30">
               <p className="flex-1 text-slate-600 pr-2">{item.label}</p>
@@ -238,14 +223,12 @@ export const ScheduleIXPage = ({ formData }) => {
             </div>
           ))}
 
-          {/* Gross Annual Income */}
           <div className="flex items-center justify-between p-1.5 bg-blue-50 border-t border-blue-200">
             <p className="font-bold text-blue-800">Gross Annual Income chargeable to contribution Rs.</p>
             <span className="font-bold font-mono w-16 text-right text-blue-700">{fmt(netIncome > 0 ? netIncome : '')}</span>
           </div>
         </div>
 
-        {/* Footer */}
         <div className="mt-3 flex justify-between items-end px-1">
           <div className="text-[5px] text-slate-500">
             <p>Date :- {getDate(formData)}</p>
@@ -261,9 +244,7 @@ export const ScheduleIXPage = ({ formData }) => {
   );
 };
 
-/* ═══════════════════════════════════════════════════════════ */
-/*  PAGE 3.2 — Income & Expenditure Account Table             */
-/* ═══════════════════════════════════════════════════════════ */
+// Income & Expenditure Account Table          
 export const IncomeExpPage = ({ formData }) => {
   const getNum = (key) => parseFloat(formData[key] || 0);
 
@@ -393,7 +374,6 @@ export const IncomeExpPage = ({ formData }) => {
   return (
     <A4Page pageLabel="Page 3.2 — Income & Expenditure">
       <div className="text-[5.5px]">
-        {/* Header */}
         <div className="text-center mb-2 space-y-0.5">
           <p className="font-bold text-[7px]">The Bombay Public Trusts Act 1950</p>
           <p className="font-bold text-[6px]">SCHEDULE IX (VIDE RULE 17(1))</p>
@@ -403,7 +383,6 @@ export const IncomeExpPage = ({ formData }) => {
           <p className="text-[5px] text-slate-500">{getTrustName(formData)}</p>
         </div>
 
-        {/* Table */}
         <table className="w-full border-collapse border border-slate-300 text-[5px]">
           <thead>
             <tr className="bg-slate-100">
@@ -453,7 +432,6 @@ export const IncomeExpPage = ({ formData }) => {
           </tfoot>
         </table>
 
-        {/* Footer */}
         <div className="mt-2 flex justify-between items-end px-1 text-[5px]">
           <p className="text-slate-500">As per our report of even date.</p>
           <div className="text-right space-y-0.5">
@@ -466,9 +444,7 @@ export const IncomeExpPage = ({ formData }) => {
   );
 };
 
-/* ═══════════════════════════════════════════════════════════ */
-/*  PAGE 4 — Balance Sheet                                    */
-/* ═══════════════════════════════════════════════════════════ */
+// PAGE 4 — Balance Sheet                                    
 export const BalanceSheetPage = ({ formData }) => {
   const getNum = (key) => parseFloat(formData[key] || 0);
 
@@ -527,7 +503,6 @@ export const BalanceSheetPage = ({ formData }) => {
   return (
     <A4Page pageLabel="Page 4 — Balance Sheet">
       <div className="text-[5px]">
-        {/* Header */}
         <div className="text-center mb-2 space-y-0.5">
           <p className="font-bold text-[7px]">The Bombay Public Trusts Act 1950.</p>
           <p className="font-bold text-[6px]">SCHEDULE VII (VIDE RULE 17(1))</p>
@@ -537,7 +512,6 @@ export const BalanceSheetPage = ({ formData }) => {
           <p className="font-bold text-[6px] mt-1">BALANCE SHEET AS ON {getFinancialYear(formData)}</p>
         </div>
 
-        {/* 6-column table matching live form */}
         <table className="w-full border-collapse border border-slate-300 text-[4.5px]">
           <thead>
             <tr className="bg-slate-100">
@@ -603,9 +577,7 @@ export const BalanceSheetPage = ({ formData }) => {
   );
 };
 
-/* ═══════════════════════════════════════════════════════════ */
-/*  PAGE 5 — Receipt & Payment Account                         */
-/* ═══════════════════════════════════════════════════════════ */
+//  PAGE 5 — Receipt & Payment Account                        
 export const ReceiptPaymentPage = ({ formData }) => {
   const recTotal = Object.entries(formData).filter(([k]) => k.startsWith('rec_')).reduce((s, [, v]) => s + (parseFloat(v) || 0), 0);
   const payTotal = Object.entries(formData).filter(([k]) => k.startsWith('pay_')).reduce((s, [, v]) => s + (parseFloat(v) || 0), 0);
@@ -637,7 +609,6 @@ export const ReceiptPaymentPage = ({ formData }) => {
   return (
     <A4Page pageLabel="Page 5 — Receipt & Payment">
       <div className="text-[5px]">
-        {/* Header */}
         <div className="text-center mb-2 space-y-0.5">
           <p className="font-bold text-[7px]">Name of the Trust :- {getTrustName(formData)}</p>
           <p className="text-[5px] mt-1">{getTrustAddress(formData)}</p>
@@ -645,9 +616,7 @@ export const ReceiptPaymentPage = ({ formData }) => {
           <p className="text-[5px] mt-1">For the Period from 01.04.2025 to {getFinancialYear(formData)}</p>
         </div>
 
-        {/* Two-column tables side by side */}
         <div className="grid grid-cols-2 gap-0.5">
-          {/* Receipts */}
           <table className="border-collapse border border-slate-300 text-[4.5px] w-full">
             <thead>
               <tr className="bg-slate-100">
@@ -667,7 +636,6 @@ export const ReceiptPaymentPage = ({ formData }) => {
             </tfoot>
           </table>
 
-          {/* Payments */}
           <table className="border-collapse border border-slate-300 text-[4.5px] w-full">
             <thead>
               <tr className="bg-slate-100">
@@ -703,9 +671,7 @@ export const ReceiptPaymentPage = ({ formData }) => {
   );
 };
 
-/* ═══════════════════════════════════════════════════════════ */
-/*  PAGE 6.1 — Schedule 9-D (Marathi)                          */
-/* ═══════════════════════════════════════════════════════════ */
+// PAGE 6.1 — Schedule 9-D (Marathi)
 export const Schedule9DPage = ({ formData }) => {
   return (
     <A4Page pageLabel="Page 6 — Schedule 9-D">
@@ -813,9 +779,7 @@ export const Schedule9DPage = ({ formData }) => {
   );
 };
 
-/* ═══════════════════════════════════════════════════════════ */
-/*  PAGE 6.2 — Delay Exemption (Marathi)                       */
-/* ═══════════════════════════════════════════════════════════ */
+// PAGE 6.2 — Delay Exemption (Marathi)
 export const DelayExemptionPage = ({ formData }) => {
   return (
     <A4Page pageLabel="Page 7 — Delay Exemption">
@@ -877,9 +841,7 @@ export const DelayExemptionPage = ({ formData }) => {
   );
 };
 
-/* ═══════════════════════════════════════════════════════════ */
-/*  MAIN LIVE PREVIEW COMPONENT                               */
-/* ═══════════════════════════════════════════════════════════ */
+//MAIN LIVE PREVIEW COMPONENT                               
 const LivePreview = ({ currentStep, formData, zoom = 100, setZoom }) => {
   const viewportRef = React.useRef(null);
   const containerRef = React.useRef(null);
@@ -908,27 +870,22 @@ const LivePreview = ({ currentStep, formData, zoom = 100, setZoom }) => {
     setZoom?.(Math.min(250, Math.max(30, fitZoom)));
   }, [isFullscreen, setZoom]);
 
-  // Handle Fullscreen state changes and Auto-Fit
   React.useEffect(() => {
     const handleFullscreenChange = () => {
       const isFull = !!document.fullscreenElement;
       setIsFullscreen(isFull);
-      // Trigger fit calculation after a small delay to allow for transition
       setTimeout(handleFit, 100);
     };
     document.addEventListener('fullscreenchange', handleFullscreenChange);
-    // Removed initial handleFit() to default to 100% zoom
 
     return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
   }, [handleFit]);
 
-  // Also fit on window resize
   React.useEffect(() => {
     window.addEventListener('resize', handleFit);
     return () => window.removeEventListener('resize', handleFit);
   }, [handleFit]);
 
-  // Handle Wheel Zoom (Ctrl + Wheel)
   React.useEffect(() => {
     const handleWheel = (e) => {
       if (e.ctrlKey || e.metaKey) {
@@ -997,7 +954,6 @@ const LivePreview = ({ currentStep, formData, zoom = 100, setZoom }) => {
           : "h-auto "
       )}
     >
-      {/* Header and Controls */}
       {!isFullscreen && (
         <div className="flex items-center justify-between mb-4 bg-white/80 p-3 rounded-2xl border border-slate-100 shadow-sm backdrop-blur-md">
           <div>
@@ -1036,7 +992,6 @@ const LivePreview = ({ currentStep, formData, zoom = 100, setZoom }) => {
           </div>
         </div>
       )}
-      {/* Background Decor for Fullscreen */}
       <AnimatePresence>
         {isFullscreen && (
           <motion.div
@@ -1051,7 +1006,6 @@ const LivePreview = ({ currentStep, formData, zoom = 100, setZoom }) => {
         )}
       </AnimatePresence>
 
-      {/* Floating Controls in Fullscreen */}
       <AnimatePresence>
         {isFullscreen && (
           <motion.div
@@ -1087,7 +1041,6 @@ const LivePreview = ({ currentStep, formData, zoom = 100, setZoom }) => {
         )}
       </AnimatePresence>
 
-      {/* Preview Viewport */}
       <div
         ref={viewportRef}
         className={cn(

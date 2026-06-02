@@ -27,7 +27,6 @@ import Step7Schedule9D from '../components/auditreport/Step7Schedule9D';
 import Step8DelayExemption from '../components/auditreport/Step8DelayExemption';
 
 
-/*                    MAIN COMPONENT                      */
 
 const CreateReport = () => {
   useDocumentTitle('Create Audit Report');
@@ -79,6 +78,7 @@ const CreateReport = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  // Auto saves the report as a draft whenever formData changes, but only if there are changes since the last save (by clicking on next button)
   const saveDraft = async (data) => {
     const currentData = data || formDataRef.current;
     const step = currentStepRef.current;
@@ -206,7 +206,6 @@ const CreateReport = () => {
     <div className="min-h-screen pb-20">
 
       <main className="max-w-[1600px] mx-auto px-4 md:px-8 pt-8 space-y-8">
-        {/* Header Row: Steps */}
         <div className="w-full flex justify-between items-center">
           <div className="flex-1">
             <StepIndicator currentStep={currentStep} />
@@ -222,68 +221,67 @@ const CreateReport = () => {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-          {/* Left: Form Area */}
           <div className={cn("space-y-6 transition-all duration-500", (currentStep === 9 || isPreviewCollapsed) ? "lg:col-span-12" : "lg:col-span-7")}>
             <Card className="p-0 border-slate-100 bg-white shadow-xl shadow-slate-200/50 overflow-hidden">
               <AnimatePresence mode="wait">
 
-                {/* ─── STEP 1: Basic Details ─── */}
+                {/* STEP 1: Basic Details */}
                 {currentStep === 1 && (
                   <motion.div key="step1" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }}>
                     <Step1BasicDetails formData={formData} onChange={handleChange} />
                   </motion.div>
                 )}
 
-                {/* ─── STEP 2: Permissions ─── */}
+                {/* STEP 2: Permissions */}
                 {currentStep === 2 && (
                   <motion.div key="step2" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }}>
                     <Step2Permissions formData={formData} onChange={handleChange} />
                   </motion.div>
                 )}
 
-                {/* ─── STEP 3: Schedule IX ─── */}
+                {/* STEP 3: Schedule IX */}
                 {currentStep === 3 && (
                   <motion.div key="step3" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }}>
                     <Step3ScheduleIX formData={formData} onChange={handleChange} />
                   </motion.div>
                 )}
 
-                {/* ─── STEP 4: Income & Expenditure ─── */}
+                {/* STEP 4: Income & Expenditure */}
                 {currentStep === 4 && (
                   <motion.div key="step4" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }}>
                     <Step4IncomeExpenditure formData={formData} onChange={handleChange} />
                   </motion.div>
                 )}
 
-                {/* ─── STEP 5: Balance Sheet ─── */}
+                {/* STEP 5: Balance Sheet */}
                 {currentStep === 5 && (
                   <motion.div key="step5" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }}>
                     <Step5BalanceSheet formData={formData} onChange={handleChange} />
                   </motion.div>
                 )}
 
-                {/* ─── STEP 6: Receipt & Payment Account ─── */}
+                {/* STEP 6: Receipt & Payment Account */}
                 {currentStep === 6 && (
                   <motion.div key="step6" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }}>
                     <Step6ReceiptPayment formData={formData} onChange={handleChange} />
                   </motion.div>
                 )}
 
-                {/* ─── STEP 7: Schedule 9-D (अनुसूची नऊ - ड) ─── */}
+                {/* STEP 7: Schedule 9-D (अनुसूची नऊ - ड) */}
                 {currentStep === 7 && (
                   <motion.div key="step7" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }}>
                     <Step7Schedule9D formData={formData} onChange={handleChange} setFormData={setFormData} />
                   </motion.div>
                 )}
 
-                {/* ─── STEP 8: Delay Exemption (विलंब माफीचा अर्ज) ─── */}
+                {/* STEP 8: Delay Exemption (विलंब माफीचा अर्ज) */}
                 {currentStep === 8 && (
                   <motion.div key="step8" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }}>
                     <Step8DelayExemption formData={formData} onChange={handleChange} />
                   </motion.div>
                 )}
 
-                {/* ─── STEP 9: Preview & Save ─── */}
+                {/* STEP 9: Preview & Save */}
                 {currentStep === 9 && (
                   <motion.div key="step9" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }}>
                     <Step9Preview formData={formData} />
@@ -293,7 +291,6 @@ const CreateReport = () => {
               </AnimatePresence>
             </Card>
 
-            {/* Navigation Buttons */}
             <div className="flex items-center justify-between pt-4">
               {currentStep > 1 ? (
                 <button
@@ -346,7 +343,7 @@ const CreateReport = () => {
         </div>
       </main>
 
-      {/* Premium Back to Top Button */}
+      {/* Back to Top Button */}
       <AnimatePresence>
         {showBackToTop && (
           <motion.div
@@ -359,7 +356,6 @@ const CreateReport = () => {
               whileHover={{ scale: 1.05 }}
               className="relative w-20 h-20 flex items-center justify-center"
             >
-              {/* Rotating Text */}
               <motion.div
                 whileHover={{ rotate: 360 }}
                 transition={{ duration: 2, ease: "easeInOut" }}
@@ -379,7 +375,6 @@ const CreateReport = () => {
                 </svg>
               </motion.div>
 
-              {/* Central Button */}
               <motion.button
                 whileTap={{ scale: 0.9 }}
                 className="w-10 h-10 bg-gradient-to-tr from-indigo-900 to-blue-600 text-white rounded-full flex items-center justify-center shadow-xl shadow-blue-500/30 relative z-10 overflow-hidden"

@@ -52,7 +52,6 @@ const Step9Preview = ({ formData }) => {
         <h2 className="text-[11px] font-bold text-slate-400 mb-2 uppercase tracking-[0.2em]">Step 9: Final Preview</h2>
         <p className="text-xs text-slate-500">Preview all pages of the report before downloading.</p>
       </div>
-      {/* Bottom Controls: Page Indicator & Zoom */}
       <div className="mt-auto pt-6 flex flex-wrap justify-center items-center gap-4 bg-white px-5 py-2 rounded-full text-xs font-bold text-slate-600 border border-slate-100 shadow-sm z-50">
         <span>Page {currentPage} of 8</span>
         <div className="w-px h-4 bg-slate-200 hidden sm:block" />
@@ -75,7 +74,6 @@ const Step9Preview = ({ formData }) => {
         </div>
       </div>
       <div ref={containerRef} className="relative border border-slate-100 bg-slate-50 rounded-3xl p-4 md:p-8 flex flex-col items-center min-h-[500px] overflow-hidden">
-        {/* Pagination Controls */}
         <div className="absolute left-2 md:left-4 top-1/2 -translate-y-1/2 z-50">
           <button
             onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
@@ -95,7 +93,6 @@ const Step9Preview = ({ formData }) => {
           </button>
         </div>
 
-        {/* Page Container */}
         <div
           className="w-full max-w-[600px] transition-all duration-300"
           style={{

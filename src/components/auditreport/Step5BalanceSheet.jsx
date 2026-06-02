@@ -3,7 +3,6 @@ import { fundsLiabilitiesItems, propertyAssetsItems } from './reportData';
 
 const Step5BalanceSheet = ({ formData, onChange }) => {
   const getNum = (key) => parseFloat(formData[key] || 0);
-
   // Calculate totals for Funds & Liabilities
   let flTotal = 0;
   fundsLiabilitiesItems.forEach(item => {
@@ -63,7 +62,7 @@ const Step5BalanceSheet = ({ formData, onChange }) => {
         {/* Ledger Columns Split Wrapper */}
         <div className="grid grid-cols-2 divide-x divide-slate-300 items-start">
           
-          {/* ================= LEFT SECTION: FUNDS & LIABILITIES ================= */}
+          {/* LEFT SECTION: FUNDS & LIABILITIES */}
           <div className="pr-4 pb-4">
             {fundsLiabilitiesItems.map((item) => (
               <div key={item.key} className="mb-4">
@@ -127,7 +126,7 @@ const Step5BalanceSheet = ({ formData, onChange }) => {
             </div>
           </div>
 
-          {/* ================= RIGHT SECTION: PROPERTY & ASSETS ================= */}
+          {/* RIGHT SECTION: PROPERTY & ASSETS */}
           <div className="pl-4 pb-4">
             {propertyAssetsItems.map((item) => (
               <div key={item.key} className="mb-4">
@@ -176,7 +175,6 @@ const Step5BalanceSheet = ({ formData, onChange }) => {
               </div>
             ))}
 
-            {/* Total Row */}
             <div className="grid grid-cols-12 items-center mt-6 pt-4">
               <span className="col-span-6 font-bold text-black">Property And Assets Total</span>
               <div className="col-span-6 flex justify-end space-x-4">

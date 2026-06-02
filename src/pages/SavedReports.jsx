@@ -54,7 +54,6 @@ const SavedReports = () => {
       }
     };
 
-    // If search term is empty, fetch immediately for filter changes
     if (!searchTerm) {
       fetchReports();
       return;

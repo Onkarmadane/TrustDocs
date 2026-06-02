@@ -4,7 +4,7 @@ import { expenditureItems, incomeItems } from './reportData';
 const Step4IncomeExpenditure = ({ formData, onChange }) => {
   const getNum = (key) => parseFloat(formData[key] || 0);
 
-  // --- EXPENDITURE SUBTOTAL CALCULATIONS ---
+  // EXPENDITURE SUBTOTAL CALCULATIONS
   const subTotalExpProperties =
     getNum("exp_rates_taxes") + getNum("exp_repairs_maintenance") +
     getNum("exp_salaries_honorarium") + getNum("exp_insurance") +
@@ -33,7 +33,7 @@ const Step4IncomeExpenditure = ({ formData, onChange }) => {
     getNum("exp_transfer_reserve") +
     subTotalObjectsTrust;
 
-  // --- INCOME SUBTOTAL CALCULATIONS (Updated mapping to the new keys) ---
+  //  INCOME SUBTOTAL CALCULATIONS (Updated mapping to the new keys) 
   const subTotalIncRent = getNum("inc_rent_accrued_inner") + getNum("inc_rent_realised_inner");
   const subTotalIncInterest =
     getNum("inc_interest_accrued_inner") + getNum("inc_interest_realised_inner") +
@@ -49,7 +49,7 @@ const Step4IncomeExpenditure = ({ formData, onChange }) => {
     getNum("inc_other_sources_outer") +
     getNum("inc_transfer_reserve_outer");
 
-  // --- BALANCING STRATEGY ---
+  //  BALANCING STRATEGY
   const netBalance = baseIncomeTotal - baseExpenditureTotal;
   const autoCalculatedSurplus = netBalance > 0 ? netBalance : 0;
 
@@ -62,7 +62,6 @@ const Step4IncomeExpenditure = ({ formData, onChange }) => {
   const finalGrandExpenditure = baseExpenditureTotal + surplus;
   const finalGrandIncome = baseIncomeTotal + deficit;
 
-  // Render input box with optional underline
   const renderInput = (name, value, isReadOnly, showUnderline) => (
     <div className="flex flex-col">
       <input
@@ -92,10 +91,9 @@ const Step4IncomeExpenditure = ({ formData, onChange }) => {
           </div>
         </div>
 
-        {/* Ledger Columns Split Wrapper */}
         <div className="grid grid-cols-2 divide-x divide-slate-300 items-start">
 
-          {/* ================= LEFT SECTION: EXPENDITURE ================= */}
+          {/* LEFT SECTION: EXPENDITURE*/}
           <div className="pr-4 pb-4">
             {expenditureItems.map((item) => (
               <div key={item.key} className="mb-4">
@@ -111,14 +109,14 @@ const Step4IncomeExpenditure = ({ formData, onChange }) => {
                           if (item.key === "exp_amount_written_off") subTotal = subTotalWrittenOff.toFixed(2);
                           if (item.key === "exp_objects_of_trust") subTotal = subTotalObjectsTrust.toFixed(2);
                         }
-                        
+
                         return (
                           <div key={sub.key} className="grid grid-cols-12 items-center">
                             <span className="col-span-6 text-slate-700">{sub.label}</span>
                             <div className="col-span-6 flex justify-end space-x-4">
                               {/* Inner Input */}
                               {renderInput(sub.key, formData[sub.key] || "", false, isLast)}
-                              
+
                               {/* Outer Input / Subtotal */}
                               {isLast ? (
                                 renderInput("", subTotal, true, true)
@@ -143,7 +141,6 @@ const Step4IncomeExpenditure = ({ formData, onChange }) => {
               </div>
             ))}
 
-            {/* Editable Surplus Fields Row Box */}
             <div className="grid grid-cols-12 items-center mt-6 pt-4">
               <span className="col-span-6 font-bold text-black">To Surplus Carried Over to Balance Sheet</span>
               <div className="col-span-6 flex justify-end space-x-4">
@@ -151,8 +148,7 @@ const Step4IncomeExpenditure = ({ formData, onChange }) => {
                 {renderInput("exp_surplus_override", formData["exp_surplus_override"] !== undefined ? formData["exp_surplus_override"] : surplus.toFixed(2), false, true)}
               </div>
             </div>
-            
-            {/* Total Row */}
+
             <div className="grid grid-cols-12 items-center mt-6 pt-4">
               <span className="col-span-6 font-bold text-black">Total</span>
               <div className="col-span-6 flex justify-end space-x-4">
@@ -167,7 +163,7 @@ const Step4IncomeExpenditure = ({ formData, onChange }) => {
             </div>
           </div>
 
-          {/* ================= RIGHT SECTION: INCOME ================= */}
+          {/*RIGHT SECTION: INCOME*/}
           <div className="pl-4 pb-4">
             {incomeItems.map((item) => (
               <div key={item.key} className="mb-4">
@@ -197,7 +193,6 @@ const Step4IncomeExpenditure = ({ formData, onChange }) => {
                     </div>
                   </div>
                 ) : item.type === "double_field" ? (
-                  /* Double Input Fields */
                   <div className="grid grid-cols-12 items-center">
                     <span className="col-span-6 font-bold text-black">{item.label}</span>
                     <div className="col-span-6 flex justify-end space-x-4">
@@ -206,7 +201,6 @@ const Step4IncomeExpenditure = ({ formData, onChange }) => {
                     </div>
                   </div>
                 ) : (
-                  /* Deficit row / Single Outer row */
                   <div className="grid grid-cols-12 items-center">
                     <span className="col-span-6 font-bold text-black">{item.label}</span>
                     <div className="col-span-6 flex justify-end space-x-4">
@@ -217,9 +211,7 @@ const Step4IncomeExpenditure = ({ formData, onChange }) => {
                 )}
               </div>
             ))}
-            
-            {/* Deficit explicitly if not in items, but usually it is separate */}
-            {/* Wait, the original code had Deficit hardcoded at the bottom. Let's add it if not present. */}
+
             <div className="grid grid-cols-12 items-center mt-6 pt-4">
               <span className="col-span-6 font-bold text-black">By Deficit Carried Over to Balance Sheet</span>
               <div className="col-span-6 flex justify-end space-x-4">
@@ -228,7 +220,6 @@ const Step4IncomeExpenditure = ({ formData, onChange }) => {
               </div>
             </div>
 
-            {/* Total Row */}
             <div className="grid grid-cols-12 items-center mt-6 pt-4">
               <span className="col-span-6 font-bold text-black">Total</span>
               <div className="col-span-6 flex justify-end space-x-4">
@@ -241,11 +232,8 @@ const Step4IncomeExpenditure = ({ formData, onChange }) => {
                 </div>
               </div>
             </div>
-            
           </div>
-
         </div>
-
       </div>
     </div>
   );
