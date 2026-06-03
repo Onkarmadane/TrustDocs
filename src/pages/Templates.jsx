@@ -3,6 +3,7 @@ import Card from '../components/ui/Card';
 import Image from '../components/ui/Image';
 import { FileText, ArrowRight } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 import dashboardImg from '../assets/dashboard.png';
 import useDocumentTitle from '../utils/useDocumentTitle';
 
@@ -37,6 +38,16 @@ const templates = [
 
 const Templates = () => {
   useDocumentTitle('Report Templates');
+  const navigate = useNavigate();
+
+  const handleTemplateClick = (id) => {
+    if (id === 2) {
+      navigate('/create-report', { state: { reportType: 'nondani' } });
+    } else {
+      navigate('/create-report', { state: { reportType: 'audit' } });
+    }
+  };
+
   return (
     <>
       <main className="max-w-[1600px] mx-auto px-4 md:px-8 lg:px-16 pt-12 relative z-10">
@@ -60,7 +71,10 @@ const Templates = () => {
                   ease: [0.23, 1, 0.32, 1]
                 }}
               >
-                <Card className="p-5 min-h-[230px] w-full max-w-[350px] mx-auto flex flex-col justify-between group border border-slate-200 cursor-pointer hover:shadow-[0_30px_60px_-15px_rgba(0,0,0,0.08)] transition-all duration-500  bg-white">
+                <Card 
+                  onClick={() => handleTemplateClick(template.id)}
+                  className="p-5 min-h-[230px] w-full max-w-[350px] mx-auto flex flex-col justify-between group border border-slate-200 cursor-pointer hover:shadow-[0_30px_60px_-15px_rgba(0,0,0,0.08)] transition-all duration-500  bg-white"
+                >
                   {/* Top-Right Accent Glow (Optimized for GPU speed & blur efficiency) */}
                   <div className={`absolute -top-24 -right-24 w-80 h-80 blur-[40px] rounded-full opacity-40 group-hover:opacity-70 transition-opacity duration-700 will-change-transform transform-gpu ${template.accent}`} />
 

@@ -1,9 +1,9 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { cn } from '../../lib/utils';
-import { steps } from './steps';
+import { steps as auditSteps } from './steps';
 
-const StepIndicator = ({ currentStep }) => (
+const StepIndicator = ({ currentStep, steps = auditSteps }) => (
   <div className="w-full overflow-x-auto pb-4">
     <div className="flex items-start justify-between w-full relative min-w-full pt-2">
       {steps.map((step, index) => (
@@ -28,7 +28,7 @@ const StepIndicator = ({ currentStep }) => (
             "mt-3 text-[10px] font-medium  tracking-wider text-center whitespace-pre-line leading-tight transition-colors duration-500",
             currentStep === step.id ? "text-blue-600" : "text-slate-400"
           )}>
-            {step.name}
+            {step.name || step.title}
           </span>
         </div>
       ))}

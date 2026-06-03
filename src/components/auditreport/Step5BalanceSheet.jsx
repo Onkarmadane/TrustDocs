@@ -3,7 +3,7 @@ import { fundsLiabilitiesItems, propertyAssetsItems } from './reportData';
 
 const Step5BalanceSheet = ({ formData, onChange }) => {
   const getNum = (key) => parseFloat(formData[key] || 0);
-  // Calculate totals for Funds & Liabilities
+x``  // Calculate totals for Funds & Liabilities
   let flTotal = 0;
   fundsLiabilitiesItems.forEach(item => {
     if (item.type === 'nested') {

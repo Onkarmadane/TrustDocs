@@ -108,7 +108,7 @@ const AddressBlock = ({ prefix, formData, onChange }) => (
   </div>
 );
 
-const Step1BasicDetails = ({ formData, onChange }) => {
+const Step1BasicDetails = ({ formData, onChange, reportType, setReportType }) => {
   return (
     <div className="divide-y divide-slate-100">
 

@@ -28,38 +28,55 @@ const Navbar = () => {
   }, []);
 
   const NavLinks = ({ mobile = false }) => {
-    const links = [
-      { name: 'Home', path: '/' },
-      { name: '+ Create Report', path: '/create-report' },
-      { name: 'All Reports', path: '/all-reports' },
-      { name: 'Templates', path: '/templates' },
-    ];
 
     return (
-      <div className={cn(
-        "flex items-center gap-3",
-        mobile ? "flex-col w-full" : ""
-      )}>
-        {links.map((link) => {
-          const isActive = location.pathname === link.path;
+      <div className={cn("flex items-center gap-3", mobile ? "flex-col w-full" : "")}>
+        <Link
+          to="/"
+          className={cn(
+            "rounded-full px-8 py-2.5 font-semibold text-xs transition-all duration-300 flex items-center justify-center whitespace-nowrap",
+            location.pathname === '/' ? "gradient text-white shadow-lg shadow-blue-500/40" : "bg-white text-slate-600 shadow-sm hover:bg-slate-50",
+            mobile ? "w-full py-4 text-sm" : ""
+          )}
+          onClick={() => mobile && setIsMenuOpen(false)}
+        >
+          Home
+        </Link>
 
-          return (
-            <Link
-              key={link.name}
-              to={link.path}
-              className={cn(
-                "rounded-full px-8 py-2.5 font-semibold text-xs transition-all duration-300 flex items-center justify-center whitespace-nowrap",
-                isActive
-                  ? "gradient text-white shadow-lg shadow-blue-500/40"
-                  : "bg-white text-slate-600 shadow-sm hover:bg-slate-50",
-                mobile ? "w-full py-4 text-sm" : ""
-              )}
-              onClick={() => mobile && setIsMenuOpen(false)}
-            >
-              {link.name}
-            </Link>
-          );
-        })}
+        <Link
+          to="/create-report"
+          className={cn(
+            "rounded-full px-8 py-2.5 font-semibold text-xs transition-all duration-300 flex items-center justify-center whitespace-nowrap",
+            location.pathname === '/create-report' ? "gradient text-white shadow-lg shadow-blue-500/40" : "bg-white text-slate-600 shadow-sm hover:bg-slate-50",
+            mobile ? "w-full py-4 text-sm" : ""
+          )}
+          onClick={() => mobile && setIsMenuOpen(false)}
+        >
+          + Create Report
+        </Link>
+
+        <Link
+          to="/all-reports"
+          className={cn(
+            "rounded-full px-8 py-2.5 font-semibold text-xs transition-all duration-300 flex items-center justify-center whitespace-nowrap",
+            location.pathname === '/all-reports' ? "gradient text-white shadow-lg shadow-blue-500/40" : "bg-white text-slate-600 shadow-sm hover:bg-slate-50",
+            mobile ? "w-full py-4 text-sm" : ""
+          )}
+          onClick={() => mobile && setIsMenuOpen(false)}
+        >
+          All Reports
+        </Link>
+        <Link
+          to="/templates"
+          className={cn(
+            "rounded-full px-8 py-2.5 font-semibold text-xs transition-all duration-300 flex items-center justify-center whitespace-nowrap",
+            location.pathname === '/templates' ? "gradient text-white shadow-lg shadow-blue-500/40" : "bg-white text-slate-600 shadow-sm hover:bg-slate-50",
+            mobile ? "w-full py-4 text-sm" : ""
+          )}
+          onClick={() => mobile && setIsMenuOpen(false)}
+        >
+          Templates
+        </Link>
       </div>
     );
   };

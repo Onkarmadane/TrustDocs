@@ -6,7 +6,9 @@ import { Edit2, Copy, FileText, Trash2, Filter, ChevronDown, Download, Loader2, 
 import { motion } from 'framer-motion';
 import toast from 'react-hot-toast';
 import { reportService } from '../services/reportService';
+import { nondaniReportService } from '../services/nondaniReportService';
 import { CoverPage, PermissionsPage, ScheduleIXPage, IncomeExpPage, BalanceSheetPage } from '../components/auditreport/LivePreview';
+import Step3Preview from '../components/nondanireport/Step3Preview';
 import { mapBackendPayloadToFormData } from '../utils/reportMapper';
 import SavedReportsSkeleton from '../components/ui/SavedReportsSkeleton';
 import useDocumentTitle from '../utils/useDocumentTitle';
@@ -28,6 +30,8 @@ const StatusBadge = ({ status }) => {
 
 const SavedReports = () => {
   useDocumentTitle('Saved Reports');
+  const [reportType, setReportType] = useState('audit');
+
   const [reports, setReports] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedReport, setSelectedReport] = useState(null);
@@ -42,7 +46,8 @@ const SavedReports = () => {
     const fetchReports = async () => {
       setIsLoading(true);
       try {
-        const result = await reportService.getReports(statusFilter, searchTerm, currentPage);
+        const service = reportType === 'nondani' ? nondaniReportService : reportService;
+        const result = await service.getReports(statusFilter, searchTerm, currentPage);
         if (result.success) {
           setReports(result.data);
           setPagination(result.pagination);
@@ -64,7 +69,7 @@ const SavedReports = () => {
     }, 400);
 
     return () => clearTimeout(debounceTimer);
-  }, [statusFilter, searchTerm, currentPage]);
+  }, [statusFilter, searchTerm, currentPage, reportType]);
 
   const getPageNumbers = () => {
     const totalPages = pagination?.total_pages || 0;
@@ -93,11 +98,12 @@ const SavedReports = () => {
   const handleDownloadPdf = async (reportId, trustName) => {
     setDownloadingId(reportId);
     try {
-      const blob = await reportService.downloadPdf(reportId);
+      const service = reportType === 'nondani' ? nondaniReportService : reportService;
+      const blob = await service.downloadPdf(reportId);
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      link.setAttribute('download', `Audit_Report_${trustName || 'Trust'}.pdf`);
+      link.setAttribute('download', `${reportType === 'nondani' ? 'Nondani' : 'Audit'}_Report_${trustName || 'Trust'}.pdf`);
       document.body.appendChild(link);
       link.click();
       link.parentNode.removeChild(link);
@@ -112,6 +118,17 @@ const SavedReports = () => {
 
   const renderReportDetails = (report) => {
     if (!report) return null;
+
+    if (reportType === 'nondani') {
+      return (
+        <div className="bg-slate-100 -mx-6 -my-5 flex flex-col items-center">
+          <div className="w-full max-w-[800px] bg-white my-8 shadow-sm">
+            <Step3Preview formData={report} />
+          </div>
+        </div>
+      );
+    }
+
     const formData = mapBackendPayloadToFormData(report);
 
     return (
@@ -188,8 +205,37 @@ const SavedReports = () => {
               </div>
             </div>
           }
-          className="mb-12"
+          className="mb-6"
         />
+
+        <div className="flex space-x-2 border-b border-slate-200 mb-8">
+          <button
+            onClick={() => {
+              setReportType('audit');
+              setCurrentPage(1);
+            }}
+            className={`px-6 py-3 text-sm font-semibold transition-all ${
+              reportType === 'audit'
+                ? 'border-b-2 border-blue-600 text-blue-600'
+                : 'text-slate-500 hover:text-slate-700'
+            }`}
+          >
+            Audit Reports
+          </button>
+          <button
+            onClick={() => {
+              setReportType('nondani');
+              setCurrentPage(1);
+            }}
+            className={`px-6 py-3 text-sm font-semibold transition-all ${
+              reportType === 'nondani'
+                ? 'border-b-2 border-blue-600 text-blue-600'
+                : 'text-slate-500 hover:text-slate-700'
+            }`}
+          >
+            Nondani Reports
+          </button>
+        </div>
 
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -211,9 +257,9 @@ const SavedReports = () => {
                 {reports.map((report) => (
                   <TableRow key={report._id} onClick={() => setSelectedReport(report)} className="cursor-pointer hover:bg-slate-50 transition-colors">
                     <TableCell className="text-slate-800 w-1/3 font-medium">
-                      {report.reportType} Report - {report.trustName || 'Untitled Trust'}
+                      {reportType === 'nondani' ? 'Nondani' : 'Audit'} Report - {report.trustName || 'Untitled Trust'}
                     </TableCell>
-                    <TableCell className="capitalize">{report.reportType} Report</TableCell>
+                    <TableCell className="capitalize">{reportType === 'nondani' ? 'Nondani' : 'Audit'} Report</TableCell>
                     <TableCell>{new Date(report.createdAt).toLocaleDateString()}</TableCell>
                     <TableCell>
                       <StatusBadge status={report.status} />
