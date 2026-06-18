@@ -7,7 +7,7 @@ import toast from 'react-hot-toast';
 import { cn } from '../../lib/utils';
 import LivePreview from './LivePreview';
 import { reportService } from '../../services/reportService';
-import { mapFormDataToBackendPayload } from '../../utils/reportMapper';
+import { mapFormDataToBackendPayload, mapBackendPayloadToFormData } from '../../utils/reportMapper';
 import useDocumentTitle from '../../utils/useDocumentTitle';
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 // Import subcomponents
@@ -28,12 +28,12 @@ import Step8DelayExemption from './Step8DelayExemption';
 
 
 
-const AuditReportForm = ({ reportType, setReportType }) => {
-  useDocumentTitle('Create Audit Report');
+const AuditReportForm = ({ reportType, setReportType, editReportId }) => {
+  useDocumentTitle(editReportId ? 'Edit Audit Report' : 'Create Audit Report');
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState({});
   const [zoom, setZoom] = useState(100);
-  const [reportId, setReportId] = useState(null);
+  const [reportId, setReportId] = useState(editReportId || null);
   const [isReportSaved, setIsReportSaved] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
   const [isPreviewCollapsed, setIsPreviewCollapsed] = useState(false);
@@ -48,6 +48,25 @@ const AuditReportForm = ({ reportType, setReportType }) => {
     currentStepRef.current = currentStep;
     reportIdRef.current = reportId;
   }, [formData, currentStep, reportId]);
+
+  useEffect(() => {
+    if (editReportId) {
+      const loadReportData = async () => {
+        try {
+          const result = await reportService.getReportById(editReportId);
+          if (result.success && result.data) {
+            const mappedData = mapBackendPayloadToFormData(result.data);
+            setFormData(mappedData);
+            lastSavedData.current = mappedData;
+          }
+        } catch (error) {
+          console.error("Failed to load report for editing:", error);
+          toast.error("Failed to load report data");
+        }
+      };
+      loadReportData();
+    }
+  }, [editReportId]);
 
   const [debouncedFormData, setDebouncedFormData] = useState(formData);
 

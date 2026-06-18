@@ -10,21 +10,22 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 import { Toaster } from 'react-hot-toast';
 
 import AppLayout from './components/layout/AppLayout';
+import NotFound from './pages/NotFound';
 
 const ProtectedRoute = ({ children }) => {
   const { user, isLoading } = useAuth();
   const token = localStorage.getItem('token');
-  
-  if (isLoading) return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
+
+  if (isLoading) return <div className="min-h-screen flex items-center justify-center"><img src="/favicon.svg" alt="logo" /></div>;
   if (!user || !token) return <Navigate to="/login" replace />;
-  
+
   return children;
 };
 
 function App() {
   return (
     <AuthProvider>
-      <Toaster 
+      <Toaster
         position="bottom-right"
         toastOptions={{
           style: {
@@ -47,7 +48,7 @@ function App() {
             <Route path="/all-reports" element={<SavedReports />} />
             <Route path="/templates" element={<Templates />} />
             <Route path="/create-report" element={<CreateReport />} />
-            {/* <Route path="/add" element={<AuditForm />} /> */}
+            <Route path="/*" element={<NotFound />} />
           </Route>
         </Routes>
       </Router>

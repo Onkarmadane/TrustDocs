@@ -12,10 +12,8 @@ const SavedReportsSkeleton = () => {
           {/* Column 1: Report Name & Trust Name */}
           <TableCell className="w-1/3">
             <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-xl bg-slate-200/80 animate-pulse shrink-0" />
               <div className="w-full space-y-2">
                 <div className="h-4 bg-slate-200/80 animate-pulse rounded-lg w-[75%]" />
-                <div className="h-3 bg-slate-100/80 animate-pulse rounded-lg w-[45%]" />
               </div>
             </div>
           </TableCell>
@@ -38,7 +36,6 @@ const SavedReportsSkeleton = () => {
           {/* Column 5: Actions */}
           <TableCell>
             <div className="flex items-center gap-4">
-              <div className="w-5 h-5 rounded-md bg-slate-200/60 animate-pulse" />
               <div className="w-5 h-5 rounded-md bg-slate-200/60 animate-pulse" />
               <div className="w-5 h-5 rounded-md bg-slate-200/60 animate-pulse" />
               <div className="w-5 h-5 rounded-md bg-slate-200/60 animate-pulse" />

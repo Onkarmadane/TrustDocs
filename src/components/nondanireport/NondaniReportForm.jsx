@@ -21,11 +21,11 @@ const steps = [
   { id: 3, title: 'Preview & Submit' }
 ];
 
-const NondaniReportForm = ({ reportType, setReportType }) => {
-  useDocumentTitle('Create Nondani Report');
+const NondaniReportForm = ({ reportType, setReportType, editReportId }) => {
+  useDocumentTitle(editReportId ? 'Edit Nondani Report' : 'Create Nondani Report');
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState({});
-  const [reportId, setReportId] = useState(null);
+  const [reportId, setReportId] = useState(editReportId || null);
   const [isReportSaved, setIsReportSaved] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
   const [isPreviewCollapsed, setIsPreviewCollapsed] = useState(false);
@@ -41,6 +41,40 @@ const NondaniReportForm = ({ reportType, setReportType }) => {
     currentStepRef.current = currentStep;
     reportIdRef.current = reportId;
   }, [formData, currentStep, reportId]);
+
+  useEffect(() => {
+    if (editReportId) {
+      const loadReportData = async () => {
+        try {
+          const result = await nondaniReportService.getReportById(editReportId);
+          if (result.success && result.data) {
+            const data = result.data;
+            if (data.date) {
+              const d = new Date(data.date);
+              if (!isNaN(d.getTime())) {
+                data.date = d.toISOString().split('T')[0];
+              }
+            }
+            setFormData(data);
+            lastSavedData.current = { ...data };
+          }
+        } catch (error) {
+          console.error("Failed to load nondani report for editing:", error);
+          toast.error("Failed to load report data");
+        }
+      };
+      loadReportData();
+    }
+  }, [editReportId]);
+
+  const [debouncedFormData, setDebouncedFormData] = useState(formData);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedFormData(formData);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [formData]);
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -235,7 +269,7 @@ const NondaniReportForm = ({ reportType, setReportType }) => {
           {/* Right: Live Preview */}
           {currentStep !== 3 && !isPreviewCollapsed && (
             <div className="lg:col-span-5 h-full">
-              <LivePreview currentStep={currentStep} formData={formData} zoom={zoom} setZoom={setZoom} />
+              <LivePreview currentStep={currentStep} formData={debouncedFormData} zoom={zoom} setZoom={setZoom} />
             </div>
           )}
         </div>

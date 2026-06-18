@@ -671,77 +671,64 @@ export const ReceiptPaymentPage = ({ formData }) => {
   );
 };
 
-// PAGE 6.1 — Schedule 9-D (Marathi)
+// PAGE 6.1 — Schedule 9-D
 export const Schedule9DPage = ({ formData }) => {
+  const previousReturns = formData.sch9d_previousITReturns && formData.sch9d_previousITReturns.length > 0 
+    ? formData.sch9d_previousITReturns 
+    : [{ receiptNo: '', year: '' }, { receiptNo: '', year: '' }, { receiptNo: '', year: '' }];
+    
+  const trusteesPan = formData.sch9d_trusteesPan && formData.sch9d_trusteesPan.length > 0 
+    ? formData.sch9d_trusteesPan 
+    : [{ name: '', pan: '' }, { name: '', pan: '' }, { name: '', pan: '' }];
+
   return (
     <A4Page pageLabel="Page 6 — Schedule 9-D">
-      <div className="text-[6px] font-sans">
-        <div className="text-center space-y-1 mb-4 font-bold border-b pb-2">
-          <p>महाराष्ट्र शासन राजपत्र असाधारण भाग चार - ब, मे 15 , 2019/वैशाख 25, शके 1941</p>
-          <p className="text-[7px]">मुख्य नियमांना जोडण्यात आलेल्या अनुसूची 9-क नंतर पुढील अनुसूची समाविष्ट करण्यात येईल.</p>
-          <p className="text-[8px]">अनुसूची नऊ - ड</p>
-          <p>(नियम 19 ( 2 अ) पहा )</p>
-          <p>महाराष्ट्र सार्वजनिक विश्वस्तव्यवस्था अधिनियम, 1950 या अधिनियमाच्या कलम 34 च्या पोट- कलम</p>
-          <p>(1) खाली लेखापरीक्षा अहवालासोबत लेखापरीक्षकाने सादर करावयाचे माहिती.</p>
+      <div className="text-[6.5px] font-sans">
+        <div className="text-center space-y-1 mb-6 font-bold pb-2">
+          <p className="text-[9px]">"SCHEDULE IX-D"</p>
+          <p className="text-[7px] font-normal">[See rule 19 (2A)]</p>
+          <p className="mt-2 text-[7px] font-normal">Information to be submitted by the Auditor along with Audit Report under</p>
+          <p className="text-[7px] font-normal">sub-section (1) of section 34 of</p>
+          <p className="text-[7px] font-normal">the Maharashtra Public Trusts Act.</p>
         </div>
 
-        <table className="w-full border-collapse border border-slate-400">
-          <tbody>
-            <tr>
-              <td className="border border-slate-400 p-1 font-bold w-6 text-center">1)</td>
-              <td className="border border-slate-400 p-1 font-bold w-1/3">संस्थेचे नाव</td>
-              <td className="border border-slate-400 p-1">{formData.sch9d_trustNameMarathi || getTrustName(formData)}</td>
-            </tr>
-            <tr>
-              <td className="border border-slate-400 p-1 font-bold text-center">2)</td>
-              <td className="border border-slate-400 p-1 font-bold">नोंदणी क्रमांक</td>
-              <td className="border border-slate-400 p-1">{formData.sch9d_registrationNoMarathi || getRegistrationNo(formData)}</td>
-            </tr>
-            <tr>
-              <td className="border border-slate-400 p-1 font-bold text-center">3)</td>
-              <td className="border border-slate-400 p-1 font-bold">आर्थिक वर्ष</td>
-              <td className="border border-slate-400 p-1 font-bold text-center">सन {formData.sch9d_financialYearMarathi || getFinancialYear(formData)}</td>
-            </tr>
-          </tbody>
-        </table>
-
-        <table className="w-full border-collapse border border-slate-400 mt-2">
+        <table className="w-full border-collapse border border-black text-[6.5px]">
           <thead>
-            <tr className="font-bold bg-slate-100">
-              <td className="border border-slate-400 p-1 w-6 text-center">अ क्रं</td>
-              <td className="border border-slate-400 p-1 w-1/3 text-center">तपशील</td>
-              <td className="border border-slate-400 p-1 text-center">वर्णन</td>
+            <tr>
+              <th className="border border-black p-1.5 w-[8%] text-center font-normal">Sr.<br/>No.</th>
+              <th className="border border-black p-1.5 w-[45%] text-center font-normal">Particulars</th>
+              <th className="border border-black p-1.5 text-center font-normal">Details</th>
             </tr>
           </thead>
           <tbody>
             <tr>
-              <td className="border border-slate-400 p-1 text-center">1</td>
-              <td className="border border-slate-400 p-1">विश्वस्त व्यवस्थेच्या स्थायी खाते क्रमांक</td>
-              <td className="border border-slate-400 p-1 text-center">{formData.sch9d_trustPan}</td>
+              <td className="border border-black p-1.5 text-center align-top">1.</td>
+              <td className="border border-black p-1.5 align-top">PAN No. of Trust.</td>
+              <td className="border border-black p-1.5 align-top">{formData.sch9d_trustPan}</td>
             </tr>
             <tr>
-              <td className="border border-slate-400 p-1 text-center">2</td>
-              <td className="border border-slate-400 p-1">आयकर अधिनियम, 196(1961 चा 43) याच्या कलम 12 A A खाली नोंदणीच्या दिनांका सह नोंदणी क्रमांक</td>
-              <td className="border border-slate-400 p-1 text-center">{formData.sch9d_incomeTaxRegistration}</td>
+              <td className="border border-black p-1.5 text-center align-top">2.</td>
+              <td className="border border-black p-1.5 align-top">Registration No. with date of registration under section 12AA of Income Tax Act, 1961 (43 of 1961).</td>
+              <td className="border border-black p-1.5 align-top">{formData.sch9d_incomeTaxRegistration}</td>
             </tr>
             <tr>
-              <td className="border border-slate-400 p-1 text-center">3</td>
-              <td className="border border-slate-400 p-1">आधीच्या तीन वर्षाचे आयकर विवरण दाखल करण्याच्या दिनांक सह पोच पावती क्रमांक.</td>
-              <td className="border border-slate-400 p-0 align-top">
-                <table className="w-full border-collapse">
+              <td className="border border-black p-1.5 text-center align-top">3.</td>
+              <td className="border border-black p-1.5 align-top">Acknowledgement No. with date of filing of the Return of Income for earlier three years.</td>
+              <td className="border border-black p-0 align-top">
+                <table className="w-full h-full border-collapse">
                   <thead>
                     <tr>
-                      <th className="border-b border-r border-slate-400 p-1 w-10">अ क्र</th>
-                      <th className="border-b border-r border-slate-400 p-1">पोच पावती क्रमांक</th>
-                      <th className="border-b border-slate-400 p-1 w-20">वर्ष</th>
+                      <th className="border-b border-r border-black p-1 font-normal w-12 text-center">Sr.<br/>No.</th>
+                      <th className="border-b border-r border-black p-1 font-normal text-center">Acknowledgement No.</th>
+                      <th className="border-b border-black p-1 font-normal w-20 text-center">Year</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {(formData.sch9d_previousITReturns || [{ receiptNo: '-', year: '-' }]).map((item, index) => (
+                    {previousReturns.map((item, index) => (
                       <tr key={index}>
-                        <td className={`border-r border-slate-400 p-1 text-center ${index !== (formData.sch9d_previousITReturns?.length || 1) - 1 ? 'border-b' : ''}`}>{index + 1}</td>
-                        <td className={`border-r border-slate-400 p-1 text-center ${index !== (formData.sch9d_previousITReturns?.length || 1) - 1 ? 'border-b' : ''}`}>{item.receiptNo || '-'}</td>
-                        <td className={`p-1 text-center ${index !== (formData.sch9d_previousITReturns?.length || 1) - 1 ? 'border-b' : ''}`}>{item.year || '-'}</td>
+                        <td className={`border-r border-black p-1 text-center ${index !== previousReturns.length - 1 ? 'border-b' : ''}`}>{['(i)', '(ii)', '(iii)', '(iv)', '(v)'][index] || `(${index + 1})`}</td>
+                        <td className={`border-r border-black p-1 text-center ${index !== previousReturns.length - 1 ? 'border-b' : ''}`}>{item.receiptNo || ''}</td>
+                        <td className={`p-1 text-center ${index !== previousReturns.length - 1 ? 'border-b' : ''}`}>{item.year || ''}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -749,23 +736,23 @@ export const Schedule9DPage = ({ formData }) => {
               </td>
             </tr>
             <tr>
-              <td className="border border-slate-400 p-1 text-center">4</td>
-              <td className="border border-slate-400 p-1">सर्व विश्वस्तांचे स्थायी खाते क्रमांक</td>
-              <td className="border border-slate-400 p-0 align-top">
-                <table className="w-full border-collapse">
+              <td className="border border-black p-1.5 text-center align-top">4.</td>
+              <td className="border border-black p-1.5 align-top">PAN No. of all Trustees.</td>
+              <td className="border border-black p-0 align-top">
+                <table className="w-full h-full border-collapse">
                   <thead>
                     <tr>
-                      <th className="border-b border-r border-slate-400 p-1 w-10">अ क्र</th>
-                      <th className="border-b border-r border-slate-400 p-1">विश्वस्तांचे नांव</th>
-                      <th className="border-b border-slate-400 p-1 w-32">स्थायी खाते क्रमांक</th>
+                      <th className="border-b border-r border-black p-1 font-normal w-12 text-center">Sr.<br/>No.</th>
+                      <th className="border-b border-r border-black p-1 font-normal text-center">Name of Trustee</th>
+                      <th className="border-b border-black p-1 font-normal w-24 text-center">PAN No.</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {(formData.sch9d_trusteesPan || [{ name: '', pan: '' }]).map((item, index) => (
+                    {trusteesPan.map((item, index) => (
                       <tr key={index}>
-                        <td className="border-b border-r border-slate-400 p-1 text-center">{index + 1}</td>
-                        <td className="border-b border-r border-slate-400 p-1 text-center">{item.name}</td>
-                        <td className="border-b border-slate-400 p-1 text-center">{item.pan}</td>
+                        <td className={`border-r border-black p-1 text-center ${index !== trusteesPan.length - 1 ? 'border-b' : ''}`}>{`(${index + 1})`}</td>
+                        <td className={`border-r border-black p-1 text-center ${index !== trusteesPan.length - 1 ? 'border-b' : ''}`}>{item.name}</td>
+                        <td className={`p-1 text-center ${index !== trusteesPan.length - 1 ? 'border-b' : ''}`}>{item.pan}</td>
                       </tr>
                     ))}
                   </tbody>

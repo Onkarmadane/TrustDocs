@@ -77,6 +77,9 @@ const AddressBlock = ({ prefix, formData, onChange }) => (
       placeholder="000000"
       value={formData[`${prefix}_pin`] || ''}
       onChange={onChange}
+      pattern="[0-9]{6}"
+      maxLength={6}
+      title="Please enter a valid 6-digit PIN code"
     />
 
     {/* District (plain text) */}
@@ -221,6 +224,9 @@ const Step1BasicDetails = ({ formData, onChange, reportType, setReportType }) =>
             placeholder="9400000000"
             value={formData.audaddr_mobileNumber || ''}
             onChange={onChange}
+            pattern="[0-9]{10}"
+            maxLength={10}
+            title="Please enter a valid 10-digit mobile number"
           />
           <InputField
             name="audaddr_emailId"

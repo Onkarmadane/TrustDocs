@@ -9,6 +9,7 @@ import { ChevronUp } from 'lucide-react';
 const CreateReport = () => {
   const location = useLocation();
   const initialReportType = location.state?.reportType || 'audit';
+  const editReportId = location.state?.reportId || null;
   const [reportType, setReportType] = useState(initialReportType);
   const [showBackToTop, setShowBackToTop] = useState(false);
 
@@ -42,8 +43,8 @@ const CreateReport = () => {
       </div>
 
       <div className="mt-4">
-        {reportType === 'audit' && <AuditReportForm reportType={reportType} setReportType={setReportType} />}
-        {reportType === 'nondani' && <NondaniReportForm reportType={reportType} setReportType={setReportType} />}
+        {reportType === 'audit' && <AuditReportForm reportType={reportType} setReportType={setReportType} editReportId={editReportId} />}
+        {reportType === 'nondani' && <NondaniReportForm reportType={reportType} setReportType={setReportType} editReportId={editReportId} />}
       </div>
 
       {/* Back to Top Button */}

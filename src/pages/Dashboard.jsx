@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import StatCard from '../components/dashboard/StatCard';
 import ReportChart from '../components/dashboard/ReportChart';
-import { FileText, CheckCircle, Clock, Layout, MousePointer2 } from 'lucide-react';
+import { FileText, CheckCircle, Clock, Layout, Loader2 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import Button from '../components/ui/Button';
 import Image from '../components/ui/Image';
@@ -9,12 +9,44 @@ import Heading from '../components/ui/Heading';
 import { useNavigate } from 'react-router-dom';
 import dashboardImg from '../assets/dashboard.png';
 import useDocumentTitle from '../utils/useDocumentTitle';
+import { dashboardService } from '../services/dashboardService';
+import toast from 'react-hot-toast';
 
 const Dashboard = () => {
   useDocumentTitle('Dashboard');
-  const [isDownloading, setIsDownloading] = useState(false);
   const navigate = useNavigate();
+  const [stats, setStats] = useState({
+    totalReports: 0,
+    templates: 4,
+    finalized: 0,
+    drafts: 0,
+    chartData: [],
+  });
+  const [isLoading, setIsLoading] = useState(true);
 
+  useEffect(() => {
+    const fetchDashboardStats = async () => {
+      try {
+        const res = await dashboardService.getDashboardStats();
+        if (res.success) {
+          setStats(res.data);
+        } else {
+          toast.error("Failed to load dashboard statistics");
+        }
+      } catch (error) {
+        console.error("Dashboard stats fetch error:", error);
+        toast.error("Error connecting to server");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchDashboardStats();
+  }, []);
+
+  const formatCount = (num) => {
+    if (num === undefined || num === null) return '00';
+    return num < 10 ? `0${num}` : num.toString();
+  };
 
   return (
     <div className="min-h-screen text-slate-900 pb-20">
@@ -45,13 +77,19 @@ const Dashboard = () => {
 
           <div className="lg:col-span-7 space-y-8 pt-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 place-items-center lg:place-items-start">
-              <StatCard title="Total Reports" count="01" variant="primary" icon={FileText} />
-              <StatCard title="Templates" count="01" icon={Layout} />
-              <StatCard title="Finalized" count="01" icon={CheckCircle} />
-              <StatCard title="Drafts" count="01" icon={Clock} />
+              <StatCard title="Total Reports" count={isLoading ? "..." : formatCount(stats.totalReports)} variant="primary" icon={FileText} />
+              <StatCard title="Templates" count={isLoading ? "..." : formatCount(stats.templates)} icon={Layout} />
+              <StatCard title="Finalized" count={isLoading ? "..." : formatCount(stats.finalized)} icon={CheckCircle} />
+              <StatCard title="Drafts" count={isLoading ? "..." : formatCount(stats.drafts)} icon={Clock} />
             </div>
 
-            <ReportChart />
+            {isLoading ? (
+              <div className="h-[400px] bg-white border border-slate-100 shadow-sm rounded-3xl flex items-center justify-center">
+                <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+              </div>
+            ) : (
+              <ReportChart data={stats.chartData} />
+            )}
           </div>
         </div>
       </main>

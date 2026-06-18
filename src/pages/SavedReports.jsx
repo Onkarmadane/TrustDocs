@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Heading from '../components/ui/Heading';
 import { Table, TableRow, TableCell } from '../components/ui/Table';
 import Modal from '../components/ui/Modal';
@@ -30,7 +31,39 @@ const StatusBadge = ({ status }) => {
 
 const SavedReports = () => {
   useDocumentTitle('Saved Reports');
+  const navigate = useNavigate();
   const [reportType, setReportType] = useState('audit');
+
+  const handleEditClick = (id) => {
+    navigate('/create-report', { state: { reportId: id, reportType: reportType } });
+  };
+
+  const [deleteConfirmation, setDeleteConfirmation] = useState(null);
+
+  const confirmDelete = async () => {
+    if (!deleteConfirmation) return;
+    const id = deleteConfirmation;
+    try {
+      const service = reportType === 'nondani' ? nondaniReportService : reportService;
+      const result = await service.deleteReport(id);
+      if (result && result.success) {
+        toast.success("Report deleted successfully");
+        setReports(prev => prev.filter(r => r._id !== id));
+      } else {
+        toast.error("Failed to delete report");
+      }
+    } catch (error) {
+      console.error("Failed to delete report:", error);
+      toast.error("Failed to delete report");
+    } finally {
+      setDeleteConfirmation(null);
+    }
+  };
+
+  const handleDeleteClick = (e, id) => {
+    e.stopPropagation();
+    setDeleteConfirmation(id);
+  };
 
   const [reports, setReports] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -255,7 +288,7 @@ const SavedReports = () => {
 
               <Table headers={['Report Name', 'Template', 'Created On', 'Status', 'Actions']}>
                 {reports.map((report) => (
-                  <TableRow key={report._id} onClick={() => setSelectedReport(report)} className="cursor-pointer hover:bg-slate-50 transition-colors">
+                  <TableRow key={report._id} onClick={() => handleEditClick(report._id)} className="cursor-pointer hover:bg-slate-50 transition-colors">
                     <TableCell className="text-slate-800 w-1/3 font-medium">
                       {reportType === 'nondani' ? 'Nondani' : 'Audit'} Report - {report.trustName || 'Untitled Trust'}
                     </TableCell>
@@ -266,8 +299,7 @@ const SavedReports = () => {
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-4 text-slate-400" onClick={(e) => e.stopPropagation()}>
-                        <button className="hover:text-blue-600 transition-colors"><Edit2 size={18} /></button>
-                        <button className="hover:text-blue-600 transition-colors"><Copy size={18} /></button>
+                        <button onClick={() => handleEditClick(report._id)} className="hover:text-blue-600 transition-colors" title="Edit"><Edit2 size={18} /></button>
                         <button
                           onClick={() => handleDownloadPdf(report._id, report.trustName)}
                           disabled={downloadingId === report._id}
@@ -280,7 +312,7 @@ const SavedReports = () => {
                             <Download size={18} />
                           )}
                         </button>
-                        <button className="hover:text-red-600 transition-colors" title="Delete"><Trash2 size={18} /></button>
+                        <button onClick={(e) => handleDeleteClick(e, report._id)} className="hover:text-red-600 transition-colors" title="Delete"><Trash2 size={18} /></button>
                       </div>
                     </TableCell>
                   </TableRow>
@@ -353,6 +385,31 @@ const SavedReports = () => {
         className="max-w-3xl"
       >
         {renderReportDetails(selectedReport)}
+      </Modal>
+
+      <Modal
+        isOpen={!!deleteConfirmation}
+        onClose={() => setDeleteConfirmation(null)}
+        title="Delete Report"
+        className="max-w-sm"
+      >
+        <p className="text-gray-600 text-sm">
+          Are you sure you want to delete this report? This action cannot be undone.
+        </p>
+        <div className="flex gap-3 mt-4">
+          <button
+            onClick={() => setDeleteConfirmation(null)}
+            className="flex-1 py-2.5 rounded-xl border border-gray-200 text-gray-700 font-semibold hover:bg-gray-50 transition-colors"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={confirmDelete}
+            className="flex-1 py-2.5 rounded-xl bg-red-600 text-white font-semibold hover:bg-red-700 transition-colors shadow-lg shadow-red-200"
+          >
+            Delete
+          </button>
+        </div>
       </Modal>
     </div>
   );

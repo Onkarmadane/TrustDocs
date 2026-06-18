@@ -461,9 +461,6 @@ export const mapFormDataToBackendPayload = (formData, currentStep, status = 'dra
 
     //Step 7: Schedule 9-D
     schedule9D: {
-      trustNameMarathi: formData.sch9d_trustNameMarathi || '',
-      registrationNoMarathi: formData.sch9d_registrationNoMarathi || '',
-      financialYearMarathi: formData.sch9d_financialYearMarathi || '',
       trustPan: formData.sch9d_trustPan || '',
       incomeTaxRegistration: formData.sch9d_incomeTaxRegistration || '',
       previousITReturns: (formData.sch9d_previousITReturns || []).map((item, i) => ({
@@ -493,6 +490,13 @@ export const mapFormDataToBackendPayload = (formData, currentStep, status = 'dra
 };
 
 
+const formatDateForInput = (dateValue) => {
+  if (!dateValue) return '';
+  const d = new Date(dateValue);
+  if (isNaN(d.getTime())) return dateValue;
+  return d.toISOString().split('T')[0];
+};
+
 export const mapBackendPayloadToFormData = (report) => {
   const formData = {
     reportType: report.reportType || 'audit',
@@ -500,7 +504,7 @@ export const mapBackendPayloadToFormData = (report) => {
     registrationNo: report.registrationNo || '',
     financialYear: report.financialYear || '',
     address: report.address || '',
-    date: report.date || '',
+    date: formatDateForInput(report.date),
     signature_1: report.signatures?.[0]?.file || '',
     signature_2: report.signatures?.[1]?.file || '',
     stamp_1: report.stamps?.[0]?.file || '',
@@ -591,9 +595,6 @@ export const mapBackendPayloadToFormData = (report) => {
 
   // Step 7: Schedule 9-D
   if (report.schedule9D) {
-    formData.sch9d_trustNameMarathi = report.schedule9D.trustNameMarathi || '';
-    formData.sch9d_registrationNoMarathi = report.schedule9D.registrationNoMarathi || '';
-    formData.sch9d_financialYearMarathi = report.schedule9D.financialYearMarathi || '';
     formData.sch9d_trustPan = report.schedule9D.trustPan || '';
     formData.sch9d_incomeTaxRegistration = report.schedule9D.incomeTaxRegistration || '';
     formData.sch9d_previousITReturns = report.schedule9D.previousITReturns || [];
@@ -606,10 +607,10 @@ export const mapBackendPayloadToFormData = (report) => {
     formData.delay_applicantAge = report.delayExemption.applicantAge || '';
     formData.delay_applicantAddress = report.delayExemption.applicantAddress || '';
     formData.delay_designation = report.delayExemption.designation || '';
-    formData.delay_trustRegistrationDate = report.delayExemption.trustRegistrationDate || '';
+    formData.delay_trustRegistrationDate = formatDateForInput(report.delayExemption.trustRegistrationDate);
     formData.delay_financialYearMarathi = report.delayExemption.financialYearMarathi || '';
     formData.delay_place = report.delayExemption.place || '';
-    formData.delay_date = report.delayExemption.date || '';
+    formData.delay_date = formatDateForInput(report.delayExemption.date);
   }
 
   return formData;

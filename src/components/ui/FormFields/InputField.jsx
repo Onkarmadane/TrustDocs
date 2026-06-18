@@ -66,7 +66,7 @@ const InputField = ({
             placeholder={placeholder}
             id={id || name}
             className={cn(
-              "w-full bg-transparent border-none font-bold text-slate-800 focus:outline-none focus:ring-0 transition-all rounded",
+              "w-full bg-transparent border-none text-slate-800 focus:outline-none focus:ring-0 transition-all rounded",
               sizeStyles[size],
               iconLeft && 'pl-12',
               iconRight && 'pr-12',
