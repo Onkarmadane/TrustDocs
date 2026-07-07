@@ -345,8 +345,16 @@ export const mapFormDataToBackendPayload = (formData, currentStep, status = 'dra
   const grossAnnualIncome = Math.max(0, (Number(formData.sch_income_shown) || 0) - totalDeductions);
 
   // Receipt & Payment totals 
-  const recTotal = calcAccountingTotal(receiptItems, formData);
-  const payTotal = calcAccountingTotal(paymentItems, formData);
+  const customRecTotal = Object.keys(formData)
+    .filter(k => k.startsWith('rec_custom_') && !k.endsWith('_label'))
+    .reduce((sum, key) => sum + (Number(formData[key]) || 0), 0);
+
+  const customPayTotal = Object.keys(formData)
+    .filter(k => k.startsWith('pay_custom_') && !k.endsWith('_label'))
+    .reduce((sum, key) => sum + (Number(formData[key]) || 0), 0);
+
+  const recTotal = calcAccountingTotal(receiptItems, formData) + customRecTotal;
+  const payTotal = calcAccountingTotal(paymentItems, formData) + customPayTotal;
 
   return {
     reportType: formData.reportType || 'audit',
@@ -453,8 +461,28 @@ export const mapFormDataToBackendPayload = (formData, currentStep, status = 'dra
 
     //Step 6: Receipt & Payment
     receiptPayment: {
-      receipts: buildAccountingRows(receiptItems, formData),
-      payments: buildAccountingRows(paymentItems, formData),
+      receipts: [
+        ...buildAccountingRows(receiptItems, formData),
+        ...Object.keys(formData)
+          .filter(k => k.startsWith('rec_custom_') && !k.endsWith('_label'))
+          .map(key => ({
+            key,
+            label: formData[`${key}_label`] || 'Custom Receipt',
+            amount: Number(formData[key]) || 0,
+            total: null
+          }))
+      ],
+      payments: [
+        ...buildAccountingRows(paymentItems, formData),
+        ...Object.keys(formData)
+          .filter(k => k.startsWith('pay_custom_') && !k.endsWith('_label'))
+          .map(key => ({
+            key,
+            label: formData[`${key}_label`] || 'Custom Payment',
+            amount: Number(formData[key]) || 0,
+            total: null
+          }))
+      ],
       totalReceipts: recTotal,
       totalPayments: payTotal,
     },
@@ -586,10 +614,20 @@ export const mapBackendPayloadToFormData = (report) => {
   // Step 6: Receipt & Payment 
   if (report.receiptPayment) {
     (report.receiptPayment.receipts || []).forEach(r => {
-      if (r.key) formData[r.key] = r.amount || 0;
+      if (r.key) {
+        formData[r.key] = r.amount || 0;
+        if (r.key.startsWith('rec_custom_')) {
+          formData[`${r.key}_label`] = r.label || '';
+        }
+      }
     });
     (report.receiptPayment.payments || []).forEach(p => {
-      if (p.key) formData[p.key] = p.amount || 0;
+      if (p.key) {
+        formData[p.key] = p.amount || 0;
+        if (p.key.startsWith('pay_custom_')) {
+          formData[`${p.key}_label`] = p.label || '';
+        }
+      }
     });
   }
 

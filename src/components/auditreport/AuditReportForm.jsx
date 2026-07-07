@@ -235,38 +235,38 @@ const AuditReportForm = ({ reportType, setReportType, editReportId }) => {
                   </motion.div>
                 )}
 
-                {/* STEP 2: Permissions */}
+                {/* STEP 2: Receipt & Payment Account */}
                 {currentStep === 2 && (
+                  <motion.div key="step6" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }}>
+                    <Step6ReceiptPayment formData={formData} onChange={handleChange} setFormData={setFormData} />
+                  </motion.div>
+                )}
+
+                {/* STEP 3: Permissions */}
+                {currentStep === 3 && (
                   <motion.div key="step2" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }}>
                     <Step2Permissions formData={formData} onChange={handleChange} />
                   </motion.div>
                 )}
 
-                {/* STEP 3: Schedule IX */}
-                {currentStep === 3 && (
+                {/* STEP 4: Schedule IX */}
+                {currentStep === 4 && (
                   <motion.div key="step3" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }}>
                     <Step3ScheduleIX formData={formData} onChange={handleChange} />
                   </motion.div>
                 )}
 
-                {/* STEP 4: Income & Expenditure */}
-                {currentStep === 4 && (
+                {/* STEP 5: Income & Expenditure */}
+                {currentStep === 5 && (
                   <motion.div key="step4" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }}>
                     <Step4IncomeExpenditure formData={formData} onChange={handleChange} />
                   </motion.div>
                 )}
 
-                {/* STEP 5: Balance Sheet */}
-                {currentStep === 5 && (
+                {/* STEP 6: Balance Sheet */}
+                {currentStep === 6 && (
                   <motion.div key="step5" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }}>
                     <Step5BalanceSheet formData={formData} onChange={handleChange} />
-                  </motion.div>
-                )}
-
-                {/* STEP 6: Receipt & Payment Account */}
-                {currentStep === 6 && (
-                  <motion.div key="step6" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }}>
-                    <Step6ReceiptPayment formData={formData} onChange={handleChange} />
                   </motion.div>
                 )}
 

@@ -9,7 +9,7 @@ const A4Page = ({ children, pageLabel }) => (
     {/* Subtle Paper Texture Overlay */}
     <div className="absolute inset-0 pointer-events-none opacity-[0.03] mix-blend-multiply bg-[url('https://www.transparenttextures.com/patterns/paper-fibers.png')]" />
 
-    <div className="h-full p-10 select-none relative z-10" style={{ fontFamily: "'Tiro Devanagari Marathi', serif" }}>
+    <div className="h-full p-7 select-none relative z-10" style={{ fontFamily: "'Sakal Marathi', 'SakalBharati', 'Tiro Devanagari Marathi', serif" }}>
       {children}
     </div>
 
@@ -319,7 +319,7 @@ const Anusuchi2Page1 = ({ formData }) => {
 
   return (
     <A4Page pageLabel="Page 5 — Anusuchi 2 (1)">
-      <div className="text-[5px] leading-relaxed h-full flex flex-col" style={{ fontFamily: "'Tiro Devanagari Marathi', serif" }}>
+      <div className="text-[5px] leading-relaxed h-full flex flex-col" style={{ fontFamily: "'Sakal Marathi', 'SakalBharati', 'Tiro Devanagari Marathi', serif" }}>
         <div className="text-center font-bold text-[7px] mb-0.5">सार्वजनिक विश्वस्त व्यवस्थेच्या नोंदणीसाठीचा अर्ज</div>
         <div className="text-center font-bold text-[6px] underline mb-0.5">अनुसूची - २</div>
         <div className="text-center text-[5px] mb-3">(नियम ६ पहा)</div>
@@ -408,7 +408,7 @@ const Anusuchi2Page1 = ({ formData }) => {
 const Anusuchi2Page2 = ({ formData }) => {
   return (
     <A4Page pageLabel="Page 6 — Anusuchi 2 (2)">
-      <div className="text-[5px] leading-relaxed h-full flex flex-col" style={{ fontFamily: "'Tiro Devanagari Marathi', serif" }}>
+      <div className="text-[5px] leading-relaxed h-full flex flex-col" style={{ fontFamily: "'Sakal Marathi', 'SakalBharati', 'Tiro Devanagari Marathi', serif" }}>
         <table className="w-full border-collapse text-[5px] leading-relaxed">
           <tbody>
             {/* Row 3 */}
@@ -503,7 +503,7 @@ const Anusuchi2Page3 = ({ formData }) => {
 
   return (
     <A4Page pageLabel="Page 7 — Anusuchi 2 (3)">
-      <div className="text-[5px] leading-relaxed h-full flex flex-col" style={{ fontFamily: "'Tiro Devanagari Marathi', serif" }}>
+      <div className="text-[5px] leading-relaxed h-full flex flex-col" style={{ fontFamily: "'Sakal Marathi', 'SakalBharati', 'Tiro Devanagari Marathi', serif" }}>
         <table className="w-full border-collapse text-[5px] leading-relaxed mb-3">
           <tbody>
             {/* Row 9 */}
@@ -650,7 +650,7 @@ const SammatipatraPage = ({ formData }) => {
 
   return (
     <A4Page pageLabel="Page 8 — Sammatipatra">
-      <div className="text-[5px] leading-relaxed h-full flex flex-col" style={{ fontFamily: "'Tiro Devanagari Marathi', serif" }}>
+      <div className="text-[5px] leading-relaxed h-full flex flex-col" style={{ fontFamily: "'Sakal Marathi', 'SakalBharati', 'Tiro Devanagari Marathi', serif" }}>
         <div className="title-lg text-center underline font-bold text-[7px] mb-3">संमतीपत्राचा नमुना</div>
         
         <div className="mb-3 leading-normal">
@@ -728,7 +728,7 @@ const AffidavitPage = ({ formData }) => {
 
   return (
     <A4Page pageLabel="Page 9 — Affidavit">
-      <div className="text-[4.5px] leading-normal h-full flex flex-col" style={{ fontFamily: "'Tiro Devanagari Marathi', serif" }}>
+      <div className="text-[4.5px] leading-normal h-full flex flex-col" style={{ fontFamily: "'Sakal Marathi', 'SakalBharati', 'Tiro Devanagari Marathi', serif" }}>
         <div className="title-lg text-center underline font-bold text-[7px] mb-2">प्रतिज्ञापत्र</div>
         <div className="mb-2 leading-relaxed text-justify">
           मी खाली सही करणार <b>{presidentName}</b>, वय <b>{presidentAge}</b> वर्षे, व्यवसाय - <b>{presidentOccupation}</b>, राहणार <b>{address}</b>.<br />

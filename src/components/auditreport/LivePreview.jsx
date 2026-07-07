@@ -58,7 +58,7 @@ export const A4Page = ({ children, pageLabel }) => (
     {/* Subtle Paper Texture Overlay */}
     <div className="absolute inset-0 pointer-events-none opacity-[0.03] mix-blend-multiply bg-[url('https://www.transparenttextures.com/patterns/paper-fibers.png')]" />
 
-    <div className="h-full p-10 select-none relative z-10">
+    <div className="h-full p-7 select-none relative z-10">
       {children}
     </div>
 
@@ -627,6 +627,18 @@ export const ReceiptPaymentPage = ({ formData }) => {
             </thead>
             <tbody>
               {renderColumn(receiptItems)}
+              {Object.keys(formData)
+                .filter(k => k.startsWith('rec_custom_') && !k.endsWith('_label'))
+                .map(key => (
+                  <tr key={key} className="bg-slate-50/60">
+                    <td className="border border-slate-200 p-1 font-bold text-[5.5px]" colSpan={1}>
+                      {formData[`${key}_label`] || 'Custom Receipt'}
+                    </td>
+                    <td className="border border-slate-200 p-1 text-right font-mono">{fmt(formData[key])}</td>
+                    <td className="border border-slate-200 p-1 text-right font-mono"></td>
+                  </tr>
+                ))
+              }
             </tbody>
             <tfoot>
               <tr className="bg-emerald-50 font-bold">
@@ -646,6 +658,18 @@ export const ReceiptPaymentPage = ({ formData }) => {
             </thead>
             <tbody>
               {renderColumn(paymentItems)}
+              {Object.keys(formData)
+                .filter(k => k.startsWith('pay_custom_') && !k.endsWith('_label'))
+                .map(key => (
+                  <tr key={key} className="bg-slate-50/60">
+                    <td className="border border-slate-200 p-1 font-bold text-[5.5px]" colSpan={1}>
+                      {formData[`${key}_label`] || 'Custom Payment'}
+                    </td>
+                    <td className="border border-slate-200 p-1 text-right font-mono">{fmt(formData[key])}</td>
+                    <td className="border border-slate-200 p-1 text-right font-mono"></td>
+                  </tr>
+                ))
+              }
             </tbody>
             <tfoot>
               <tr className="bg-emerald-50 font-bold">
@@ -917,11 +941,11 @@ const LivePreview = ({ currentStep, formData, zoom = 100, setZoom }) => {
         {(() => {
           switch (stepToRender) {
             case 1: return <CoverPage formData={formData} />;
-            case 2: return <PermissionsPage formData={formData} />;
-            case 3: return <ScheduleIXPage formData={formData} />;
-            case 4: return <IncomeExpPage formData={formData} />;
-            case 5: return <BalanceSheetPage formData={formData} />;
-            case 6: return <ReceiptPaymentPage formData={formData} />;
+            case 2: return <ReceiptPaymentPage formData={formData} />;
+            case 3: return <PermissionsPage formData={formData} />;
+            case 4: return <ScheduleIXPage formData={formData} />;
+            case 5: return <IncomeExpPage formData={formData} />;
+            case 6: return <BalanceSheetPage formData={formData} />;
             case 7: return <Schedule9DPage formData={formData} />;
             case 8: return <DelayExemptionPage formData={formData} />;
             default: return <CoverPage formData={formData} />;
