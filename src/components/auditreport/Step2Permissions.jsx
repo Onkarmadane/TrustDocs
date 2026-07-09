@@ -16,6 +16,7 @@ const Step2Permissions = ({ formData, onChange }) => {
               options={[
                 { value: 'yes', label: 'Yes' },
                 { value: 'no', label: 'No' },
+                { value: 'NA', label: 'N/A' },
               ]}
             />
           </div>

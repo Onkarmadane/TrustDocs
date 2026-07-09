@@ -151,22 +151,19 @@ export const PermissionsPage = ({ formData }) => (
           <tr className="bg-slate-100">
             <th className="border border-slate-300 p-1 text-left w-[6%]">Sr.</th>
             <th className="border border-slate-300 p-1 text-left">Particulars</th>
-            <th className="border border-slate-300 p-1 text-center w-[10%]">Yes</th>
-            <th className="border border-slate-300 p-1 text-center w-[10%]">No</th>
+            <th className="border border-slate-300 p-1 text-center w-[18%]">Yes / No / N/A</th>
           </tr>
         </thead>
         <tbody>
           {permissionsQuestions.map((q, i) => {
             const val = formData[`perm_${i}`];
+            const displayVal = val === 'yes' ? 'Yes' : val === 'no' ? 'No' : val === 'NA' ? 'N/A' : (val || 'N/A');
             return (
               <tr key={i} className={i % 2 === 0 ? 'bg-white' : 'bg-slate-50/50'}>
                 <td className="border border-slate-200 p-1 text-center font-bold">{i + 1}</td>
                 <td className="border border-slate-200 p-1 leading-tight">{q}</td>
-                <td className="border border-slate-200 p-1 text-center">
-                  {val === 'yes' && <span className="text-green-600 font-bold">✓</span>}
-                </td>
-                <td className="border border-slate-200 p-1 text-center">
-                  {val === 'no' && <span className="text-red-500 font-bold">X</span>}
+                <td className="border border-slate-200 p-1 text-center font-bold">
+                  {displayVal}
                 </td>
               </tr>
             );
@@ -793,9 +790,13 @@ export const Schedule9DPage = ({ formData }) => {
 // PAGE 6.2 — Delay Exemption (Marathi)
 export const DelayExemptionPage = ({ formData }) => {
   return (
-    <A4Page pageLabel="Page 7 — Delay Exemption">
+    <A4Page pageLabel="Page 8 — Delay Exemption">
       <div className="text-[7px] font-sans leading-relaxed space-y-3">
-        <h2 className="text-[12px] font-bold text-center border-b border-slate-300 pb-2 mb-4">विलंब माफीचा अर्ज</h2>
+        <div style={{ float: 'left', width: '45px', height: '55px', border: '1px dashed #000', display: 'flex', alignItems: 'center', justifyContent: 'center', textAlign: 'center', fontSize: '5px', padding: '2px', lineHeight: '1.25', fontWeight: 'bold' }}>
+          तिकीट चिकटविण्याची जागा
+        </div>
+        <h2 className="text-[12px] font-bold text-center border-b border-slate-300 pb-2 mb-4" style={{ marginTop: '10px' }}>विलंब माफीचा अर्ज</h2>
+        <div style={{ clear: 'both' }}></div>
 
         <p className="pl-4">
           वय {formData.delay_applicantAge || '४०'} वर्ष पत्ता- {formData.delay_applicantAddress || 'रा.कोपर्डी ता.भोकरदन जि.जालना'} सत्य प्रतिज्ञेवर खालील प्रमाणे कथन करतो की,
@@ -847,6 +848,47 @@ export const DelayExemptionPage = ({ formData }) => {
         <div className="text-center mt-8 font-bold">
           माझे समक्ष
         </div>
+      </div>
+    </A4Page>
+  );
+};
+
+// PAGE 9 — Trustee List (Marathi)
+export const TrusteeListPage = ({ formData }) => {
+  const trusteesPan = formData.sch9d_trusteesPan && formData.sch9d_trusteesPan.length > 0 
+    ? formData.sch9d_trusteesPan 
+    : [];
+
+  const minRows = 9;
+  const totalRows = Math.max(minRows, trusteesPan.length);
+  const rows = Array.from({ length: totalRows }).map((_, i) => trusteesPan[i] || { name: '', pan: '' });
+
+  return (
+    <A4Page pageLabel="Page 9 — Trustee List">
+      <div className="text-[6.5px] font-sans">
+        <div className="text-center space-y-1 mb-6 font-bold pb-2">
+          <h2 className="text-[9px] font-bold">विश्वस्तांची यादी</h2>
+          <p className="text-[7px] font-normal">(List of Trustees)</p>
+        </div>
+
+        <table className="w-full border-collapse border border-black text-[6.5px]">
+          <thead>
+            <tr>
+              <th className="border border-black p-1.5 w-[10%] text-center font-bold">अ.क्र.</th>
+              <th className="border border-black p-1.5 w-[60%] text-center font-bold">विश्वस्ताचे नाव (Name of Trustee)</th>
+              <th className="border border-black p-1.5 w-[30%] text-center font-bold">पॅन कार्ड क्रमांक (PAN No.)</th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((item, index) => (
+              <tr key={index}>
+                <td className="border border-black p-1.5 text-center font-bold">{index + 1}</td>
+                <td className="border border-black p-1.5 text-left">{item.name || ''}</td>
+                <td className="border border-black p-1.5 text-center font-mono">{item.pan || ''}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
     </A4Page>
   );
@@ -948,6 +990,7 @@ const LivePreview = ({ currentStep, formData, zoom = 100, setZoom }) => {
             case 6: return <BalanceSheetPage formData={formData} />;
             case 7: return <Schedule9DPage formData={formData} />;
             case 8: return <DelayExemptionPage formData={formData} />;
+            case 9: return <TrusteeListPage formData={formData} />;
             default: return <CoverPage formData={formData} />;
           }
         })()}
@@ -1071,14 +1114,14 @@ const LivePreview = ({ currentStep, formData, zoom = 100, setZoom }) => {
               <ChevronLeft size={20} />
             </button>
             <button
-              onClick={() => setPreviewPage(prev => Math.min(8, prev + 1))}
+              onClick={() => setPreviewPage(prev => Math.min(9, prev + 1))}
               className="absolute right-4 top-1/2 -translate-y-1/2 z-50 p-2 bg-white/80 rounded-full shadow-md hover:bg-white disabled:opacity-50"
-              disabled={previewPage === 8}
+              disabled={previewPage === 9}
             >
               <ChevronRight size={20} />
             </button>
             <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-white/80 px-3 py-1 rounded-full text-xs font-bold text-slate-600 z-50">
-              Page {previewPage} of 8
+              Page {previewPage} of 9
             </div>
           </>
         )}

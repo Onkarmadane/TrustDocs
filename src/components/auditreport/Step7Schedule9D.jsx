@@ -115,7 +115,9 @@ const Step7Schedule9D = ({ formData, onChange, setFormData }) => {
             </button>
           </div>
           <div className="space-y-3">
-            {(formData.sch9d_trusteesPan || [{ name: '', pan: '' }]).map((item, index) => (
+            {((formData.sch9d_trusteesPan && formData.sch9d_trusteesPan.length > 0)
+              ? formData.sch9d_trusteesPan
+              : Array(9).fill().map(() => ({ name: '', pan: '' }))).map((item, index) => (
               <div key={index} className="grid grid-cols-1 md:grid-cols-12 gap-4 items-end">
                 <div className="col-span-1 hidden md:block text-center text-xs text-slate-500 pb-3">{index + 1}</div>
                 <div className="col-span-12 md:col-span-5">
@@ -123,9 +125,12 @@ const Step7Schedule9D = ({ formData, onChange, setFormData }) => {
                     name={`sch9d_trustee_name_${index}`}
                     label="Name of Trustee"
                     placeholder="Name"
-                    value={item.name}
+                    value={item.name || ''}
                     onChange={(e) => {
-                      const updated = [...(formData.sch9d_trusteesPan || [])];
+                      const base = (formData.sch9d_trusteesPan && formData.sch9d_trusteesPan.length > 0)
+                        ? formData.sch9d_trusteesPan
+                        : Array(9).fill().map(() => ({ name: '', pan: '' }));
+                      const updated = [...base];
                       updated[index] = { ...updated[index], name: e.target.value };
                       setFormData(prev => ({ ...prev, sch9d_trusteesPan: updated }));
                     }}
@@ -136,9 +141,12 @@ const Step7Schedule9D = ({ formData, onChange, setFormData }) => {
                     name={`sch9d_trustee_pan_${index}`}
                     label="PAN No."
                     placeholder="PAN"
-                    value={item.pan}
+                    value={item.pan || ''}
                     onChange={(e) => {
-                      const updated = [...(formData.sch9d_trusteesPan || [])];
+                      const base = (formData.sch9d_trusteesPan && formData.sch9d_trusteesPan.length > 0)
+                        ? formData.sch9d_trusteesPan
+                        : Array(9).fill().map(() => ({ name: '', pan: '' }));
+                      const updated = [...base];
                       updated[index] = { ...updated[index], pan: e.target.value.toUpperCase() };
                       setFormData(prev => ({ ...prev, sch9d_trusteesPan: updated }));
                     }}
@@ -151,7 +159,10 @@ const Step7Schedule9D = ({ formData, onChange, setFormData }) => {
                   <button
                     type="button"
                     onClick={() => {
-                      const updated = (formData.sch9d_trusteesPan || []).filter((_, i) => i !== index);
+                      const base = (formData.sch9d_trusteesPan && formData.sch9d_trusteesPan.length > 0)
+                        ? formData.sch9d_trusteesPan
+                        : Array(9).fill().map(() => ({ name: '', pan: '' }));
+                      const updated = base.filter((_, i) => i !== index);
                       setFormData(prev => ({ ...prev, sch9d_trusteesPan: updated }));
                     }}
                     className="text-red-500 hover:text-red-700 text-xs"
