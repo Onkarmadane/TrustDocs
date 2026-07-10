@@ -15,7 +15,7 @@ const InputField = ({
   required = false,
   error,
   variant = 'default',
-  size = 'medium',
+  size = 'small',
   iconLeft,
   iconRight,
   readOnly = false,
@@ -47,7 +47,7 @@ const InputField = ({
       )}>
         {label && (
           <label className={cn(
-            "absolute -top-2.5 left-5 bg-white px-2 text-[12px] font-bold tracking-wide transition-colors z-10",
+            "absolute -top-2.5 left-5 bg-white px-2 text-[10px] font-bold tracking-wide transition-colors z-10",
             error ? 'text-red-500' : 'text-blue-900 group-focus-within:text-blue-900'
           )}>
             {label}

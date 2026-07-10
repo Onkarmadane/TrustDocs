@@ -26,7 +26,7 @@ const AddressBlock = ({ prefix, formData, onChange }) => (
     <InputField
       name={`${prefix}_buildingName`}
       label="Building Name Or Office Name"
-      placeholder="Enter"
+      placeholder="Enter Building Name Or Office Name Here..."
       value={formData[`${prefix}_buildingName`] || ''}
       onChange={onChange}
     />
@@ -42,7 +42,7 @@ const AddressBlock = ({ prefix, formData, onChange }) => (
     <InputField
       name={`${prefix}_streetName`}
       label="Street Name"
-      placeholder="Enter"
+      placeholder="Enter Street Name Here..."
       value={formData[`${prefix}_streetName`] || ''}
       onChange={onChange}
     />
@@ -58,7 +58,7 @@ const AddressBlock = ({ prefix, formData, onChange }) => (
     <InputField
       name={`${prefix}_landmark`}
       label="LandMark"
-      placeholder="Enter"
+      placeholder="Enter LandMark Here..."
       value={formData[`${prefix}_landmark`] || ''}
       onChange={onChange}
     />
@@ -74,7 +74,7 @@ const AddressBlock = ({ prefix, formData, onChange }) => (
     <InputField
       name={`${prefix}_pin`}
       label="Pin"
-      placeholder="000000"
+      placeholder="Enter Pin Here..."
       value={formData[`${prefix}_pin`] || ''}
       onChange={onChange}
       pattern="[0-9]{6}"
@@ -86,7 +86,7 @@ const AddressBlock = ({ prefix, formData, onChange }) => (
     <InputField
       name={`${prefix}_district`}
       label="District"
-      placeholder="Enter District"
+      placeholder="Enter District Here..."
       value={formData[`${prefix}_district`] || ''}
       onChange={onChange}
     />
@@ -95,7 +95,7 @@ const AddressBlock = ({ prefix, formData, onChange }) => (
     <InputField
       name={`${prefix}_taluka`}
       label="Taluka"
-      placeholder="Enter Taluka"
+      placeholder="Enter Taluka Here..."
       value={formData[`${prefix}_taluka`] || ''}
       onChange={onChange}
     />
@@ -104,7 +104,7 @@ const AddressBlock = ({ prefix, formData, onChange }) => (
     <InputField
       name={`${prefix}_village`}
       label="Village"
-      placeholder="Enter Village"
+      placeholder="Enter Village Here..."
       value={formData[`${prefix}_village`] || ''}
       onChange={onChange}
     />
@@ -121,14 +121,14 @@ const Step1BasicDetails = ({ formData, onChange, reportType, setReportType }) =>
           <InputField
             name="trust_trustNumber"
             label="Trust Number"
-            placeholder="E-0000000(JLN)"
+            placeholder="Enter Trust Number Here..."
             value={formData.trust_trustNumber || ''}
             onChange={onChange}
           />
           <InputField
             name="trust_trustName"
             label="Trust Name"
-            placeholder="Enter Trust Name"
+            placeholder="Enter Trust Name Here..."
             value={formData.trust_trustName || ''}
             onChange={onChange}
           />
@@ -142,42 +142,42 @@ const Step1BasicDetails = ({ formData, onChange, reportType, setReportType }) =>
           <InputField
             name="aud_auditorName"
             label="Auditor Name"
-            placeholder="Enter Auditor Name"
+            placeholder="Enter Auditor Name Here..."
             value={formData.aud_auditorName || ''}
             onChange={onChange}
           />
           <InputField
             name="aud_district"
             label="District"
-            placeholder="Enter District"
+            placeholder="Enter District Here..."
             value={formData.aud_district || ''}
             onChange={onChange}
           />
           <InputField
             name="aud_nameOfFirm"
             label="Name Of The Firm"
-            placeholder="Enter Firm Name"
+            placeholder="Enter Firm Name Here..."
             value={formData.aud_nameOfFirm || ''}
             onChange={onChange}
           />
           <InputField
             name="aud_membershipNumber"
             label="Membership Number"
-            placeholder="e.g. 72/2025"
+            placeholder="Enter Membership Number Here..."
             value={formData.aud_membershipNumber || ''}
             onChange={onChange}
           />
           <InputField
             name="aud_status"
             label="Status"
-            placeholder="Enter Status"
+            placeholder="Enter Status Here..."
             value={formData.aud_status || ''}
             onChange={onChange}
           />
           <InputField
             name="aud_registrationNumber"
             label="Registration Number"
-            placeholder="e.g. 72/2025"
+            placeholder="Enter Registration Number Here..."
             value={formData.aud_registrationNumber || ''}
             onChange={onChange}
           />
@@ -186,7 +186,7 @@ const Step1BasicDetails = ({ formData, onChange, reportType, setReportType }) =>
 
       <div className="p-8 space-y-5">
         <h2 className="input-headings">Accounting Year & Report Details</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-x-6 gap-y-1">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-x-6 gap-y-1 items-center">
           <SelectField
             name="accountingYear"
             label="Accounting Year"
@@ -194,7 +194,6 @@ const Step1BasicDetails = ({ formData, onChange, reportType, setReportType }) =>
             onChange={onChange}
             options={ACCOUNTING_YEARS}
             placeholder="Select Year"
-            size="medium"
           />
           <InputField
             name="date"
@@ -207,7 +206,7 @@ const Step1BasicDetails = ({ formData, onChange, reportType, setReportType }) =>
           <InputField
             name="place"
             label="Place"
-            placeholder="Enter Place"
+            placeholder="Enter Place Here..."
             value={formData.place || ''}
             onChange={onChange}
           />
@@ -221,7 +220,7 @@ const Step1BasicDetails = ({ formData, onChange, reportType, setReportType }) =>
           <InputField
             name="audaddr_mobileNumber"
             label="Mobile Number"
-            placeholder="9400000000"
+            placeholder="Enter Mobile Number Here..."
             value={formData.audaddr_mobileNumber || ''}
             onChange={onChange}
             pattern="[0-9]{10}"
@@ -231,7 +230,7 @@ const Step1BasicDetails = ({ formData, onChange, reportType, setReportType }) =>
           <InputField
             name="audaddr_emailId"
             label="Email Id"
-            placeholder="example@gmail.com"
+            placeholder="Enter Email Here..."
             type="email"
             value={formData.audaddr_emailId || ''}
             onChange={onChange}

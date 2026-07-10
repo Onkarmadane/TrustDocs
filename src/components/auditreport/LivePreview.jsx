@@ -694,13 +694,19 @@ export const ReceiptPaymentPage = ({ formData }) => {
 
 // PAGE 6.1 — Schedule 9-D
 export const Schedule9DPage = ({ formData }) => {
-  const previousReturns = formData.sch9d_previousITReturns && formData.sch9d_previousITReturns.length > 0 
+  const previousReturnsData = formData.sch9d_previousITReturns && formData.sch9d_previousITReturns.length > 0 
     ? formData.sch9d_previousITReturns 
-    : [{ receiptNo: '', year: '' }, { receiptNo: '', year: '' }, { receiptNo: '', year: '' }];
+    : [];
+  const minReturns = 3;
+  const totalReturns = Math.max(minReturns, previousReturnsData.length);
+  const previousReturns = Array.from({ length: totalReturns }).map((_, i) => previousReturnsData[i] || { receiptNo: '', year: '' });
     
-  const trusteesPan = formData.sch9d_trusteesPan && formData.sch9d_trusteesPan.length > 0 
+  const trusteesPanData = formData.sch9d_trusteesPan && formData.sch9d_trusteesPan.length > 0 
     ? formData.sch9d_trusteesPan 
-    : [{ name: '', pan: '' }, { name: '', pan: '' }, { name: '', pan: '' }];
+    : [];
+  const minTrustees = 9;
+  const totalTrustees = Math.max(minTrustees, trusteesPanData.length);
+  const trusteesPan = Array.from({ length: totalTrustees }).map((_, i) => trusteesPanData[i] || { name: '', pan: '' });
 
   return (
     <A4Page pageLabel="Page 6 — Schedule 9-D">

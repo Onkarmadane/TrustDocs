@@ -23,13 +23,13 @@ const AddressBlock = ({ prefix, formData, onChange }) => {
   const addr = formData?.trustDetails?.address || {};
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-1">
-      <InputField name={`${prefix}_buildingName`} label="Building / Office Name (इमारत / कार्यालय)" placeholder="Enter" value={addr.buildingName || ''} onChange={onChange} />
-      <InputField name={`${prefix}_streetName`} label="Street / Road Name (रस्ता)" placeholder="Enter" value={addr.streetName || ''} onChange={onChange} />
-      <InputField name={`${prefix}_landmark`} label="Landmark (खूण)" placeholder="Enter" value={addr.landmark || ''} onChange={onChange} />
+      <InputField name={`${prefix}_buildingName`} label="Building / Office Name (इमारत / कार्यालय)" placeholder="Enter Building / Office Name Here..." value={addr.buildingName || ''} onChange={onChange} />
+      <InputField name={`${prefix}_streetName`} label="Street / Road Name (रस्ता)" placeholder="Enter Street / Road Name Here..." value={addr.streetName || ''} onChange={onChange} />
+      <InputField name={`${prefix}_landmark`} label="Landmark (खूण)" placeholder="Enter Landmark Here..." value={addr.landmark || ''} onChange={onChange} />
       <InputField name={`${prefix}_pin`} label="PIN Code (पिनकोड)" placeholder="000000" value={addr.pin || ''} onChange={onChange} />
-      <InputField name={`${prefix}_village`} label="Village / City (गाव / शहर)" placeholder="Enter Village" value={addr.village || ''} onChange={onChange} />
-      <InputField name={`${prefix}_taluka`} label="Taluka (तालुका)" placeholder="Enter Taluka" value={addr.taluka || ''} onChange={onChange} />
-      <InputField name={`${prefix}_district`} label="District (जिल्हा)" placeholder="Enter District" value={addr.district || ''} onChange={onChange} />
+      <InputField name={`${prefix}_village`} label="Village / City (गाव / शहर)" placeholder="Enter Village Here..." value={addr.village || ''} onChange={onChange} />
+      <InputField name={`${prefix}_taluka`} label="Taluka (तालुका)" placeholder="Enter Taluka Here..." value={addr.taluka || ''} onChange={onChange} />
+      <InputField name={`${prefix}_district`} label="District (जिल्हा)" placeholder="Enter District Here..." value={addr.district || ''} onChange={onChange} />
     </div>
   );
 };
@@ -81,11 +81,11 @@ const Step1BasicDetails = ({ formData, onChange, reportType, setReportType }) =>
       <div className="p-8 space-y-5">
         <h2 className="input-headings text-xl font-bold mb-4">संस्थेची मूलभूत माहिती (Global Information)</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-1">
-          <InputField name="trustName" label="Trust / Society Name (संस्थेचे नाव) *" placeholder="Enter Trust Name" value={formData.trustName || ''} onChange={onChange} />
-          <InputField name="registrationNo" label="Registration No. (नोंदणी क्रमांक)" placeholder="e.g. JLN/2025/001" value={formData.registrationNo || ''} onChange={onChange} />
+          <InputField name="trustName" label="Trust / Society Name (संस्थेचे नाव) *" placeholder="Enter Trust Name Here..." value={formData.trustName || ''} onChange={onChange} />
+          <InputField name="registrationNo" label="Registration No. (नोंदणी क्रमांक)" placeholder="Enter Registration No. Here..." value={formData.registrationNo || ''} onChange={onChange} />
           <InputField name="date" label="Application Date (दिनांक) *" type="date" value={formData.date || ''} onChange={onChange} />
-          <InputField name="financialYear" label="Financial Year (आर्थिक वर्ष)" placeholder="e.g. 2025-26" value={formData.financialYear || ''} onChange={onChange} />
-          <InputField name="place" label="Place (स्थळ) *" placeholder="e.g. Jalna" value={formData.place || ''} onChange={onChange} />
+          <InputField name="financialYear" label="Financial Year (आर्थिक वर्ष)" placeholder="Enter Financial Year Here..." value={formData.financialYear || ''} onChange={onChange} />
+          <InputField name="place" label="Place (स्थळ) *" placeholder="Enter Place Here..." value={formData.place || ''} onChange={onChange} />
         </div>
         <h3 className="font-semibold text-md mt-6 mb-2 text-slate-700">Society / Office Address (संस्थेच्या कार्यालयाचा पत्ता)</h3>
         <AddressBlock prefix="trust_addr" formData={formData} onChange={onChange} />
@@ -95,11 +95,11 @@ const Step1BasicDetails = ({ formData, onChange, reportType, setReportType }) =>
       <div className="p-8 space-y-5">
         <h2 className="input-headings text-xl font-bold mb-4">पदाधिकाऱ्यांची माहिती (Key Officers)</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-1">
-          <InputField name="presidentName" label="President Name (अध्यक्ष) *" placeholder="Full Name" value={formData.presidentName || ''} onChange={onChange} />
-          <InputField name="vicePresidentName" label="Vice President Name (उपाध्यक्ष)" placeholder="Full Name" value={formData.vicePresidentName || ''} onChange={onChange} />
-          <InputField name="secretaryName" label="Secretary Name (सचिव) *" placeholder="Full Name" value={formData.secretaryName || ''} onChange={onChange} />
-          <InputField name="jointSecretaryName" label="Joint Secretary Name (सहसचिव)" placeholder="Full Name" value={formData.jointSecretaryName || ''} onChange={onChange} />
-          <InputField name="treasurerName" label="Treasurer Name (कोषाध्यक्ष)" placeholder="Full Name" value={formData.treasurerName || ''} onChange={onChange} />
+          <InputField name="presidentName" label="President Name (अध्यक्ष) *" placeholder="Enter Full Name Here..." value={formData.presidentName || ''} onChange={onChange} />
+          <InputField name="vicePresidentName" label="Vice President Name (उपाध्यक्ष)" placeholder="Enter Full Name Here..." value={formData.vicePresidentName || ''} onChange={onChange} />
+          <InputField name="secretaryName" label="Secretary Name (सचिव) *" placeholder="Enter Full Name Here..." value={formData.secretaryName || ''} onChange={onChange} />
+          <InputField name="jointSecretaryName" label="Joint Secretary Name (सहसचिव)" placeholder="Enter Full Name Here..." value={formData.jointSecretaryName || ''} onChange={onChange} />
+          <InputField name="treasurerName" label="Treasurer Name (कोषाध्यक्ष)" placeholder="Enter Full Name Here..." value={formData.treasurerName || ''} onChange={onChange} />
         </div>
       </div>
 
@@ -124,8 +124,8 @@ const Step1BasicDetails = ({ formData, onChange, reportType, setReportType }) =>
               <button onClick={() => removeCommitteeMember(index)} className="px-3 py-1 bg-red-50 text-red-600 rounded-lg text-sm font-semibold hover:bg-red-100">Remove</button>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <InputField label="Full Name (संपूर्ण नाव)" placeholder="Name" value={member.name || ''} onChange={(e) => handleCommitteeChange(index, 'name', e.target.value)} />
-              <InputField label="Address (पत्ता)" placeholder="Full Address" value={member.address || ''} onChange={(e) => handleCommitteeChange(index, 'address', e.target.value)} />
+              <InputField label="Full Name (संपूर्ण नाव)" placeholder="Enter Full Name Here..." value={member.name || ''} onChange={(e) => handleCommitteeChange(index, 'name', e.target.value)} />
+              <InputField label="Address (पत्ता)" placeholder="Enter Full Address Here..." value={member.address || ''} onChange={(e) => handleCommitteeChange(index, 'address', e.target.value)} />
               <SelectField
                 label="Designation (पद)"
                 value={member.designation || ''}

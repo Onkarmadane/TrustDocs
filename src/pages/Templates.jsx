@@ -1,50 +1,49 @@
-import Heading from '../components/ui/Heading';
-import Card from '../components/ui/Card';
-import Image from '../components/ui/Image';
-import { FileText, ArrowRight } from 'lucide-react';
-import { motion } from 'framer-motion';
-import { useNavigate } from 'react-router-dom';
-import dashboardImg from '../assets/dashboard.png';
-import useDocumentTitle from '../utils/useDocumentTitle';
+import Heading from "../components/ui/Heading";
+import Card from "../components/ui/Card";
+import Image from "../components/ui/Image";
+import { FileText, ArrowRight } from "lucide-react";
+import { motion } from "framer-motion";
+import { useNavigate } from "react-router-dom";
+import dashboardImg from "../assets/dashboard.png";
+import useDocumentTitle from "../utils/useDocumentTitle";
 
 const templates = [
   {
     id: 1,
-    title: 'Audit Report',
-    description: 'Annual audit report with income, expenditure & auditor remarks.',
-    accent: 'bg-blue-400/20'
+    title: "Audit Report",
+    description:
+      "Annual audit report with income, expenditure & auditor remarks.",
+    accent: "bg-blue-400/20",
   },
   {
     id: 2,
-    title: 'Non-Dini Register',
-    description: 'Schedule VIII non-religious property register entries.',
-    accent: 'bg-emerald-400/20'
+    title: "Non-Dini Register",
+    description: "Schedule VIII non-religious property register entries.",
+    accent: "bg-emerald-400/20",
   },
-  {
-    id: 3,
-    title: 'Donation Report',
-    description: 'Donor-wise contributions with receipt details.',
-    accent: 'bg-pink-400/20'
-  },
-  {
-    id: 4,
-    title: 'Balance Sheet',
-    description: 'Statement of assets & liabilities for the financial year.',
-    accent: 'bg-orange-400/20'
-  }
+  // {
+  //   id: 3,
+  //   title: "Donation Report",
+  //   description: "Donor-wise contributions with receipt details.",
+  //   accent: "bg-pink-400/20",
+  // },
+  // {
+  //   id: 4,
+  //   title: "Balance Sheet",
+  //   description: "Statement of assets & liabilities for the financial year.",
+  //   accent: "bg-orange-400/20",
+  // },
 ];
 
-
-
 const Templates = () => {
-  useDocumentTitle('Report Templates');
+  useDocumentTitle("Report Templates");
   const navigate = useNavigate();
 
   const handleTemplateClick = (id) => {
     if (id === 2) {
-      navigate('/create-report', { state: { reportType: 'nondani' } });
+      navigate("/create-report", { state: { reportType: "nondani" } });
     } else {
-      navigate('/create-report', { state: { reportType: 'audit' } });
+      navigate("/create-report", { state: { reportType: "audit" } });
     }
   };
 
@@ -68,35 +67,40 @@ const Templates = () => {
                 transition={{
                   duration: 0.6,
                   delay: index * 0.1,
-                  ease: [0.23, 1, 0.32, 1]
+                  ease: [0.23, 1, 0.32, 1],
                 }}
               >
-                <Card 
+                <Card
                   onClick={() => handleTemplateClick(template.id)}
                   className="p-5 min-h-[230px] w-full max-w-[350px] mx-auto flex flex-col justify-between group border border-slate-200 cursor-pointer hover:shadow-[0_30px_60px_-15px_rgba(0,0,0,0.08)] transition-all duration-500  bg-white"
                 >
                   {/* Top-Right Accent Glow (Optimized for GPU speed & blur efficiency) */}
-                  <div className={`absolute -top-24 -right-24 w-80 h-80 blur-[40px] rounded-full opacity-40 group-hover:opacity-70 transition-opacity duration-700 will-change-transform transform-gpu ${template.accent}`} />
+                  <div
+                    className={`absolute -top-24 -right-24 w-80 h-80 blur-[40px] rounded-full opacity-40 group-hover:opacity-70 transition-opacity duration-700 will-change-transform transform-gpu ${template.accent}`}
+                  />
 
                   <div className="relative z-10">
                     <div className="bg-gradient-to-br from-indigo-900 to-blue-600 w-[60px] h-[60px] rounded-[12px] flex items-center justify-center text-white mb-8 shadow-lg shadow-blue-500/10 group-hover:scale-105 transition-transform duration-500">
                       <FileText size={32} strokeWidth={1.5} />
                     </div>
-                    <h3 className="text-[15px] font-bold text-slate-800 mb-4 tracking-tight">{template.title}</h3>
+                    <h3 className="text-[15px] font-bold text-slate-800 mb-4 tracking-tight">
+                      {template.title}
+                    </h3>
                     <div className="flex justify-between">
                       <p className="text-slate-500 text-[15px] leading-relaxed font-normal">
                         {template.description}
                       </p>
                       <div className="w-[60px] h-[60px] p-5 ms-3 rounded-2xl bg-white border border-slate-200 flex items-center justify-center text-blue-900 shadow-[0_4px_20px_rgba(0,0,0,0.03)] group-hover:bg-slate-50 transition-all duration-300">
-                        <ArrowRight size={26} className="group-hover:-rotate-45 transition-transform duration-300" />
+                        <ArrowRight
+                          size={26}
+                          className="group-hover:-rotate-45 transition-transform duration-300"
+                        />
                       </div>
                     </div>
                   </div>
-
                 </Card>
               </motion.div>
             ))}
-
           </div>
 
           <motion.div
@@ -119,6 +123,5 @@ const Templates = () => {
     </>
   );
 };
-
 
 export default Templates;
