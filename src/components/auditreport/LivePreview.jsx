@@ -76,54 +76,75 @@ export const A4Page = ({ children, pageLabel }) => (
 );
 
 // Cover page
-export const CoverPage = ({ formData }) => (
-  <A4Page pageLabel="Page 1 — Cover">
-    <div className="h-full flex flex-col items-center justify-center text-center px-4">
-      <div className="space-y-5 flex-1 flex flex-col items-center justify-center">
-        <h1 className="text-lg font-serif font-bold text-slate-900 tracking-[0.2em] uppercase">
-          Audit Report
-        </h1>
-        <div className="h-[1.5px] w-20 bg-slate-800 mx-auto" />
+export const CoverPage = ({ formData }) => {
+  const regNo = getRegistrationNo(formData);
+  const trustName = getTrustName(formData);
+  const trustAddress = getTrustAddress(formData);
+  const finYear = getFinancialYear(formData);
+  const date = getDate(formData);
+  const audFirm = getAuditorFirm(formData);
+  const audStatus = getAuditorStatus(formData) || 'CERTIFIED AUDITORS';
+  const audName = getAuditorName(formData);
+  const audMem = getAuditorMembershipNo(formData);
+  const audReg = getAuditorRegistrationNo(formData);
+  const audAddr = getAuditorAddress(formData);
+  const audEmail = getAuditorEmail(formData);
+  const audMobile = getAuditorMobile(formData);
 
-        <div className="space-y-1 pt-4">
-          <p className="text-[7px] font-bold uppercase tracking-widest text-slate-700">
-            For the year ended {getFinancialYear(formData)}
-          </p>
-          <p className="text-[7px] text-slate-600 italic mt-2">
-            {getTrustName(formData)}
-          </p>
-          <p className="text-[6px] text-slate-500">
-            {getTrustAddress(formData)}
-          </p>
+  return (
+    <A4Page pageLabel="Page 1 — Cover">
+      <div className="h-full border-2 border-black p-4 flex flex-col justify-between text-center font-serif">
+        {/* Top Title */}
+        <div className="pt-4">
+          <h1 className="text-[13px] font-bold tracking-[0.15em] uppercase text-black">
+            AUDIT REPORT
+          </h1>
         </div>
 
-        <div className="pt-6">
-          <p className="text-[8px] font-bold text-slate-800">
-            Registration No :- {getRegistrationNo(formData)}
+        {/* Middle Section */}
+        <div className="space-y-2 my-auto">
+          <p className="text-[8px] font-bold uppercase text-black">
+            FOR THE YEAR ENDED {finYear}
           </p>
-          <p className="text-[8px] font-bold text-slate-800 mt-1">
-            Date :- {getDate(formData)}
+          <p className="text-[9px] font-bold uppercase text-red-600 leading-tight">
+            {trustName}
           </p>
+          <p className="text-[7.5px] font-bold text-red-600 leading-tight pb-3">
+            {trustAddress ? (trustAddress.toLowerCase().startsWith('at') ? trustAddress : `At. ${trustAddress}`) : ''}
+          </p>
+
+          <div className="inline-block text-left text-[8.5px] font-bold space-y-0.5 pt-1">
+            <p className="whitespace-nowrap">
+              <span className="text-black">Registration No :- </span>
+              <span className="text-red-600">{regNo}</span>
+            </p>
+            <p className="text-black whitespace-nowrap">
+              Date : &nbsp; &nbsp; {date}
+            </p>
+          </div>
+        </div>
+
+        {/* Bottom Auditor Details */}
+        <div className="pb-1 space-y-0.5 text-black">
+          <p className="text-[9px] font-bold uppercase tracking-wide">{audFirm}</p>
+          <p className="text-[7.5px] font-bold uppercase">{audStatus}</p>
+          <div className="text-[6.5px] font-bold pt-0.5 leading-tight">
+            {audName && <p>{audName}</p>}
+            {(audMem || audReg) && (
+              <p>
+                {audMem ? `M.No: ${audMem}` : ''}
+                {audReg ? ` | F.R.No: ${audReg}` : ''}
+              </p>
+            )}
+            {audAddr && <p>Address : - {audAddr}</p>}
+            {audEmail && <p>Email. Id- {audEmail}</p>}
+            {audMobile && <p>Mob.No- {audMobile}</p>}
+          </div>
         </div>
       </div>
-
-      <div className="mt-auto pb-4 space-y-0.5">
-        <p className="text-[8px] font-bold uppercase tracking-wide">{getAuditorFirm(formData)}</p>
-        <p className="text-[6px] text-slate-500 font-bold uppercase">{getAuditorStatus(formData)}</p>
-        <div className="text-[5px] text-slate-400 pt-0.5">
-          {getAuditorName(formData) && <p className="font-bold text-slate-600">{getAuditorName(formData)}</p>}
-          <p>
-            {getAuditorMembershipNo(formData) ? `M.No: ${getAuditorMembershipNo(formData)}` : ''}
-            {getAuditorRegistrationNo(formData) ? ` | F.R.No: ${getAuditorRegistrationNo(formData)}` : ''}
-          </p>
-          <p>Address :- {getAuditorAddress(formData)}</p>
-          <p>Email. Id- {getAuditorEmail(formData)}</p>
-          <p>Mob.No- {getAuditorMobile(formData)}</p>
-        </div>
-      </div>
-    </div>
-  </A4Page>
-);
+    </A4Page>
+  );
+};
 
 // Permissions and Disclosures
 export const PermissionsPage = ({ formData }) => (
@@ -185,56 +206,151 @@ export const PermissionsPage = ({ formData }) => (
 // Schedule & Deductions IX
 export const ScheduleIXPage = ({ formData }) => {
   const grossIncome = parseFloat(formData.sch_income_shown || 0);
-  const totalDeductions = scheduleIXItems.reduce((s, item) => s + (parseFloat(formData[item.key]) || 0), 0);
-  const netIncome = grossIncome - totalDeductions;
+  const totalDeductions = scheduleIXItems.reduce((sum, item) => {
+    if (item.type === 'group') {
+      return sum + item.subItems.reduce((s, sub) => s + (parseFloat(formData[sub.key]) || 0), 0);
+    }
+    return sum + (parseFloat(formData[item.key]) || 0);
+  }, 0);
+  const netIncome = Math.max(0, grossIncome - totalDeductions);
 
   return (
-    <A4Page pageLabel="Page 3.1 — Schedule IX">
-      <div className="text-[5.5px] leading-relaxed">
-        <div className="text-center mb-3 space-y-0.5">
-          <p className="font-bold text-[7px]">The Bombay Public Trusts Act 1950</p>
-          <p className="font-bold text-[6px]">SCHEDULE - IX C</p>
-          <p className="text-[5px] text-slate-500">( VIDE RULE 32 )</p>
-          <p className="text-[5px] mt-1">
-            STATEMENT OF INCOME TO CONTRIBUTION FOR THE YEAR ENDING :- {getFinancialYear(formData)}
+    <A4Page pageLabel="Page 3 — Schedule IX C">
+      <div className="text-[5.5px] leading-relaxed font-serif">
+        <div className="text-center mb-2 space-y-0.5 font-bold">
+          <p className="text-[7.5px]">The Bombay Public Trusts Act 1950</p>
+          <p className="text-[7px]">SCHEDULE - IX C</p>
+          <p className="text-[5.5px] font-normal text-slate-600">( VIDE RULE 32 )</p>
+          <p className="text-[5.5px] uppercase">
+            STATEMENT IN INCOME TO CONTRIBUTION FOR THE YEAR ENDING : {getFinancialYear(formData)}
           </p>
-          <p className="text-[5px] text-slate-600">
-            Name of the Trust — {getTrustName(formData)} | Reg. No:- {getRegistrationNo(formData)}
+          <p className="text-[6.5px] uppercase">
+            Name of the Trust :- {getTrustName(formData)}
+          </p>
+          <p className="text-[5.5px]">
+            {getTrustAddress(formData) ? (getTrustAddress(formData).toLowerCase().startsWith('at') ? getTrustAddress(formData) : `At. ${getTrustAddress(formData)}`) : ''}
+          </p>
+          <p className="text-[5.5px]">
+            Registration No-{getRegistrationNo(formData)}
           </p>
         </div>
 
-        <div className="border border-slate-300 text-[5px]">
-          <div className="flex items-center justify-between border-b border-slate-200 p-1.5 bg-slate-50">
-            <p className="font-bold flex-1">I. Income as shown in the Income and Expenditure Account (Schedule IX)</p>
-            <span className="font-bold font-mono w-16 text-right">{fmt(formData.sch_income_shown)}</span>
-          </div>
+        <table className="w-full border-collapse border border-black text-[5px]">
+          <thead>
+            <tr>
+              <th colSpan={2} className="border border-black h-3"></th>
+              <th className="border border-black font-bold text-center w-[18%] text-[6px]">Rs.</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td className="border border-black font-bold text-center w-[6%] p-1 align-top">I.</td>
+              <td className="border border-black font-bold p-1 align-top">
+                Income as showan in the income and Expenditure Account (Schedule IX)
+              </td>
+              <td className="border border-black font-bold text-center p-1 align-middle">
+                {formData.sch_income_shown ? Number(formData.sch_income_shown).toLocaleString('en-IN') : ''}
+              </td>
+            </tr>
 
-          <div className="p-1.5 border-b border-slate-200 bg-white">
-            <p className="font-bold">II. Items not chargeable to contribution under Section 58 and Rules 32</p>
-          </div>
+            <tr>
+              <td className="border border-black font-bold text-center w-[6%] p-1 align-top">II.</td>
+              <td className="border border-black p-1 align-top text-[4.8px] leading-tight">
+                <p className="font-bold mb-0.5">Items not chargeable to contribution under Section 58 and Rules 32</p>
+                <div className="flex justify-between items-baseline">
+                  <span>i) Donations received from other Public Trust and Dharmadas:</span>
+                  <span className="font-bold font-mono text-right min-w-[30px] pr-1">{formData.sch_donations ? Number(formData.sch_donations).toLocaleString('en-IN') : ''}</span>
+                </div>
+                <div className="flex justify-between items-baseline">
+                  <span>ii) Grants received from Government and local authorities:</span>
+                  <span className="font-bold font-mono text-right min-w-[30px] pr-1">{formData.sch_grants ? Number(formData.sch_grants).toLocaleString('en-IN') : ''}</span>
+                </div>
+                <div className="flex justify-between items-baseline">
+                  <span>iii) Interest or Sinking or Depreciation Fund:</span>
+                  <span className="font-bold font-mono text-right min-w-[30px] pr-1">{formData.sch_sinking ? Number(formData.sch_sinking).toLocaleString('en-IN') : ''}</span>
+                </div>
+                <div className="flex justify-between items-baseline">
+                  <span>iv) Amount spent for the purpose of secular education:</span>
+                  <span className="font-bold font-mono text-right min-w-[30px] pr-1">{formData.sch_education ? Number(formData.sch_education).toLocaleString('en-IN') : ''}</span>
+                </div>
+                <div className="flex justify-between items-baseline">
+                  <span>v) Amount spent for the purpose of medical relief:</span>
+                  <span className="font-bold font-mono text-right min-w-[30px] pr-1">{formData.sch_medical ? Number(formData.sch_medical).toLocaleString('en-IN') : ''}</span>
+                </div>
+                <div className="flex justify-between items-baseline">
+                  <span>vi) Amount spent for the purpose of veterinary treatment of animals:</span>
+                  <span className="font-bold font-mono text-right min-w-[30px] pr-1">{formData.sch_veterinary ? Number(formData.sch_veterinary).toLocaleString('en-IN') : ''}</span>
+                </div>
+                <div className="flex justify-between items-baseline">
+                  <span>vii) Expenditure incurred from donations for relief of distress caused by scarcity, drought, flood, fire or other natural calamity:</span>
+                  <span className="font-bold font-mono text-right min-w-[30px] pr-1">{formData.sch_calamity ? Number(formData.sch_calamity).toLocaleString('en-IN') : ''}</span>
+                </div>
+                <div>viii) Deductions out of income from lands used for agricultural purpose:</div>
+                <div className="flex justify-between items-baseline pl-2">
+                  <span>a] Land Revenue and local Fund cess:</span>
+                  <span className="font-bold font-mono text-right min-w-[30px] pr-1">{formData.sch_agri_a ? Number(formData.sch_agri_a).toLocaleString('en-IN') : ''}</span>
+                </div>
+                <div className="flex justify-between items-baseline pl-2">
+                  <span>b] Rent payable to superior landlord:</span>
+                  <span className="font-bold font-mono text-right min-w-[30px] pr-1">{formData.sch_agri_b ? Number(formData.sch_agri_b).toLocaleString('en-IN') : ''}</span>
+                </div>
+                <div className="flex justify-between items-baseline pl-2">
+                  <span>c] Cost of production, if lands are cultivated by trust:</span>
+                  <span className="font-bold font-mono text-right min-w-[30px] pr-1">{formData.sch_agri_c ? Number(formData.sch_agri_c).toLocaleString('en-IN') : ''}</span>
+                </div>
+                <div>ix) Deductions out of income from lands used for non agricultural purpose:</div>
+                <div className="flex justify-between items-baseline pl-2">
+                  <span>a] Assessment, cesses and other Government or Municipal taxes:</span>
+                  <span className="font-bold font-mono text-right min-w-[30px] pr-1">{formData.sch_non_agri_a ? Number(formData.sch_non_agri_a).toLocaleString('en-IN') : ''}</span>
+                </div>
+                <div className="flex justify-between items-baseline pl-2">
+                  <span>b] Ground rent payable to the superior landlord:</span>
+                  <span className="font-bold font-mono text-right min-w-[30px] pr-1">{formData.sch_non_agri_b ? Number(formData.sch_non_agri_b).toLocaleString('en-IN') : ''}</span>
+                </div>
+                <div className="flex justify-between items-baseline pl-2">
+                  <span>c] Insurance premia:</span>
+                  <span className="font-bold font-mono text-right min-w-[30px] pr-1">{formData.sch_non_agri_c ? Number(formData.sch_non_agri_c).toLocaleString('en-IN') : ''}</span>
+                </div>
+                <div className="flex justify-between items-baseline pl-2">
+                  <span>d] Repairs at 10% of gross rent of Building let out:</span>
+                  <span className="font-bold font-mono text-right min-w-[30px] pr-1">{formData.sch_non_agri_d ? Number(formData.sch_non_agri_d).toLocaleString('en-IN') : ''}</span>
+                </div>
+                <div className="flex justify-between items-baseline pl-2">
+                  <span>e] Cost of Collection at 4 percent of gross rent of buildings let out:</span>
+                  <span className="font-bold font-mono text-right min-w-[30px] pr-1">{formData.sch_non_agri_e ? Number(formData.sch_non_agri_e).toLocaleString('en-IN') : ''}</span>
+                </div>
+                <div className="flex justify-between items-baseline">
+                  <span>x) Cost of collection of income or receipts from securities, stocks etc at 1% of such income:</span>
+                  <span className="font-bold font-mono text-right min-w-[30px] pr-1">{formData.sch_securities_1 ? Number(formData.sch_securities_1).toLocaleString('en-IN') : ''}</span>
+                </div>
+                <div className="flex justify-between items-baseline">
+                  <span>xi) Deduction on account of repairs in respect of building not rented and yielding no income at 10% of the estimated gross annual rent:</span>
+                  <span className="font-bold font-mono text-right min-w-[30px] pr-1">{formData.sch_repairs ? Number(formData.sch_repairs).toLocaleString('en-IN') : ''}</span>
+                </div>
+              </td>
+              <td className="border border-black font-bold text-center p-1 align-middle">
+                {totalDeductions > 0 ? totalDeductions.toLocaleString('en-IN') : ''}
+              </td>
+            </tr>
 
-          {scheduleIXItems.map((item) => (
-            <div key={item.key} className="flex items-center justify-between border-b border-slate-100 px-2 py-1 hover:bg-blue-50/30">
-              <p className="flex-1 text-slate-600 pr-2">{item.label}</p>
-              <span className="font-mono w-16 text-right text-slate-700">{fmt(formData[item.key])}</span>
-            </div>
-          ))}
+            <tr>
+              <td colSpan={2} className="border border-black font-bold p-1">
+                Gross Annual Income chargeable to contribution Rs.
+              </td>
+              <td className="border border-black font-bold text-center p-1">
+                {netIncome > 0 ? netIncome.toLocaleString('en-IN') : (grossIncome > 0 ? '0' : '')}
+              </td>
+            </tr>
+          </tbody>
+        </table>
 
-          <div className="flex items-center justify-between p-1.5 bg-blue-50 border-t border-blue-200">
-            <p className="font-bold text-blue-800">Gross Annual Income chargeable to contribution Rs.</p>
-            <span className="font-bold font-mono w-16 text-right text-blue-700">{fmt(netIncome > 0 ? netIncome : '')}</span>
-          </div>
-        </div>
+        <p className="text-[4.8px] text-justify leading-tight mt-1.5 px-0.5">
+          Certified that while claiming deductions admissible under the above Sehedule,the Trust has not claimedany amount twice either wholly or partly, against any of the items mentioned in the Sehedule while have the effect of double-deductions.
+        </p>
 
-        <div className="mt-3 flex justify-between items-end px-1">
-          <div className="text-[5px] text-slate-500">
-            <p>Date :- {getDate(formData)}</p>
-            <p>Trust Address: {getTrustAddress(formData)}</p>
-          </div>
-          <div className="text-right text-[5px] space-y-0.5">
-            <p className="font-bold text-[6px]">{getAuditorFirm(formData)}</p>
-            <p className="text-slate-400">{getAuditorStatus(formData)}</p>
-          </div>
+        <div className="mt-2 text-[5px] font-bold space-y-0.5">
+          <p>Date :- {getDate(formData)}</p>
+          <p>Trust Address:- {getTrustAddress(formData)}</p>
         </div>
       </div>
     </A4Page>
@@ -295,7 +411,7 @@ export const IncomeExpPage = ({ formData }) => {
         isLastNested: true
       });
     } else if (exp.type === 'nested') {
-      expRows.push({ label: <span className="font-bold">{exp.label}</span>, inner: '', outer: '' });
+      expRows.push({ label: <span className="font-bold text-black">{exp.label}</span>, inner: '', outer: '' });
       exp.subFields.forEach((sub, idx) => {
         const isLast = idx === exp.subFields.length - 1;
         let subTotal = "";
@@ -305,7 +421,7 @@ export const IncomeExpPage = ({ formData }) => {
           if (exp.key === "exp_objects_of_trust") subTotal = subTotalObjectsTrust;
         }
         expRows.push({
-          label: <span className="pl-2 text-slate-700">{sub.label}</span>,
+          label: <span className="pl-3.5 text-slate-700 font-normal">{sub.label}</span>,
           inner: formData[sub.key],
           outer: subTotal,
           isLastNested: isLast
@@ -314,7 +430,7 @@ export const IncomeExpPage = ({ formData }) => {
     }
   });
   expRows.push({
-    label: <span className="font-bold">To Surplus Carried Over To Balance Sheet</span>,
+    label: <span className="font-bold text-black">To Surplus Carried Over To Balance Sheet</span>,
     inner: '',
     outer: surplus,
     isLastNested: true
@@ -325,7 +441,7 @@ export const IncomeExpPage = ({ formData }) => {
     if (inc.key === 'inc_deficit_row') return; // Skip, will add explicitly at the bottom
 
     if (inc.type === 'nested') {
-      incRows.push({ label: <span className="font-bold">{inc.label}</span>, inner: '', outer: '' });
+      incRows.push({ label: <span className="font-bold text-black">{inc.label}</span>, inner: '', outer: '' });
       inc.subFields.forEach((sub, idx) => {
         const isLast = idx === inc.subFields.length - 1;
         let outerVal = '';
@@ -337,7 +453,7 @@ export const IncomeExpPage = ({ formData }) => {
           }
         }
         incRows.push({
-          label: <span className="pl-2 text-slate-700">{sub.label}</span>,
+          label: <span className="pl-3.5 text-slate-700 font-normal">{sub.label}</span>,
           inner: formData[sub.innerKey],
           outer: outerVal,
           isLastNested: isLast
@@ -528,7 +644,7 @@ export const BalanceSheetPage = ({ formData }) => {
                 <tr key={i}>
                   {/* FL side */}
                   <td className="border-l border-r border-slate-200 p-0.5 leading-tight">
-                    {fl && <span className={fl.isSubItem ? 'pl-2 text-slate-600' : 'font-bold text-black'}>{fl.label}</span>}
+                    {fl && <span className={fl.isSubItem ? 'pl-3.5 text-slate-700 font-normal' : 'font-bold text-black'}>{fl.label}</span>}
                   </td>
                   <td className={`border-r border-slate-200 p-0.5 text-right font-mono align-bottom ${fl?.isLast && fl?.inner != null ? 'border-b border-slate-400' : ''}`}>
                     {fl && fl.inner != null ? fmt(fl.inner) : ''}
@@ -538,7 +654,7 @@ export const BalanceSheetPage = ({ formData }) => {
                   </td>
                   {/* PA side */}
                   <td className="border-r border-slate-200 p-0.5 leading-tight">
-                    {pa && <span className={pa.isSubItem ? 'pl-2 text-slate-600' : 'font-bold text-black'}>{pa.label}</span>}
+                    {pa && <span className={pa.isSubItem ? 'pl-3.5 text-slate-700 font-normal' : 'font-bold text-black'}>{pa.label}</span>}
                   </td>
                   <td className={`border-r border-slate-200 p-0.5 text-right font-mono align-bottom ${pa?.isLast && pa?.inner != null ? 'border-b border-slate-400' : ''}`}>
                     {pa && pa.inner != null ? fmt(pa.inner) : ''}
@@ -583,7 +699,7 @@ export const ReceiptPaymentPage = ({ formData }) => {
     items.map((item) => (
       <React.Fragment key={item.key}>
         <tr className="bg-slate-50/60">
-          <td className="border border-slate-200 p-1 font-bold text-[5.5px]" colSpan={1}>
+          <td className="border border-slate-200 p-1 font-bold text-[5.5px] text-black" colSpan={1}>
             {item.label}
           </td>
           <td className="border border-slate-200 p-1 text-right font-mono">{fmt(formData[item.key])}</td>
@@ -594,7 +710,7 @@ export const ReceiptPaymentPage = ({ formData }) => {
           const sl = typeof sub === 'string' ? sub : sub.label;
           return (
             <tr key={sk}>
-              <td className="border border-slate-100 p-0.5 pl-2 text-slate-600">{sl}</td>
+              <td className="border border-slate-100 p-0.5 pl-3.5 text-slate-700 font-normal">{sl}</td>
               <td className="border border-slate-100 p-0.5 text-right font-mono">{fmt(formData[sk])}</td>
               <td className="border border-slate-100 p-0.5"></td>
             </tr>

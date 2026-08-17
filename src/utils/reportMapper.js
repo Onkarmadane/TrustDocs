@@ -16,10 +16,7 @@ const buildExpenditureLabelMap = () => {
   const map = {};
   expenditureItems.forEach(item => {
     map[item.key] = item.label;
-    // standalone items also have an _inner sibling
-    if (item.type === 'standalone') {
-      map[`${item.key}_inner`] = item.label + ' (Detail)';
-    }
+    map[`${item.key}_inner`] = item.label;
     if (item.subFields) {
       item.subFields.forEach(sub => {
         map[sub.key] = sub.label;
@@ -34,12 +31,12 @@ const buildIncomeLabelMap = () => {
   const map = {};
   incomeItems.forEach(item => {
     map[item.key] = item.label;
-    if (item.innerKey) map[item.innerKey] = item.label + ' (Detail)';
+    if (item.innerKey) map[item.innerKey] = item.label;
     if (item.outerKey) map[item.outerKey] = item.label;
     if (item.subFields) {
       item.subFields.forEach(sub => {
         if (sub.innerKey) map[sub.innerKey] = sub.label;
-        if (sub.outerKey) map[sub.outerKey] = sub.label + ' (Total)';
+        if (sub.outerKey) map[sub.outerKey] = sub.label;
       });
     }
   });
@@ -51,13 +48,13 @@ const buildBalanceSheetLabelMap = (items) => {
   const map = {};
   items.forEach(item => {
     map[item.key] = item.label;
-    if (item.innerKey) map[item.innerKey] = item.label + ' (Detail)';
+    if (item.innerKey) map[item.innerKey] = item.label;
     if (item.outerKey) map[item.outerKey] = item.label;
     if (item.subFields) {
       item.subFields.forEach(sub => {
         const innerKey = sub.innerKey || sub.key;
         if (innerKey) map[innerKey] = sub.label;
-        if (sub.outerKey) map[sub.outerKey] = sub.label + ' (Total)';
+        if (sub.outerKey) map[sub.outerKey] = sub.label;
       });
     }
   });
@@ -115,22 +112,22 @@ const buildExpenditureRows = (formData, surplus) => {
   expenditureItems.forEach(item => {
     if (item.type === 'nested') {
       // Section header
-      rows.push({ key: item.key, label: item.label, amount: null });
+      rows.push({ key: item.key, label: item.label, amount: null, isHeader: true });
       item.subFields.forEach(sub => {
-        rows.push({ key: sub.key, label: sub.label, amount: getNum(sub.key) });
+        rows.push({ key: sub.key, label: sub.label, amount: getNum(sub.key), isSubItem: true });
       });
     } else {
       // Standalone – outer key is the totalling value used in calculations
-      rows.push({ key: item.key, label: item.label, amount: getNum(item.key) });
-      // Also preserve the _inner detail if the user filled it in
       const innerVal = getNum(`${item.key}_inner`);
-      if (innerVal !== 0) {
-        rows.push({
-          key: `${item.key}_inner`,
-          label: (EXPENDITURE_LABEL_MAP[`${item.key}_inner`] || item.label + ' (Detail)'),
-          amount: innerVal,
-        });
-      }
+      const outerVal = getNum(item.key);
+      rows.push({
+        key: item.key,
+        innerKey: `${item.key}_inner`,
+        label: item.label,
+        amount: innerVal !== 0 ? innerVal : (outerVal !== 0 ? outerVal : null),
+        total: outerVal !== 0 ? outerVal : null,
+        isHeader: true
+      });
     }
   });
 
@@ -138,6 +135,7 @@ const buildExpenditureRows = (formData, surplus) => {
     key: 'exp_surplus_override',
     label: 'To Surplus Carried Over to Balance Sheet',
     amount: surplus,
+    isHeader: true,
   });
 
   return rows;
@@ -150,26 +148,39 @@ const buildIncomeRows = (formData, deficit) => {
   const rows = [];
 
   incomeItems.forEach(item => {
+    if (item.key === 'inc_deficit_row') return; // Skip deficit item here, added explicitly at bottom
+
     if (item.type === 'nested') {
-      rows.push({ key: item.key, label: item.label, amount: null });
+      rows.push({ key: item.key, label: item.label, amount: null, isHeader: true });
       item.subFields.forEach(sub => {
-        rows.push({ key: sub.innerKey, label: sub.label, amount: getNum(sub.innerKey) });
-        if (sub.type === 'double_field' && sub.outerKey) {
-          rows.push({
-            key: sub.outerKey,
-            label: sub.label + ' (Total)',
-            amount: getNum(sub.outerKey),
-          });
-        }
+        const innerVal = getNum(sub.innerKey);
+        const outerVal = sub.outerKey ? getNum(sub.outerKey) : null;
+        rows.push({
+          key: sub.innerKey,
+          outerKey: sub.outerKey,
+          label: sub.label,
+          amount: innerVal !== 0 ? innerVal : null,
+          total: outerVal !== null && outerVal !== 0 ? outerVal : null,
+          isSubItem: true
+        });
       });
     } else if (item.type === 'double_field') {
-      rows.push({ key: item.innerKey, label: item.label + ' (Detail)', amount: getNum(item.innerKey) });
-      rows.push({ key: item.outerKey, label: item.label, amount: getNum(item.outerKey) });
+      const innerVal = getNum(item.innerKey);
+      const outerVal = getNum(item.outerKey);
+      rows.push({
+        key: item.innerKey,
+        outerKey: item.outerKey,
+        label: item.label,
+        amount: innerVal !== 0 ? innerVal : null,
+        total: outerVal !== 0 ? outerVal : null,
+        isHeader: true
+      });
     } else if (item.type === 'single_outer') {
       rows.push({
         key: item.outerKey || item.key,
         label: item.label,
         amount: getNum(item.outerKey || item.key),
+        isHeader: true,
       });
     }
   });
@@ -178,6 +189,7 @@ const buildIncomeRows = (formData, deficit) => {
     key: 'inc_deficit_calc',
     label: 'By Deficit Carried Over to Balance Sheet',
     amount: deficit,
+    isHeader: true,
   });
 
   return rows;
@@ -192,36 +204,41 @@ const buildBalanceSheetRows = (items, formData, labelMap) => {
 
   items.forEach(item => {
     if (item.type === 'nested') {
-      rows.push({ key: item.key, label: item.label, amount: null, total: null });
+      rows.push({ key: item.key, label: item.label, amount: null, total: null, isHeader: true });
       item.subFields.forEach(sub => {
         const innerKey = sub.innerKey || sub.key;
-        if (sub.type === 'double_field' || sub.outerKey) {
-          // Both inner and outer stored; inner→amount, outer→total
-          rows.push({
-            key: innerKey,
-            label: labelMap[innerKey] || sub.label,
-            amount: getNum(innerKey),
-            total: getNum(sub.outerKey),
-          });
-          // Also persist outer key as its own row so backward mapping restores it
-          rows.push({
-            key: sub.outerKey,
-            label: (labelMap[sub.outerKey] || sub.label + ' (Total)'),
-            amount: getNum(sub.outerKey),
-            total: null,
-          });
-        } else {
-          rows.push({
-            key: innerKey,
-            label: labelMap[innerKey] || sub.label,
-            amount: getNum(innerKey),
-            total: null,
-          });
-        }
+        const innerVal = getNum(innerKey);
+        const outerVal = sub.outerKey ? getNum(sub.outerKey) : null;
+
+        rows.push({
+          key: innerKey,
+          outerKey: sub.outerKey,
+          label: labelMap[innerKey] || sub.label,
+          amount: innerVal !== 0 ? innerVal : null,
+          total: outerVal !== null && outerVal !== 0 ? outerVal : null,
+          isSubItem: true,
+        });
       });
     } else if (item.type === 'double_field') {
-      rows.push({ key: item.innerKey, label: item.label + ' (Detail)', amount: getNum(item.innerKey), total: null });
-      rows.push({ key: item.outerKey, label: item.label, amount: getNum(item.outerKey), total: null });
+      const innerVal = getNum(item.innerKey);
+      const outerVal = getNum(item.outerKey);
+      rows.push({
+        key: item.innerKey,
+        outerKey: item.outerKey,
+        label: item.label,
+        amount: innerVal !== 0 ? innerVal : null,
+        total: outerVal !== 0 ? outerVal : null,
+        isHeader: true,
+      });
+    } else {
+      const val = getNum(item.outerKey || item.key);
+      rows.push({
+        key: item.key,
+        label: item.label,
+        amount: null,
+        total: val !== 0 ? val : null,
+        isHeader: true,
+      });
     }
   });
 
@@ -239,12 +256,12 @@ const buildAccountingRows = (items, formData) => {
 
   items.forEach(item => {
     if (item.subItems && item.subItems.length > 0) {
-      rows.push({ key: item.key, label: item.label, amount: null, total: null });
+      rows.push({ key: item.key, label: item.label, amount: null, total: null, isHeader: true });
       item.subItems.forEach(sub => {
-        rows.push({ key: sub.key, label: sub.label, amount: getNum(sub.key), total: null });
+        rows.push({ key: sub.key, label: sub.label, amount: getNum(sub.key), total: null, isSubItem: true });
       });
     } else {
-      rows.push({ key: item.key, label: item.label, amount: getNum(item.key), total: null });
+      rows.push({ key: item.key, label: item.label, amount: getNum(item.key), total: null, isHeader: true });
     }
   });
 
