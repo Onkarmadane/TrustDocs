@@ -29,7 +29,9 @@ const A4Page = ({ children, pageLabel }) => (
 // ── Format helpers ──
 const formatDate = (dateString) => {
   if (!dateString) return new Date().toLocaleDateString('en-GB');
-  return new Date(dateString).toLocaleDateString('en-GB');
+  const d = new Date(dateString);
+  if (isNaN(d.getTime())) return dateString;
+  return d.toLocaleDateString('en-GB');
 };
 
 const getAddress = (formData) => {
@@ -37,10 +39,13 @@ const getAddress = (formData) => {
   const parts = [];
   if (addressObj.buildingName) parts.push(addressObj.buildingName);
   if (addressObj.streetName) parts.push(addressObj.streetName);
+  if (addressObj.landmark) parts.push(addressObj.landmark);
   if (addressObj.village) parts.push(`मु. ${addressObj.village}`);
   if (addressObj.taluka) parts.push(`ता. ${addressObj.taluka}`);
   if (addressObj.district) parts.push(`जि. ${addressObj.district}`);
-  return parts.length > 0 ? parts.join(', ') : "_________________";
+  if (parts.length > 0) return parts.join(', ') + (addressObj.pin ? ` - ${addressObj.pin}` : '');
+  if (typeof formData.address === 'string' && formData.address.trim()) return formData.address;
+  return "_________________";
 };
 
 // ── Page 1: Application (परिशिष्ट "अ") ──
@@ -57,7 +62,7 @@ const ApplicationPage = ({ formData }) => {
   ];
 
   return (
-    <A4Page pageLabel="Page 1 — Application">
+    <A4Page pageLabel="Page 1 — Application (अर्ज)">
       <div className="text-[5.5px] leading-relaxed h-full flex flex-col">
         <div className="border border-black p-1 text-center font-bold mx-auto mb-4 text-[7px]">
           परिशिष्ट " अ "<br />
@@ -142,7 +147,7 @@ const ApplicationPage = ({ formData }) => {
   );
 };
 
-// ── Page 2: Memorandum (परिशिष्ट "ब") ──
+// ── Page 2: Memorandum (परिशिष्ट "ब" - उद्देश) ──
 const MemorandumPage = ({ formData }) => {
   const trustName = formData.trustName || "_________________";
   const address = getAddress(formData);
@@ -151,12 +156,22 @@ const MemorandumPage = ({ formData }) => {
     "साहित्यिक, कलावंतास पुरस्कार देऊन कौतुक करणे.",
     "व्याख्याने कविसंमेलन, वादविवाद, परिसंवाद, साहित्यसंमेलन इत्यादी साहित्यिक उपक्रम राबविणे.",
     "लेखक वाचक सुसंवाद घडवून आणणे.",
-    "विविध भाषिक पुस्तके उपलब्ध करून देणे."
+    "विविध भाषिक पुस्तके उपलब्ध करून देणे.",
+    "समाजातील विविध घटकात वाचनाची आवड निर्माण करण्यासाठी वाचनालय सुरू करणे ते चालविणे.",
+    "सार्वजनिक वाचनालयाद्वारे दैनिक, साप्ताहिक, मासिक इ. उपलब्ध करून देणे, शहरी व ग्रामीण भागात वाचनालये सुरू करणे.",
+    "प्रौढांमध्ये साक्षरतेचा प्रचार व प्रसार करणे वाचनाची आवड निर्माण करणे.",
+    "मनोरंजनातुन ज्ञानवृध्दी होईल अशा प्रकारचे साहित्य वाचनालयाला पुरविणे.",
+    "चर्चासत्रे, वाद-संवाद, मेळावे भरवुन विविध प्रकारचे साहित्य निर्मितीस हातभार लावणे.",
+    "सामाजिक, पौराणिक, विज्ञानविषयक माहिती संपन्न पुस्तके उपलब्ध करणे.",
+    "संगणकीकृत तसेच ऑनलाईन (डीजीटल) वाचनालये सुरू करणे.",
+    "लहान मुलांसाठी व प्रौढ साक्षरांसाठी आवश्यक ती पुस्तके वाचनालयात उपलब्ध करून देणे.",
+    "विविध प्रकाराचे वर्तमानपत्र, साप्ताहिके, पाक्षिके, मासिके व वार्षिक अंक तसेच विशेषांक ची माहिती इ. वाचनालयात उपलब्ध करून देणे.",
+    "दुर्मिळ ग्रंथांचे व पुस्तकाचे जतन करणे."
   ];
   const objectives = (formData.objectives && formData.objectives.length > 0) ? formData.objectives : defaultObjectives;
 
   return (
-    <A4Page pageLabel="Page 2 — Memorandum">
+    <A4Page pageLabel="Page 2 — Memorandum (उद्देश)">
       <div className="text-[5.5px] leading-relaxed">
         <div className="text-center font-bold text-[7px] mb-3">
           परिशिष्ट " ब "<br />
@@ -187,9 +202,12 @@ const MemorandumPage = ({ formData }) => {
           </tbody>
         </table>
 
-        <div className="ml-6 space-y-1 text-[5.5px]">
+        <div className="ml-4 space-y-1 text-[5px]">
           {objectives.map((obj, i) => (
-            <div key={i}><b>{i + 1})</b> {obj || '_____'}</div>
+            <div key={i} className="flex gap-1.5 items-start">
+              <span className="font-bold">{i + 1})</span>
+              <span className="text-justify">{obj || '_____'}</span>
+            </div>
           ))}
         </div>
       </div>
@@ -203,12 +221,20 @@ const CommitteePage = ({ formData }) => {
   const address = getAddress(formData);
   const committeeMembers = formData.committeeMembers && formData.committeeMembers.length > 0 
     ? formData.committeeMembers 
-    : Array(7).fill({ name: '_________________', address: '_________________', designation: '_________________', age: '____', occupation: '_________________', nationality: 'भारतीय' });
+    : [
+        { name: '_________________', address: '_________________', designation: 'अध्यक्ष', age: '____', occupation: '_________________', nationality: 'भारतीय' },
+        { name: '_________________', address: '_________________', designation: 'उपाध्यक्ष', age: '____', occupation: '_________________', nationality: 'भारतीय' },
+        { name: '_________________', address: '_________________', designation: 'सचिव', age: '____', occupation: '_________________', nationality: 'भारतीय' },
+        { name: '_________________', address: '_________________', designation: 'सहसचिव', age: '____', occupation: '_________________', nationality: 'भारतीय' },
+        { name: '_________________', address: '_________________', designation: 'कोषाध्यक्ष', age: '____', occupation: '_________________', nationality: 'भारतीय' },
+        { name: '_________________', address: '_________________', designation: 'सदस्य', age: '____', occupation: '_________________', nationality: 'भारतीय' },
+        { name: '_________________', address: '_________________', designation: 'सदस्य', age: '____', occupation: '_________________', nationality: 'भारतीय' }
+      ];
 
   return (
-    <A4Page pageLabel="Page 3 — Committee">
+    <A4Page pageLabel="Page 3 — Committee (कार्यकारी मंडळ)">
       <div className="text-[5.5px] leading-relaxed">
-        <div className="mb-3">
+        <div className="mb-3 text-justify">
           <b>4) " {trustName} "</b> {address}. या संस्थेचे 
           नियम व नियमावली प्रमाणे या कार्यकारी मंडळावर सदरहु संस्थेच्या कार्यकारी मंडळाचा संस्थेचा कार्यभार सोपविण्यात 
           आला आहे. त्या पहिल्या कार्यकारी मंडळाचा संपुर्ण पत्ता, हुद्दा, वय, व्यवसाय, राष्ट्रीयत्व खालील प्रमाणे आहे.
@@ -216,23 +242,23 @@ const CommitteePage = ({ formData }) => {
 
         <table className="w-full border-collapse border border-black text-[4.5px] mb-4">
           <thead>
-            <tr>
-              <th className="border border-black p-1">अ.क्र.</th>
-              <th className="border border-black p-1">सभासदाचे संपूर्ण नांव</th>
-              <th className="border border-black p-1">पत्ता</th>
-              <th className="border border-black p-1">पद</th>
-              <th className="border border-black p-1">वय</th>
-              <th className="border border-black p-1">व्यवसाय</th>
-              <th className="border border-black p-1">राष्ट्रीयत्व</th>
+            <tr className="bg-slate-50">
+              <th className="border border-black p-1 w-6">अ.क्र.</th>
+              <th className="border border-black p-1 text-left">सभासदाचे संपूर्ण नांव</th>
+              <th className="border border-black p-1 text-left w-32">पत्ता</th>
+              <th className="border border-black p-1 text-left w-14">पद</th>
+              <th className="border border-black p-1 w-6">वय</th>
+              <th className="border border-black p-1 text-left w-12">व्यवसाय</th>
+              <th className="border border-black p-1 text-left w-12">राष्ट्रीयत्व</th>
             </tr>
           </thead>
           <tbody>
             {committeeMembers.map((m, i) => (
               <tr key={i}>
-                <td className="border border-black p-1 text-center">{i + 1}</td>
-                <td className="border border-black p-1">{m.name || '_____'}</td>
-                <td className="border border-black p-1">{m.address || '_____'}</td>
-                <td className="border border-black p-1">{m.designation || '_____'}</td>
+                <td className="border border-black p-1 text-center font-bold">{i + 1}</td>
+                <td className="border border-black p-1 font-semibold">{m.name || '_____'}</td>
+                <td className="border border-black p-1 text-[4px] leading-tight">{m.address || '_____'}</td>
+                <td className="border border-black p-1 font-bold">{m.designation || '_____'}</td>
                 <td className="border border-black p-1 text-center">{m.age || '_____'}</td>
                 <td className="border border-black p-1">{m.occupation || '_____'}</td>
                 <td className="border border-black p-1">{m.nationality || 'भारतीय'}</td>
@@ -241,17 +267,17 @@ const CommitteePage = ({ formData }) => {
           </tbody>
         </table>
 
-        <div className="flex justify-between px-4 mt-6 text-[5px]">
-          <div>अध्यक्ष: {formData.presidentName || "_________________"}</div>
-          <div>उपाध्यक्ष: {formData.vicePresidentName || "_________________"}</div>
-          <div>सचिव: {formData.secretaryName || "_________________"}</div>
+        <div className="flex justify-between px-2 mt-4 text-[5px] font-bold">
+          <div>अध्यक्ष: {formData.presidentName || committeeMembers[0]?.name || "_________________"}</div>
+          <div>उपाध्यक्ष: {formData.vicePresidentName || committeeMembers[1]?.name || "_________________"}</div>
+          <div>सचिव: {formData.secretaryName || committeeMembers[2]?.name || "_________________"}</div>
         </div>
       </div>
     </A4Page>
   );
 };
 
-// ── Page 4: Signatures (सही पत्र) ──
+// ── Page 4: Signatures (विधानपत्र व सह्या) ──
 const SignaturesPage = ({ formData }) => {
   const trustName = formData.trustName || "_________________";
   const address = getAddress(formData);
@@ -262,9 +288,9 @@ const SignaturesPage = ({ formData }) => {
     : Array(7).fill({ name: '_________________', address: '_________________' });
 
   return (
-    <A4Page pageLabel="Page 4 — Signatures">
+    <A4Page pageLabel="Page 4 — Signatures (सह्या)">
       <div className="text-[5.5px] leading-relaxed">
-        <div className="mb-3">
+        <div className="mb-3 text-justify">
           <b>5.</b> आम्ही खालील सह्या करणार <b>" {trustName} "</b> {address}. 
           चे पदाधिकारी सदस्य जाहीर करतो की, संस्था अधिनियम 1860 अन्वये अभिप्रेत
           केलेली संस्था अस्तित्वात आणण्याची आमची ईच्छा असून वरील उद्देशाने आम्ही एकत्र येऊन 
@@ -274,33 +300,33 @@ const SignaturesPage = ({ formData }) => {
 
         <table className="w-full border-collapse border border-black text-[4.5px] mb-4">
           <thead>
-            <tr>
+            <tr className="bg-slate-50">
               <th className="border border-black p-1 w-8">अ.क्र.</th>
-              <th className="border border-black p-1">सभासदाचे संपूर्ण नांव</th>
-              <th className="border border-black p-1">पत्ता</th>
-              <th className="border border-black p-1 w-16">सही</th>
+              <th className="border border-black p-1 text-left">सभासदाचे संपूर्ण नांव</th>
+              <th className="border border-black p-1 text-left">पत्ता</th>
+              <th className="border border-black p-1 w-16 text-center">सही</th>
             </tr>
           </thead>
           <tbody>
             {committeeMembers.map((m, i) => (
               <tr key={i}>
-                <td className="border border-black p-1 text-center">{i + 1}</td>
+                <td className="border border-black p-1 text-center font-bold">{i + 1}</td>
                 <td className="border border-black p-1">{m.name || '_____'}</td>
-                <td className="border border-black p-1">{m.address || '_____'}</td>
-                <td className="border border-black p-1 h-6"></td>
+                <td className="border border-black p-1 text-[4px]">{m.address || '_____'}</td>
+                <td className="border border-black p-1 h-5"></td>
               </tr>
             ))}
           </tbody>
         </table>
 
-        <div className="mt-4 text-[5px]">
+        <div className="mt-2 text-[5px]">
           स्थळ : {place}<br />
           दिनांक : {date}
         </div>
 
-        <div className="mt-6 ml-[50%] text-[5px]">
+        <div className="mt-4 ml-[50%] text-[4.5px] leading-normal">
           वरील सह्या करणाऱ्या सर्व सभासदांना मी ओळखतो.<br />
-          व त्यांनी माझ्या समक्ष या विधानपत्रावर सह्या केल्या आहेत.<br /><br /><br />
+          व त्यांनी माझ्या समक्ष या विधानपत्रावर सह्या केल्या आहेत.<br /><br />
           <b>विशेष कार्यकारी दंडाधिकारी / वकील / सनदी लेखापाल / नोटरी संपूर्ण नांव, पत्ता व शिक्का.</b>
         </div>
       </div>
@@ -319,10 +345,10 @@ const Anusuchi2Page1 = ({ formData }) => {
 
   return (
     <A4Page pageLabel="Page 5 — Anusuchi 2 (1)">
-      <div className="text-[5px] leading-relaxed h-full flex flex-col" style={{ fontFamily: "'Sakal Marathi', 'SakalBharati', 'Tiro Devanagari Marathi', serif" }}>
+      <div className="text-[5px] leading-relaxed h-full flex flex-col">
         <div className="text-center font-bold text-[7px] mb-0.5">सार्वजनिक विश्वस्त व्यवस्थेच्या नोंदणीसाठीचा अर्ज</div>
         <div className="text-center font-bold text-[6px] underline mb-0.5">अनुसूची - २</div>
-        <div className="text-center text-[5px] mb-3">(नियम ६ पहा)</div>
+        <div className="text-center text-[5px] mb-2">(नियम ६ पहा)</div>
         
         <div className="mb-2 leading-normal">
           <b>मा. सहाय्यक धर्मादाय आयुक्त,</b><br />
@@ -330,7 +356,7 @@ const Anusuchi2Page1 = ({ formData }) => {
         </div>
         
         <div className="mb-2 leading-normal">
-          <b>" {trustName} "</b> &nbsp;&nbsp;&nbsp;&nbsp; {address}<br />
+          <b>“ {trustName} ”</b> &nbsp;&nbsp;&nbsp;&nbsp; {address}<br />
           <b>या सार्वजनिक विश्वस्त व्यवस्थेसंबंधी.</b>
         </div>
         
@@ -341,7 +367,7 @@ const Anusuchi2Page1 = ({ formData }) => {
         <table className="w-full border-collapse mb-1 text-[5px] leading-normal">
           <tbody>
             <tr>
-              <td className="w-4 font-bold align-top">२</td>
+              <td className="w-4 font-bold align-top">२)</td>
               <td colSpan="2" className="font-bold align-top">मी पुढील आवश्यक तपशील सादर करीत आहे :-</td>
             </tr>
             <tr>
@@ -350,43 +376,43 @@ const Anusuchi2Page1 = ({ formData }) => {
                 सार्वजनिक विश्वस्त व्यवस्था ज्या नावाने ओळखली जावी ते नाव व पूर्ण पत्ता :-
               </td>
               <td className="align-top pt-1 font-bold leading-tight">
-                " {trustName} "<br />
+                “ {trustName} ”<br />
                 <span className="font-normal text-[4.5px]">{address}</span>
               </td>
             </tr>
             <tr>
-              <td className="w-4 align-top pt-2">१.</td>
-              <td colSpan="2" className="align-top pt-2">
-                विश्वस्त व व्यवस्थापक यांची नावे पत्ता व पद :-
+              <td className="w-4 align-top pt-2">१)</td>
+              <td colSpan="2" className="align-top pt-2 font-bold">
+                विश्वस्त व व्यवस्थापक यांची नावे, पत्ता व पद :-
               </td>
             </tr>
           </tbody>
         </table>
         
-        {/* Committee Table with Dashed Lines */}
-        <table className="w-full border-collapse text-[4.5px] mt-1">
+        {/* Committee Table styled cleanly like Page 3 */}
+        <table className="w-full border-collapse text-[4.5px] mt-1 border-t border-b border-black">
           <thead>
-            <tr className="border-t border-b border-dashed border-black">
-              <th className="py-1 text-left font-bold w-[6%]">अ.क्र.</th>
-              <th className="py-1 text-left font-bold w-[44%]">सभासदाचे संपूर्ण नांव</th>
-              <th className="py-1 text-left font-bold w-[35%]">पत्ता</th>
-              <th className="py-1 text-left font-bold w-[15%]">पद</th>
+            <tr className="border-b border-black bg-slate-50">
+              <th className="py-1 px-1 text-center font-bold w-6 whitespace-nowrap">अ.क्र.</th>
+              <th className="py-1 px-1 text-left font-bold w-36 whitespace-nowrap">सभासदाचे संपूर्ण नांव</th>
+              <th className="py-1 px-1 text-left font-bold">पत्ता</th>
+              <th className="py-1 px-1 text-left font-bold w-14 whitespace-nowrap">पद</th>
             </tr>
           </thead>
           <tbody>
             {committeeMembers.map((m, i) => (
-              <tr key={i} className={i === committeeMembers.length - 1 ? "border-b border-dashed border-black" : ""}>
-                <td className="py-1 align-top">{i + 1}.</td>
-                <td className="py-1 align-top font-bold">{m.name || '_____'}</td>
-                <td className="py-1 align-top text-[4px] leading-tight">{m.address || '_____'}</td>
-                <td className="py-1 align-top">{m.designation || '_____'}</td>
+              <tr key={i} className="border-b border-slate-200 last:border-b-0">
+                <td className="py-1 px-1 text-center align-top font-bold">{i + 1}.</td>
+                <td className="py-1 px-1 align-top font-bold">{m.name || '_____'}</td>
+                <td className="py-1 px-1 align-top text-[4px] leading-tight">{m.address || '_____'}</td>
+                <td className="py-1 px-1 align-top font-medium">{m.designation || '_____'}</td>
               </tr>
             ))}
           </tbody>
         </table>
         
-        {/* Item 2 describing election method at the bottom of the page */}
-        <table className="w-full border-collapse mt-3 text-[4.5px] leading-normal">
+        {/* Item 2 at the bottom */}
+        <table className="w-full border-collapse mt-auto pt-2 text-[4.5px] leading-normal">
           <tbody>
             <tr>
               <td className="w-5 font-bold align-top">२)</td>
@@ -408,7 +434,7 @@ const Anusuchi2Page1 = ({ formData }) => {
 const Anusuchi2Page2 = ({ formData }) => {
   return (
     <A4Page pageLabel="Page 6 — Anusuchi 2 (2)">
-      <div className="text-[5px] leading-relaxed h-full flex flex-col" style={{ fontFamily: "'Sakal Marathi', 'SakalBharati', 'Tiro Devanagari Marathi', serif" }}>
+      <div className="text-[5px] leading-relaxed h-full flex flex-col">
         <table className="w-full border-collapse text-[5px] leading-relaxed">
           <tbody>
             {/* Row 3 */}
@@ -500,10 +526,11 @@ const Anusuchi2Page3 = ({ formData }) => {
   const trustName = formData.trustName || "_________________";
   const address = getAddress(formData);
   const presidentName = formData.presidentName || "_________________";
+  const date = formatDate(formData.date);
 
   return (
     <A4Page pageLabel="Page 7 — Anusuchi 2 (3)">
-      <div className="text-[5px] leading-relaxed h-full flex flex-col" style={{ fontFamily: "'Sakal Marathi', 'SakalBharati', 'Tiro Devanagari Marathi', serif" }}>
+      <div className="text-[5px] leading-relaxed h-full flex flex-col">
         <table className="w-full border-collapse text-[5px] leading-relaxed mb-3">
           <tbody>
             {/* Row 9 */}
@@ -583,56 +610,56 @@ const Anusuchi2Page3 = ({ formData }) => {
           </tbody>
         </table>
 
-        <div className="leading-relaxed mb-3 text-[4.5px]">
+        <div className="leading-relaxed mb-2 text-[4.5px]">
           <b>३.&nbsp;&nbsp;&nbsp;&nbsp; फी दाखल रु. ३/- (अक्षरी तीन रुपये फक्त) सोबत पाठवित आहोत.</b><br />
           <b>४.&nbsp;&nbsp;&nbsp;&nbsp; सार्वजनिक विश्वस्त व्यवस्थेसंबंधी विश्वस्तांशी किंवा व्यवस्थापक यांच्याशी करावयाचा कोणताही पत्र व्यवहार पुढील पत्त्यावर करावा.</b>
         </div>
 
-        <div className="leading-tight ml-5 mb-4 text-[4.5px]">
+        <div className="leading-tight ml-4 mb-3 text-[4.5px]">
           संस्थेचे नाव &nbsp;&nbsp;&nbsp;:- &nbsp;&nbsp;&nbsp; <b>" {trustName} "</b><br />
           पत्ता &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:- &nbsp;&nbsp;&nbsp; <b>{address}</b>
-        </div>
-
-        <table className="w-full border-none mb-4 text-[4.5px]">
-          <tbody>
-            <tr>
-              <td className="w-1/2">
-                <b>तारीख :- &nbsp;&nbsp;&nbsp; / &nbsp;&nbsp;&nbsp; /2026</b>
-              </td>
-              <td className="text-right font-bold pr-5">
-                <br />
-                अर्जदाराची सही
-              </td>
-            </tr>
-          </tbody>
-        </table>
-
-        <div className="border-t border-dashed border-black my-2"></div>
-
-        <div className="text-justify indent-4 leading-relaxed mb-3 text-[4.5px]">
-          मी वर नामनिर्देशित <b>{presidentName}</b>, <b>{address}</b> येथील रहिवासी असून, प्रतिज्ञा करतो व सांगतो की, वरील अर्जात नमूद केलेली माहिती माझ्या पूर्ण माहिती प्रमाणे व विश्वासा प्रमाणे खरी आहे.
-        </div>
-        
-        <div className="font-bold mb-4 indent-4 text-[4.5px]">
-          उपरिनिर्दिष्ट जालना येथे गांभीर्यपूर्वक प्रतिज्ञा केली.
         </div>
 
         <table className="w-full border-none mb-2 text-[4.5px]">
           <tbody>
             <tr>
               <td className="w-1/2">
-                <b>तारीख :- &nbsp;&nbsp;&nbsp; / &nbsp;&nbsp;&nbsp; /2026</b>
+                <b>तारीख :- {date}</b>
               </td>
-              <td className="text-right font-bold pr-5">
-                <br />
+              <td className="text-right font-bold pr-4">
                 अर्जदाराची सही
               </td>
             </tr>
           </tbody>
         </table>
 
-        <div className="text-center font-bold mt-2 text-[5px]">
-          माझ्या समक्ष
+        <div className="border-t border-dashed border-black my-1.5"></div>
+
+        <div className="text-justify indent-4 leading-relaxed mb-2 text-[4.5px]">
+          मी वर नामनिर्देशित <b>{presidentName}</b>, <b>{address}</b> येथील रहिवासी असून, प्रतिज्ञा करतो व सांगतो की, वरील अर्जात नमूद केलेली माहिती माझ्या पूर्ण माहिती प्रमाणे व विश्वासा प्रमाणे खरी आहे.
+        </div>
+        
+        <div className="font-bold mb-2 indent-4 text-[4.5px]">
+          उपरिनिर्दिष्ट जालना येथे गांभीर्यपूर्वक प्रतिज्ञा केली.
+        </div>
+
+        <div className="mt-auto pt-2">
+          <table className="w-full border-none mb-1 text-[4.5px]">
+            <tbody>
+              <tr>
+                <td className="w-1/2">
+                  <b>तारीख :- {date}</b>
+                </td>
+                <td className="text-right font-bold pr-4">
+                  अर्जदाराची सही
+                </td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div className="text-center font-bold text-[5px]">
+            माझ्या समक्ष
+          </div>
         </div>
       </div>
     </A4Page>
@@ -649,8 +676,8 @@ const SammatipatraPage = ({ formData }) => {
     : Array(7).fill({ name: '_________________', address: '_________________' });
 
   return (
-    <A4Page pageLabel="Page 8 — Sammatipatra">
-      <div className="text-[5px] leading-relaxed h-full flex flex-col" style={{ fontFamily: "'Sakal Marathi', 'SakalBharati', 'Tiro Devanagari Marathi', serif" }}>
+    <A4Page pageLabel="Page 8 — Sammatipatra (संमतीपत्र)">
+      <div className="text-[5px] leading-relaxed h-full flex flex-col">
         <div className="title-lg text-center underline font-bold text-[7px] mb-3">संमतीपत्राचा नमुना</div>
         
         <div className="mb-3 leading-normal">
@@ -662,54 +689,53 @@ const SammatipatraPage = ({ formData }) => {
         <div className="mb-3">
           <b>महोदय,</b><br />
           <p className="text-justify indent-4 leading-normal my-1 text-[4.8px]">
-            <b>{presidentName}</b>, यांनी विश्वस्त व्यवस्था/संस्था/मंडळ <b>" {trustName} "</b> <b>{address}</b> नोंदविण्यासाठी मुंबई सार्वजनिक विश्वस्त व्यवस्था अधिनियम १९५० अन्वये दि. &nbsp;&nbsp;&nbsp; / &nbsp;&nbsp;&nbsp; /2026 रोजी अर्ज सादर केला आहे. त्या अर्जातील सर्व माहिती खरी आहे. आम्हास त्या संबंधी जास्त सांगावयाचे नाही सदरहू अर्जाची सुनावणीची स्वतंत्र नोटीस आम्हास पाठवण्याची आवश्यकता नाही. नोंदणी प्रमाणपत्र अर्जदाराच्या नावे देण्यास आमची कोणतीही हरकत नाही.
+            <b>{presidentName}</b>, यांनी विश्वस्त व्यवस्था/संस्था/मंडळ <b>" {trustName} "</b> <b>${address}</b> नोंदविण्यासाठी मुंबई सार्वजनिक विश्वस्त व्यवस्था अधिनियम १९५० अन्वये दि. {formatDate(formData.date)} रोजी अर्ज सादर केला आहे. त्या अर्जातील सर्व माहिती खरी आहे. आम्हास त्या संबंधी जास्त सांगावयाचे नाही सदरहू अर्जाची सुनावणीची स्वतंत्र नोटीस आम्हास पाठवण्याची आवश्यकता नाही. नोंदणी प्रमाणपत्र अर्जदाराच्या नावे देण्यास आमची कोणतीही हरकत नाही.
           </p>
         </div>
 
-        <div className="mb-2 leading-normal">
+        <div className="flex justify-between items-baseline mb-1">
           <b>कळावे,</b>
-        </div>
-        
-        <div className="text-right font-bold pr-8 mb-1 text-[5px]">
-          आपले,
+          <b className="pr-6">आपले,</b>
         </div>
 
-        {/* Committee Members Table with Dashed Lines */}
-        <table className="w-full border-collapse text-[4.5px] mt-1">
+        {/* Committee Members Table styled cleanly like Page 3 */}
+        <table className="w-full border-collapse text-[4.5px] mt-1 border-t border-b border-black">
           <thead>
-            <tr className="border-t border-b border-dashed border-black">
-              <th className="py-1 text-left font-bold w-[6%]">अ.क्र.</th>
-              <th className="py-1 text-left font-bold w-[44%]">सभासदाचे संपूर्ण नांव</th>
-              <th className="py-1 text-left font-bold w-[35%]">पत्ता</th>
-              <th className="py-1 text-center font-bold w-[15%]">सही</th>
+            <tr className="border-b border-black bg-slate-50">
+              <th className="py-1 px-1 text-center font-bold w-6 whitespace-nowrap">अ.क्र.</th>
+              <th className="py-1 px-1 text-left font-bold w-36 whitespace-nowrap">सभासदाचे संपूर्ण नांव</th>
+              <th className="py-1 px-1 text-left font-bold">पत्ता</th>
+              <th className="py-1 px-1 text-center font-bold w-14 whitespace-nowrap">सही</th>
             </tr>
           </thead>
           <tbody>
             {committeeMembers.map((m, i) => (
-              <tr key={i} className={i === committeeMembers.length - 1 ? "border-b border-dashed border-black" : ""}>
-                <td className="py-1.5 align-top">{i + 1}.</td>
-                <td className="py-1.5 align-top font-bold">{m.name || '_____'}</td>
-                <td className="py-1.5 align-top text-[4px] leading-tight">{m.address || '_____'}</td>
-                <td className="py-1.5 align-middle text-center">
-                  <span className="border-b border-black w-12 h-2 inline-block">&nbsp;</span>
+              <tr key={i} className="border-b border-slate-200 last:border-b-0">
+                <td className="py-1 px-1 text-center align-top font-bold">{i + 1}.</td>
+                <td className="py-1 px-1 align-top font-bold">{m.name || '_____'}</td>
+                <td className="py-1 px-1 align-top text-[4px] leading-tight">{m.address || '_____'}</td>
+                <td className="py-1 px-1 align-middle text-center">
+                  <span className="border-b border-black w-10 h-1.5 inline-block">&nbsp;</span>
                 </td>
               </tr>
             ))}
           </tbody>
         </table>
 
-        <table className="w-full border-none mt-3 text-[4.8px]">
-          <tbody>
-            <tr>
-              <td className="w-[40%]"></td>
-              <td className="text-right font-bold pr-5 leading-normal">
-                वरील सर्व सह्या मी ओळखतो<br /><br />
-                (अर्जदाराची सही.)<br /><br />
-                <b>{presidentName}</b>
-              </td>
-            </tr>
-          </tbody>
-        </table>
+        <div className="mt-auto pt-2">
+          <table className="w-full border-none text-[4.8px]">
+            <tbody>
+              <tr>
+                <td className="w-[40%]"></td>
+                <td className="text-right font-bold pr-5 leading-normal">
+                  वरील सर्व सह्या मी ओळखतो<br /><br />
+                  (अर्जदाराची सही.)<br /><br />
+                  <b>{presidentName}</b>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
     </A4Page>
   );
@@ -724,11 +750,11 @@ const AffidavitPage = ({ formData }) => {
   const committeeMembers = formData.committeeMembers || [];
   const presidentDetails = committeeMembers.find(m => m.designation?.includes('अध्यक्ष') || m.name === presidentName) || {};
   const presidentAge = presidentDetails.age || "____";
-  const presidentOccupation = presidentDetails.occupation || "________";
+  const presidentOccupation = presidentDetails.occupation || "शेती";
 
   return (
-    <A4Page pageLabel="Page 9 — Affidavit">
-      <div className="text-[4.5px] leading-normal h-full flex flex-col" style={{ fontFamily: "'Sakal Marathi', 'SakalBharati', 'Tiro Devanagari Marathi', serif" }}>
+    <A4Page pageLabel="Page 9 — Affidavit (प्रतिज्ञापत्र)">
+      <div className="text-[4.5px] leading-normal h-full flex flex-col">
         <div className="title-lg text-center underline font-bold text-[7px] mb-2">प्रतिज्ञापत्र</div>
         <div className="mb-2 leading-relaxed text-justify">
           मी खाली सही करणार <b>{presidentName}</b>, वय <b>{presidentAge}</b> वर्षे, व्यवसाय - <b>{presidentOccupation}</b>, राहणार <b>{address}</b>.<br />
@@ -742,8 +768,8 @@ const AffidavitPage = ({ formData }) => {
           सदर प्रस्तावाबाबत किंवा पत्त्याबाबत भविष्यात काही वाद निर्माण झाल्यास अथवा तक्रार आल्यास त्याची संपूर्ण जबाबदारी वैयक्तिक व सामूहिकरीत्या माझी व कार्यकारी मंडळाची राहील. कार्यालयाच्या पत्त्यात काही बदल झाल्यास तो नियमानुसार आपल्या कार्यालयाला अवगत करण्यात येईल.<br /><br />
           हे प्रतिज्ञापत्र मी स्वेच्छेने व राजीखुशीने लिहून दिले असून ते सत्य व बरोबर आहे.
         </div>
-        <div className="flex justify-between mt-3">
-          <div>स्थळ : {formData.place || "_________________"}<br />दिनांक : {formatDate(formData.date)}</div>
+        <div className="flex justify-between mt-auto">
+          <div>स्थळ : {formData.place || "जालना"}<br />दिनांक : {formatDate(formData.date)}</div>
           <div className="text-center font-bold">
             प्रतिज्ञाक<br /><br /><br />
             {presidentName}
@@ -765,6 +791,18 @@ const LivePreview = ({ currentStep, formData, zoom = 100, setZoom }) => {
   const containerRef = React.useRef(null);
   const [isFullscreen, setIsFullscreen] = React.useState(false);
   const [previewPage, setPreviewPage] = React.useState(1);
+
+  const previewPagesList = [
+    { id: 1, name: "1. अर्ज (Application)" },
+    { id: 2, name: "2. उद्देश (Objectives)" },
+    { id: 3, name: "3. कार्यकारी मंडळ (Committee)" },
+    { id: 4, name: "4. विधानपत्र / सह्या (Signatures)" },
+    { id: 5, name: "5. अनुसूची २ (१) (Trust App 1)" },
+    { id: 6, name: "6. अनुसूची २ (२) (Trust App 2)" },
+    { id: 7, name: "7. अनुसूची २ (३) (Trust App 3)" },
+    { id: 8, name: "8. संमतीपत्र (Consent Letter)" },
+    { id: 9, name: "9. प्रतिज्ञापत्र (Affidavit)" },
+  ];
 
   const handleFit = React.useCallback(() => {
     if (!viewportRef.current) return;
@@ -831,32 +869,18 @@ const LivePreview = ({ currentStep, formData, zoom = 100, setZoom }) => {
   };
 
   const renderContent = () => {
-    const stepToRender = currentStep === 3 ? previewPage : currentStep;
-    return (
-      <motion.div
-        key={`${stepToRender}`}
-        initial={{ opacity: 0, y: 10, scale: 0.98 }}
-        animate={{ opacity: 1, y: 0, scale: 1 }}
-        exit={{ opacity: 0, y: -10, scale: 0.98 }}
-        transition={{ duration: 0.4, ease: [0.23, 1, 0.32, 1] }}
-        className="w-full"
-      >
-        {(() => {
-          switch (stepToRender) {
-            case 1: return <ApplicationPage formData={formData} />;
-            case 2: return <MemorandumPage formData={formData} />;
-            case 3: return <CommitteePage formData={formData} />;
-            case 4: return <SignaturesPage formData={formData} />;
-            case 5: return <Anusuchi2Page1 formData={formData} />;
-            case 6: return <Anusuchi2Page2 formData={formData} />;
-            case 7: return <Anusuchi2Page3 formData={formData} />;
-            case 8: return <SammatipatraPage formData={formData} />;
-            case 9: return <AffidavitPage formData={formData} />;
-            default: return <ApplicationPage formData={formData} />;
-          }
-        })()}
-      </motion.div>
-    );
+    switch (previewPage) {
+      case 1: return <ApplicationPage formData={formData} />;
+      case 2: return <MemorandumPage formData={formData} />;
+      case 3: return <CommitteePage formData={formData} />;
+      case 4: return <SignaturesPage formData={formData} />;
+      case 5: return <Anusuchi2Page1 formData={formData} />;
+      case 6: return <Anusuchi2Page2 formData={formData} />;
+      case 7: return <Anusuchi2Page3 formData={formData} />;
+      case 8: return <SammatipatraPage formData={formData} />;
+      case 9: return <AffidavitPage formData={formData} />;
+      default: return <ApplicationPage formData={formData} />;
+    }
   };
 
   return (
@@ -870,43 +894,81 @@ const LivePreview = ({ currentStep, formData, zoom = 100, setZoom }) => {
       )}
     >
       {!isFullscreen && (
-        <div className="flex items-center justify-between mb-4 bg-white/80 p-3 rounded-2xl border border-slate-100 shadow-sm backdrop-blur-md">
-          <div>
-            <h3 className="text-xs font-bold text-slate-800 uppercase tracking-widest">Live Preview</h3>
-            <p className="text-[10px] text-slate-400 mt-0.5 font-bold flex items-center gap-2">
-              <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
-              A4 — Real Time
-            </p>
-          </div>
-          <div className="flex items-center gap-1">
-            <button
-              onClick={() => setZoom(prev => Math.max(30, prev - 10))}
-              className="p-2 hover:bg-slate-50 rounded-xl text-slate-400 hover:text-blue-600 transition-all active:scale-95"
-              title="Zoom Out"
-            >
-              <Search size={14} className="scale-x-[-1]" />
-            </button>
-            <div className="w-14 text-center">
-              <span className="text-[10px] font-bold text-slate-600 tabular-nums">{zoom}%</span>
+        <div className="space-y-2 mb-3">
+          {/* Header Controls Bar */}
+          <div className="flex items-center justify-between bg-white/90 p-3 rounded-2xl border border-slate-100 shadow-sm backdrop-blur-md">
+            <div>
+              <h3 className="text-xs font-bold text-slate-800 uppercase tracking-widest">Live Preview</h3>
+              <p className="text-[10px] text-slate-400 mt-0.5 font-bold flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+                Real-time Sync
+              </p>
             </div>
-            <button
-              onClick={() => setZoom(prev => Math.min(250, prev + 10))}
-              className="p-2 hover:bg-slate-50 rounded-xl text-slate-400 hover:text-blue-600 transition-all active:scale-95"
-              title="Zoom In"
-            >
-              <Search size={14} />
-            </button>
-            <div className="w-px h-4 bg-slate-100 mx-1" />
-            <button
-              onClick={() => setZoom(100)}
-              className="p-2 hover:bg-slate-50 rounded-xl text-slate-400 hover:text-blue-600 transition-all active:scale-95"
-              title="Reset Zoom"
-            >
-              <Maximize2 size={14} />
-            </button>
+            
+            {/* Page Jump Selector */}
+            <div className="flex items-center gap-1">
+              <select
+                value={previewPage}
+                onChange={(e) => setPreviewPage(Number(e.target.value))}
+                className="text-xs font-semibold bg-slate-50 border border-slate-200 rounded-lg px-2 py-1 text-slate-700 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+              >
+                {previewPagesList.map(p => (
+                  <option key={p.id} value={p.id}>{p.name}</option>
+                ))}
+              </select>
+
+              <div className="flex items-center gap-0.5 ml-1">
+                <button
+                  onClick={() => setPreviewPage(prev => Math.max(1, prev - 1))}
+                  disabled={previewPage === 1}
+                  className="p-1 hover:bg-slate-100 rounded text-slate-500 disabled:opacity-30"
+                  title="Previous Page"
+                >
+                  <ChevronLeft size={16} />
+                </button>
+                <span className="text-[10px] font-bold text-slate-500 px-1">
+                  {previewPage}/9
+                </span>
+                <button
+                  onClick={() => setPreviewPage(prev => Math.min(9, prev + 1))}
+                  disabled={previewPage === 9}
+                  className="p-1 hover:bg-slate-100 rounded text-slate-500 disabled:opacity-30"
+                  title="Next Page"
+                >
+                  <ChevronRight size={16} />
+                </button>
+              </div>
+            </div>
+
+            {/* Zoom Controls */}
+            <div className="flex items-center gap-1">
+              <button
+                onClick={() => setZoom(prev => Math.max(30, prev - 10))}
+                className="p-1.5 hover:bg-slate-50 rounded-lg text-slate-400 hover:text-blue-600 transition-all active:scale-95"
+                title="Zoom Out"
+              >
+                <Search size={13} className="scale-x-[-1]" />
+              </button>
+              <span className="text-[10px] font-bold text-slate-600 tabular-nums w-8 text-center">{zoom}%</span>
+              <button
+                onClick={() => setZoom(prev => Math.min(250, prev + 10))}
+                className="p-1.5 hover:bg-slate-50 rounded-lg text-slate-400 hover:text-blue-600 transition-all active:scale-95"
+                title="Zoom In"
+              >
+                <Search size={13} />
+              </button>
+              <button
+                onClick={() => setZoom(100)}
+                className="p-1.5 hover:bg-slate-50 rounded-lg text-slate-400 hover:text-blue-600 transition-all active:scale-95 ml-0.5"
+                title="Reset Zoom"
+              >
+                <Maximize2 size={13} />
+              </button>
+            </div>
           </div>
         </div>
       )}
+
       <AnimatePresence>
         {isFullscreen && (
           <motion.div
@@ -929,6 +991,24 @@ const LivePreview = ({ currentStep, formData, zoom = 100, setZoom }) => {
             exit={{ y: 20, opacity: 0 }}
             className="absolute bottom-10 left-1/2 -translate-x-1/2 z-[110] flex items-center gap-4 bg-slate-900/80 backdrop-blur-2xl border border-white/10 p-2.5 rounded-[2rem] shadow-2xl"
           >
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setPreviewPage(prev => Math.max(1, prev - 1))}
+                disabled={previewPage === 1}
+                className="p-2 text-white/70 hover:text-white disabled:opacity-30"
+              >
+                <ChevronLeft size={18} />
+              </button>
+              <span className="text-xs font-bold text-white">Page {previewPage} of 9</span>
+              <button
+                onClick={() => setPreviewPage(prev => Math.min(9, prev + 1))}
+                disabled={previewPage === 9}
+                className="p-2 text-white/70 hover:text-white disabled:opacity-30"
+              >
+                <ChevronRight size={18} />
+              </button>
+            </div>
+            <div className="w-px h-6 bg-white/10" />
             <div className="flex items-center gap-1 px-2">
               <button
                 onClick={() => setZoom(prev => Math.max(30, prev - 10))}
@@ -965,27 +1045,22 @@ const LivePreview = ({ currentStep, formData, zoom = 100, setZoom }) => {
             : "h-auto bg-slate-50 border border-slate-100 shadow-inner rounded-3xl"
         )}
       >
-        {currentStep === 3 && (
-          <>
-            <button
-              onClick={() => setPreviewPage(prev => Math.max(1, prev - 1))}
-              className="absolute left-4 top-1/2 -translate-y-1/2 z-50 p-2 bg-white/80 rounded-full shadow-md hover:bg-white disabled:opacity-50"
-              disabled={previewPage === 1}
-            >
-              <ChevronLeft size={20} />
-            </button>
-            <button
-              onClick={() => setPreviewPage(prev => Math.min(9, prev + 1))}
-              className="absolute right-4 top-1/2 -translate-y-1/2 z-50 p-2 bg-white/80 rounded-full shadow-md hover:bg-white disabled:opacity-50"
-              disabled={previewPage === 9}
-            >
-              <ChevronRight size={20} />
-            </button>
-            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-white/80 px-3 py-1 rounded-full text-xs font-bold text-slate-600 z-50">
-              Page {previewPage} of 9
-            </div>
-          </>
-        )}
+        <button
+          onClick={() => setPreviewPage(prev => Math.max(1, prev - 1))}
+          className="absolute left-3 top-1/2 -translate-y-1/2 z-50 p-2 bg-white/90 rounded-full shadow-md hover:bg-white disabled:opacity-30 transition-all"
+          disabled={previewPage === 1}
+          title="Previous page"
+        >
+          <ChevronLeft size={18} />
+        </button>
+        <button
+          onClick={() => setPreviewPage(prev => Math.min(9, prev + 1))}
+          className="absolute right-3 top-1/2 -translate-y-1/2 z-50 p-2 bg-white/90 rounded-full shadow-md hover:bg-white disabled:opacity-30 transition-all"
+          disabled={previewPage === 9}
+          title="Next page"
+        >
+          <ChevronRight size={18} />
+        </button>
 
         <motion.div
           layout
@@ -1014,7 +1089,16 @@ const LivePreview = ({ currentStep, formData, zoom = 100, setZoom }) => {
           }}
         >
           <AnimatePresence mode="wait">
-            {renderContent()}
+            <motion.div
+              key={`${previewPage}`}
+              initial={{ opacity: 0, y: 8, scale: 0.98 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -8, scale: 0.98 }}
+              transition={{ duration: 0.3, ease: [0.23, 1, 0.32, 1] }}
+              className="w-full"
+            >
+              {renderContent()}
+            </motion.div>
           </AnimatePresence>
         </motion.div>
       </div>

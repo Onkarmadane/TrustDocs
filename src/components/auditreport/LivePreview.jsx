@@ -95,25 +95,25 @@ export const CoverPage = ({ formData }) => {
     <A4Page pageLabel="Page 1 — Cover">
       <div className="h-full border-2 border-black p-4 flex flex-col justify-between text-center font-serif">
         {/* Top Title */}
-        <div className="pt-4">
-          <h1 className="text-[13px] font-bold tracking-[0.15em] uppercase text-black">
+        <div className="pt-3">
+          <h1 className="text-[17px] font-bold tracking-[0.25em] uppercase text-black">
             AUDIT REPORT
           </h1>
         </div>
 
         {/* Middle Section */}
-        <div className="space-y-2 my-auto">
-          <p className="text-[8px] font-bold uppercase text-black">
+        <div className="space-y-2.5 my-auto">
+          <p className="text-[10.5px] font-bold uppercase text-black tracking-wide">
             FOR THE YEAR ENDED {finYear}
           </p>
-          <p className="text-[9px] font-bold uppercase text-red-600 leading-tight">
+          <p className="text-[13px] font-bold uppercase text-red-600 leading-tight">
             {trustName}
           </p>
-          <p className="text-[7.5px] font-bold text-red-600 leading-tight pb-3">
+          <p className="text-[9.5px] font-bold text-red-600 leading-tight pb-3">
             {trustAddress ? (trustAddress.toLowerCase().startsWith('at') ? trustAddress : `At. ${trustAddress}`) : ''}
           </p>
 
-          <div className="inline-block text-left text-[8.5px] font-bold space-y-0.5 pt-1">
+          <div className="inline-block text-left text-[11px] font-bold space-y-0.5 pt-1">
             <p className="whitespace-nowrap">
               <span className="text-black">Registration No :- </span>
               <span className="text-red-600">{regNo}</span>
@@ -126,9 +126,9 @@ export const CoverPage = ({ formData }) => {
 
         {/* Bottom Auditor Details */}
         <div className="pb-1 space-y-0.5 text-black">
-          <p className="text-[9px] font-bold uppercase tracking-wide">{audFirm}</p>
-          <p className="text-[7.5px] font-bold uppercase">{audStatus}</p>
-          <div className="text-[6.5px] font-bold pt-0.5 leading-tight">
+          <p className="text-[12px] font-bold uppercase tracking-wider">{audFirm}</p>
+          <p className="text-[9.5px] font-bold uppercase tracking-wide">{audStatus}</p>
+          <div className="text-[8.5px] font-bold pt-0.5 leading-snug">
             {audName && <p>{audName}</p>}
             {(audMem || audReg) && (
               <p>
@@ -136,7 +136,7 @@ export const CoverPage = ({ formData }) => {
                 {audReg ? ` | F.R.No: ${audReg}` : ''}
               </p>
             )}
-            {audAddr && <p>Address : - {audAddr}</p>}
+            {audAddr && <p className="max-w-[95%] mx-auto">Address : - {audAddr}</p>}
             {audEmail && <p>Email. Id- {audEmail}</p>}
             {audMobile && <p>Mob.No- {audMobile}</p>}
           </div>
@@ -825,53 +825,52 @@ export const Schedule9DPage = ({ formData }) => {
   const trusteesPan = Array.from({ length: totalTrustees }).map((_, i) => trusteesPanData[i] || { name: '', pan: '' });
 
   return (
-    <A4Page pageLabel="Page 6 — Schedule 9-D">
-      <div className="text-[6.5px] font-sans">
-        <div className="text-center space-y-1 mb-6 font-bold pb-2">
-          <p className="text-[9px]">"SCHEDULE IX-D"</p>
-          <p className="text-[7px] font-normal">[See rule 19 (2A)]</p>
-          <p className="mt-2 text-[7px] font-normal">Information to be submitted by the Auditor along with Audit Report under</p>
-          <p className="text-[7px] font-normal">sub-section (1) of section 34 of</p>
-          <p className="text-[7px] font-normal">the Maharashtra Public Trusts Act.</p>
+    <A4Page pageLabel="Page 7 — Schedule 9-D">
+      <div className="text-[7.5px] font-sans leading-relaxed">
+        <div className="text-center space-y-0.5 mb-3 font-bold">
+          <p className="text-[11px] tracking-wide">"SCHEDULE IX-D"</p>
+          <p className="text-[8px] font-normal">[See rule 19 (2A)]</p>
+          <p className="mt-1 text-[8px] font-normal">Information to be submitted by the Auditor along with Audit Report under</p>
+          <p className="text-[8px] font-normal">sub-section (1) of section 34 of the Maharashtra Public Trusts Act.</p>
         </div>
 
-        <table className="w-full border-collapse border border-black text-[6.5px]">
+        <table className="w-full border-collapse border border-black text-[7.5px] mt-2">
           <thead>
-            <tr>
-              <th className="border border-black p-1.5 w-[8%] text-center font-normal">Sr.<br/>No.</th>
-              <th className="border border-black p-1.5 w-[45%] text-center font-normal">Particulars</th>
-              <th className="border border-black p-1.5 text-center font-normal">Details</th>
+            <tr className="bg-slate-100">
+              <th className="border border-black p-1.5 w-[8%] text-center font-bold">Sr.<br/>No.</th>
+              <th className="border border-black p-1.5 w-[44%] text-center font-bold">Particulars</th>
+              <th className="border border-black p-1.5 text-center font-bold">Details</th>
             </tr>
           </thead>
           <tbody>
             <tr>
-              <td className="border border-black p-1.5 text-center align-top">1.</td>
-              <td className="border border-black p-1.5 align-top">PAN No. of Trust.</td>
-              <td className="border border-black p-1.5 align-top">{formData.sch9d_trustPan}</td>
+              <td className="border border-black p-2 text-center align-middle font-bold">1.</td>
+              <td className="border border-black p-2 align-middle">PAN No. of Trust.</td>
+              <td className="border border-black p-2 align-middle font-mono font-bold">{formData.sch9d_trustPan}</td>
             </tr>
             <tr>
-              <td className="border border-black p-1.5 text-center align-top">2.</td>
-              <td className="border border-black p-1.5 align-top">Registration No. with date of registration under section 12AA of Income Tax Act, 1961 (43 of 1961).</td>
-              <td className="border border-black p-1.5 align-top">{formData.sch9d_incomeTaxRegistration}</td>
+              <td className="border border-black p-2 text-center align-middle font-bold">2.</td>
+              <td className="border border-black p-2 align-middle">Registration No. with date of registration under section 12AA of Income Tax Act, 1961 (43 of 1961).</td>
+              <td className="border border-black p-2 align-middle">{formData.sch9d_incomeTaxRegistration}</td>
             </tr>
             <tr>
-              <td className="border border-black p-1.5 text-center align-top">3.</td>
-              <td className="border border-black p-1.5 align-top">Acknowledgement No. with date of filing of the Return of Income for earlier three years.</td>
+              <td className="border border-black p-2 text-center align-middle font-bold">3.</td>
+              <td className="border border-black p-2 align-middle">Acknowledgement No. with date of filing of the Return of Income for earlier three years.</td>
               <td className="border border-black p-0 align-top">
                 <table className="w-full h-full border-collapse">
                   <thead>
-                    <tr>
-                      <th className="border-b border-r border-black p-1 font-normal w-12 text-center">Sr.<br/>No.</th>
-                      <th className="border-b border-r border-black p-1 font-normal text-center">Acknowledgement No.</th>
-                      <th className="border-b border-black p-1 font-normal w-20 text-center">Year</th>
+                    <tr className="bg-slate-50">
+                      <th className="border-b border-r border-black p-1.5 font-bold w-12 text-center">Sr.<br/>No.</th>
+                      <th className="border-b border-r border-black p-1.5 font-bold text-center">Acknowledgement No.</th>
+                      <th className="border-b border-black p-1.5 font-bold w-20 text-center">Year</th>
                     </tr>
                   </thead>
                   <tbody>
                     {previousReturns.map((item, index) => (
                       <tr key={index}>
-                        <td className={`border-r border-black p-1 text-center ${index !== previousReturns.length - 1 ? 'border-b' : ''}`}>{['(i)', '(ii)', '(iii)', '(iv)', '(v)'][index] || `(${index + 1})`}</td>
-                        <td className={`border-r border-black p-1 text-center ${index !== previousReturns.length - 1 ? 'border-b' : ''}`}>{item.receiptNo || ''}</td>
-                        <td className={`p-1 text-center ${index !== previousReturns.length - 1 ? 'border-b' : ''}`}>{item.year || ''}</td>
+                        <td className={`border-r border-black p-1.5 text-center ${index !== previousReturns.length - 1 ? 'border-b' : ''}`}>{['(i)', '(ii)', '(iii)', '(iv)', '(v)'][index] || `(${index + 1})`}</td>
+                        <td className={`border-r border-black p-1.5 text-center font-mono ${index !== previousReturns.length - 1 ? 'border-b' : ''}`}>{item.receiptNo || ''}</td>
+                        <td className={`p-1.5 text-center ${index !== previousReturns.length - 1 ? 'border-b' : ''}`}>{item.year || ''}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -879,23 +878,23 @@ export const Schedule9DPage = ({ formData }) => {
               </td>
             </tr>
             <tr>
-              <td className="border border-black p-1.5 text-center align-top">4.</td>
-              <td className="border border-black p-1.5 align-top">PAN No. of all Trustees.</td>
+              <td className="border border-black p-2 text-center align-middle font-bold">4.</td>
+              <td className="border border-black p-2 align-middle">PAN No. of all Trustees.</td>
               <td className="border border-black p-0 align-top">
                 <table className="w-full h-full border-collapse">
                   <thead>
-                    <tr>
-                      <th className="border-b border-r border-black p-1 font-normal w-12 text-center">Sr.<br/>No.</th>
-                      <th className="border-b border-r border-black p-1 font-normal text-center">Name of Trustee</th>
-                      <th className="border-b border-black p-1 font-normal w-24 text-center">PAN No.</th>
+                    <tr className="bg-slate-50">
+                      <th className="border-b border-r border-black p-1.5 font-bold w-12 text-center">Sr.<br/>No.</th>
+                      <th className="border-b border-r border-black p-1.5 font-bold text-center">Name of Trustee</th>
+                      <th className="border-b border-black p-1.5 font-bold w-24 text-center">PAN No.</th>
                     </tr>
                   </thead>
                   <tbody>
                     {trusteesPan.map((item, index) => (
                       <tr key={index}>
-                        <td className={`border-r border-black p-1 text-center ${index !== trusteesPan.length - 1 ? 'border-b' : ''}`}>{`(${index + 1})`}</td>
-                        <td className={`border-r border-black p-1 text-center ${index !== trusteesPan.length - 1 ? 'border-b' : ''}`}>{item.name}</td>
-                        <td className={`p-1 text-center ${index !== trusteesPan.length - 1 ? 'border-b' : ''}`}>{item.pan}</td>
+                        <td className={`border-r border-black p-1.5 text-center ${index !== trusteesPan.length - 1 ? 'border-b' : ''}`}>{`(${index + 1})`}</td>
+                        <td className={`border-r border-black p-1.5 text-left ${index !== trusteesPan.length - 1 ? 'border-b' : ''}`}>{item.name}</td>
+                        <td className={`p-1.5 text-center font-mono ${index !== trusteesPan.length - 1 ? 'border-b' : ''}`}>{item.pan}</td>
                       </tr>
                     ))}
                   </tbody>

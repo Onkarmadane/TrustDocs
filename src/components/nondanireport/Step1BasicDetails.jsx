@@ -110,42 +110,78 @@ const Step1BasicDetails = ({ formData, onChange, reportType, setReportType }) =>
             <h2 className="input-headings text-xl font-bold">कार्यकारी मंडळ (Committee Members)</h2>
             <p className="text-sm text-slate-500 mt-1">Min 7, Max 13 members as per rules</p>
           </div>
-          <button onClick={addCommitteeMember} className="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-semibold hover:bg-indigo-700 transition-colors">+ Add Member</button>
+          <button 
+            type="button"
+            onClick={addCommitteeMember} 
+            className="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-semibold hover:bg-indigo-700 transition-colors shadow-sm"
+          >
+            + Add Member
+          </button>
         </div>
+
         {(formData.committeeMembers || []).length === 0 && (
-          <div className="text-center py-8 text-slate-400 border-2 border-dashed border-slate-200 rounded-xl">
-            No members added yet. Click "+ Add Member" to start.
+          <div className="text-center py-8 text-slate-400 border-2 border-dashed border-slate-200 rounded-xl bg-white">
+            <p className="font-medium text-sm">No members added yet. Click below to add Member 1.</p>
+            <button
+              type="button"
+              onClick={addCommitteeMember}
+              className="mt-3 px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-semibold hover:bg-indigo-700 transition-colors shadow-sm"
+            >
+              + Add Member
+            </button>
           </div>
         )}
-        {(formData.committeeMembers || []).map((member, index) => (
-          <div key={index} className="bg-white p-4 rounded-xl border border-slate-200 space-y-3">
-            <div className="flex items-center justify-between mb-2">
-              <span className="font-bold text-slate-600 text-sm">Member #{index + 1}</span>
-              <button onClick={() => removeCommitteeMember(index)} className="px-3 py-1 bg-red-50 text-red-600 rounded-lg text-sm font-semibold hover:bg-red-100">Remove</button>
+
+        <div className="space-y-4">
+          {(formData.committeeMembers || []).map((member, index) => (
+            <div key={index} className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm space-y-3">
+              <div className="flex items-center justify-between mb-2">
+                <span className="font-bold text-slate-700 text-sm">Member #{index + 1} (सभासद क्र. {index + 1})</span>
+                <button 
+                  type="button"
+                  onClick={() => removeCommitteeMember(index)} 
+                  className="px-3 py-1 bg-red-50 text-red-600 rounded-lg text-xs font-semibold hover:bg-red-100 transition-colors"
+                >
+                  Remove
+                </button>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <InputField label="Full Name (संपूर्ण नाव)" placeholder="Enter Full Name Here..." value={member.name || ''} onChange={(e) => handleCommitteeChange(index, 'name', e.target.value)} />
+                <InputField label="Address (पत्ता)" placeholder="Enter Full Address Here..." value={member.address || ''} onChange={(e) => handleCommitteeChange(index, 'address', e.target.value)} />
+                <SelectField
+                  label="Designation (पद)"
+                  value={member.designation || ''}
+                  onChange={(e) => handleCommitteeChange(index, 'designation', e.target.value)}
+                  options={[
+                    { value: '', label: 'Select Designation' },
+                    { value: 'अध्यक्ष', label: 'अध्यक्ष (President)' },
+                    { value: 'उपाध्यक्ष', label: 'उपाध्यक्ष (Vice President)' },
+                    { value: 'सचिव', label: 'सचिव (Secretary)' },
+                    { value: 'सहसचिव', label: 'सहसचिव (Joint Secretary)' },
+                    { value: 'कोषाध्यक्ष', label: 'कोषाध्यक्ष (Treasurer)' },
+                    { value: 'सदस्य', label: 'सदस्य (Member)' },
+                  ]}
+                />
+                <InputField label="Age (वय)" type="number" placeholder="Age" value={member.age || ''} onChange={(e) => handleCommitteeChange(index, 'age', e.target.value)} />
+                <InputField label="Occupation (व्यवसाय)" placeholder="e.g. शेती, नोकरी" value={member.occupation || ''} onChange={(e) => handleCommitteeChange(index, 'occupation', e.target.value)} />
+                <InputField label="Nationality (राष्ट्रीयत्व)" value={member.nationality || 'भारतीय'} onChange={(e) => handleCommitteeChange(index, 'nationality', e.target.value)} />
+              </div>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <InputField label="Full Name (संपूर्ण नाव)" placeholder="Enter Full Name Here..." value={member.name || ''} onChange={(e) => handleCommitteeChange(index, 'name', e.target.value)} />
-              <InputField label="Address (पत्ता)" placeholder="Enter Full Address Here..." value={member.address || ''} onChange={(e) => handleCommitteeChange(index, 'address', e.target.value)} />
-              <SelectField
-                label="Designation (पद)"
-                value={member.designation || ''}
-                onChange={(e) => handleCommitteeChange(index, 'designation', e.target.value)}
-                options={[
-                  { value: '', label: 'Select Designation' },
-                  { value: 'अध्यक्ष', label: 'अध्यक्ष (President)' },
-                  { value: 'उपाध्यक्ष', label: 'उपाध्यक्ष (Vice President)' },
-                  { value: 'सचिव', label: 'सचिव (Secretary)' },
-                  { value: 'सहसचिव', label: 'सहसचिव (Joint Secretary)' },
-                  { value: 'कोषाध्यक्ष', label: 'कोषाध्यक्ष (Treasurer)' },
-                  { value: 'सदस्य', label: 'सदस्य (Member)' },
-                ]}
-              />
-              <InputField label="Age (वय)" type="number" placeholder="Age" value={member.age || ''} onChange={(e) => handleCommitteeChange(index, 'age', e.target.value)} />
-              <InputField label="Occupation (व्यवसाय)" placeholder="e.g. शेती, नोकरी" value={member.occupation || ''} onChange={(e) => handleCommitteeChange(index, 'occupation', e.target.value)} />
-              <InputField label="Nationality (राष्ट्रीयत्व)" value={member.nationality || 'भारतीय'} onChange={(e) => handleCommitteeChange(index, 'nationality', e.target.value)} />
-            </div>
+          ))}
+        </div>
+
+        {/* Add Member button below members list */}
+        {(formData.committeeMembers || []).length > 0 && (
+          <div className="pt-2">
+            <button
+              type="button"
+              onClick={addCommitteeMember}
+              className="w-full py-3 border-2 border-dashed border-indigo-300 hover:border-indigo-500 bg-indigo-50/50 hover:bg-indigo-50 text-indigo-700 font-semibold rounded-xl text-sm transition-all flex items-center justify-center gap-2 shadow-sm"
+            >
+              + Add Member (पुढील सभासद जोडा)
+            </button>
           </div>
-        ))}
+        )}
       </div>
 
       {/* Section 4: Objectives */}
@@ -194,62 +230,93 @@ const Step1BasicDetails = ({ formData, onChange, reportType, setReportType }) =>
                 <div className="flex justify-between items-center">
                   <h3 className="font-bold text-sm text-slate-700">इतर उद्देश (Other Custom Objectives)</h3>
                   <button
+                    type="button"
                     onClick={() => {
                       const newSelected = [...selectedObjectives, ''];
                       onChange({ target: { name: 'objectives', value: newSelected } });
                     }}
-                    className="px-3 py-1 bg-indigo-600 text-white rounded-lg text-xs font-semibold hover:bg-indigo-700 transition-colors"
+                    className="px-3 py-1.5 bg-indigo-600 text-white rounded-lg text-xs font-semibold hover:bg-indigo-700 transition-colors shadow-sm"
                   >
                     + Add Custom Objective
                   </button>
                 </div>
                 
                 {customObjectives.length === 0 ? (
-                  <p className="text-xs text-slate-400 italic">No custom objectives added yet.</p>
+                  <div className="text-center py-6 bg-slate-50 border-2 border-dashed border-slate-200 rounded-xl">
+                    <p className="text-xs text-slate-400 italic mb-2">No custom objectives added yet.</p>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const newSelected = [...selectedObjectives, ''];
+                        onChange({ target: { name: 'objectives', value: newSelected } });
+                      }}
+                      className="px-3.5 py-1.5 bg-indigo-50 text-indigo-600 hover:bg-indigo-100 rounded-lg text-xs font-semibold transition-colors"
+                    >
+                      + Add Custom Objective
+                    </button>
+                  </div>
                 ) : (
-                  customObjectives.map((obj, customIdx) => {
-                    let absoluteIndex = -1;
-                    let occurrenceCount = 0;
-                    for (let i = 0; i < selectedObjectives.length; i++) {
-                      if (!DEFAULT_OBJECTIVES.includes(selectedObjectives[i])) {
-                        if (occurrenceCount === customIdx) {
-                          absoluteIndex = i;
-                          break;
+                  <div className="space-y-3">
+                    {customObjectives.map((obj, customIdx) => {
+                      let absoluteIndex = -1;
+                      let occurrenceCount = 0;
+                      for (let i = 0; i < selectedObjectives.length; i++) {
+                        if (!DEFAULT_OBJECTIVES.includes(selectedObjectives[i])) {
+                          if (occurrenceCount === customIdx) {
+                            absoluteIndex = i;
+                            break;
+                          }
+                          occurrenceCount++;
                         }
-                        occurrenceCount++;
                       }
-                    }
 
-                    return (
-                      <div key={customIdx} className="flex gap-3 items-center">
-                        <span className="text-sm font-bold text-slate-400"># {customIdx + 1}</span>
-                        <div className="flex-1">
-                          <input
-                            type="text"
-                            placeholder="Enter custom objective"
-                            value={obj}
-                            onChange={(e) => {
-                              const updated = [...selectedObjectives];
-                              if (absoluteIndex !== -1) {
-                                updated[absoluteIndex] = e.target.value;
-                                onChange({ target: { name: 'objectives', value: updated } });
-                              }
+                      return (
+                        <div key={customIdx} className="flex gap-3 items-center bg-white p-3 rounded-lg border border-slate-200 shadow-sm">
+                          <span className="text-sm font-bold text-slate-500 min-w-[24px]">#{customIdx + 1}</span>
+                          <div className="flex-1">
+                            <input
+                              type="text"
+                              placeholder="Enter custom objective (उद्देश प्रविष्ट करा)"
+                              value={obj}
+                              onChange={(e) => {
+                                const updated = [...selectedObjectives];
+                                if (absoluteIndex !== -1) {
+                                  updated[absoluteIndex] = e.target.value;
+                                  onChange({ target: { name: 'objectives', value: updated } });
+                                }
+                              }}
+                              className="w-full px-4 py-2 text-sm border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white"
+                            />
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const updated = selectedObjectives.filter((_, i) => i !== absoluteIndex);
+                              onChange({ target: { name: 'objectives', value: updated } });
                             }}
-                            className="w-full px-4 py-2 text-sm border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white"
-                          />
+                            className="px-2.5 py-2 bg-red-50 text-red-500 rounded-lg text-xs font-bold hover:bg-red-100 transition-colors"
+                            title="Remove objective"
+                          >
+                            ✕
+                          </button>
                         </div>
-                        <button
-                          onClick={() => {
-                            const updated = selectedObjectives.filter((_, i) => i !== absoluteIndex);
-                            onChange({ target: { name: 'objectives', value: updated } });
-                          }}
-                          className="px-2.5 py-2 bg-red-50 text-red-500 rounded-lg text-xs hover:bg-red-100"
-                        >
-                          ✕
-                        </button>
-                      </div>
-                    );
-                  })
+                      );
+                    })}
+
+                    {/* Add Objective button below custom objectives list */}
+                    <div className="pt-2">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const newSelected = [...selectedObjectives, ''];
+                          onChange({ target: { name: 'objectives', value: newSelected } });
+                        }}
+                        className="w-full py-2.5 border-2 border-dashed border-indigo-300 hover:border-indigo-500 bg-indigo-50/50 hover:bg-indigo-50 text-indigo-700 font-semibold rounded-xl text-xs transition-all flex items-center justify-center gap-2 shadow-sm"
+                      >
+                        + Add Custom Objective (नवीन उद्देश जोडा)
+                      </button>
+                    </div>
+                  </div>
                 )}
               </div>
             </div>
