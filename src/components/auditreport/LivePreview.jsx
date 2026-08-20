@@ -800,8 +800,8 @@ export const ReceiptPaymentPage = ({ formData }) => {
     { label: 'BANK', inner: (openBank > 0 || openCash > 0) ? (openBank === 0 ? '0.00' : openBank) : null, outer: openTotal > 0 ? openTotal : null, isSubItem: true },
     { label: '', inner: null, outer: null },
     { label: '', inner: null, outer: null },
-    { label: 'To Receipts', inner: null, outer: null, isHeader: true },
-    { label: 'To Member Contribution', inner: null, outer: recMembers > 0 ? recMembers : null, isHeader: false },
+    { label: 'To Receipts', inner: (getNum('rec_receipts') > 0 && getNum('rec_receipts_total') > 0) ? getNum('rec_receipts') : null, outer: recReceipts > 0 ? recReceipts : null, isHeader: recReceipts === 0 },
+    { label: 'To Member Contribution', inner: (getNum('rec_members') > 0 && getNum('rec_members_total') > 0) ? getNum('rec_members') : null, outer: recMembers > 0 ? recMembers : null, isHeader: false },
   ];
 
   if (recDonation > 0) {

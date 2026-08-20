@@ -56,23 +56,29 @@ const Step6ReceiptPayment = ({ formData, onChange, setFormData }) => {
 
   let recStandardTotal = 0;
   receiptItems.forEach(item => {
-    if (item.subItems) {
-      item.subItems.forEach(sub => {
-        recStandardTotal += getNum(sub.key);
-      });
+    if (item.subItems && item.subItems.length > 0) {
+      const subSum = item.subItems.reduce((s, sub) => s + (getNum(sub.key) || getNum(`${sub.key}_total`)), 0);
+      const outerVal = getNum(`${item.key}_total`);
+      const innerVal = getNum(item.key);
+      recStandardTotal += (outerVal > 0 ? outerVal : (subSum > 0 ? subSum : innerVal));
     } else {
-      recStandardTotal += getNum(item.key);
+      const outerVal = getNum(`${item.key}_total`);
+      const innerVal = getNum(item.key);
+      recStandardTotal += (outerVal > 0 ? outerVal : innerVal);
     }
   });
 
   let payStandardTotal = 0;
   paymentItems.forEach(item => {
-    if (item.subItems) {
-      item.subItems.forEach(sub => {
-        payStandardTotal += getNum(sub.key);
-      });
+    if (item.subItems && item.subItems.length > 0) {
+      const subSum = item.subItems.reduce((s, sub) => s + (getNum(sub.key) || getNum(`${sub.key}_total`)), 0);
+      const outerVal = getNum(`${item.key}_total`);
+      const innerVal = getNum(item.key);
+      payStandardTotal += (outerVal > 0 ? outerVal : (subSum > 0 ? subSum : innerVal));
     } else {
-      payStandardTotal += getNum(item.key);
+      const outerVal = getNum(`${item.key}_total`);
+      const innerVal = getNum(item.key);
+      payStandardTotal += (outerVal > 0 ? outerVal : innerVal);
     }
   });
 

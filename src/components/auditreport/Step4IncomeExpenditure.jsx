@@ -21,33 +21,33 @@ const Step4IncomeExpenditure = ({ formData, onChange }) => {
 
   const baseExpenditureTotal =
     subTotalExpProperties +
-    getNum("exp_establishment") +
-    getNum("exp_remuneration_trustees") +
-    getNum("exp_remuneration_head") +
-    getNum("exp_legal") +
-    getNum("exp_audit") +
-    getNum("exp_contribution_fees") +
+    (getNum("exp_establishment") || getNum("exp_establishment_inner")) +
+    (getNum("exp_remuneration_trustees") || getNum("exp_remuneration_trustees_inner")) +
+    (getNum("exp_remuneration_head") || getNum("exp_remuneration_head_inner")) +
+    (getNum("exp_legal") || getNum("exp_legal_inner")) +
+    (getNum("exp_audit") || getNum("exp_audit_inner")) +
+    (getNum("exp_contribution_fees") || getNum("exp_contribution_fees_inner")) +
     subTotalWrittenOff +
-    getNum("exp_misc") +
-    getNum("exp_depreciations") +
-    getNum("exp_transfer_reserve") +
+    (getNum("exp_misc") || getNum("exp_misc_inner")) +
+    (getNum("exp_depreciations") || getNum("exp_depreciations_inner")) +
+    (getNum("exp_transfer_reserve") || getNum("exp_transfer_reserve_inner")) +
     subTotalObjectsTrust;
 
   //  INCOME SUBTOTAL CALCULATIONS (Updated mapping to the new keys) 
-  const subTotalIncRent = getNum("inc_rent_accrued_inner") + getNum("inc_rent_realised_inner");
+  const subTotalIncRent = getNum("inc_rent_accrued_inner") + getNum("inc_rent_realised_inner") + getNum("inc_rent_total_outer");
   const subTotalIncInterest =
     getNum("inc_interest_accrued_inner") + getNum("inc_interest_realised_inner") +
     getNum("inc_interest_securities_inner") + getNum("inc_interest_loan_inner") +
-    getNum("inc_interest_bank_inner");
+    getNum("inc_interest_bank_inner") + getNum("inc_interest_total_outer");
 
   const baseIncomeTotal =
     subTotalIncRent +
     subTotalIncInterest +
-    getNum("inc_dividend_outer") +
-    getNum("inc_donations_outer") +
-    getNum("inc_grants_outer") +
-    getNum("inc_other_sources_outer") +
-    getNum("inc_transfer_reserve_outer");
+    (getNum("inc_dividend_outer") || getNum("inc_dividend_inner") || getNum("inc_dividend")) +
+    (getNum("inc_donations_outer") || getNum("inc_donations_inner") || getNum("inc_donations")) +
+    (getNum("inc_grants_outer") || getNum("inc_grants_inner") || getNum("inc_grants")) +
+    (getNum("inc_other_sources_outer") || getNum("inc_other_sources_inner") || getNum("inc_other_sources")) +
+    (getNum("inc_transfer_reserve_outer") || getNum("inc_transfer_reserve_inner") || getNum("inc_transfer_reserve"));
 
   //  BALANCING STRATEGY
   const netBalance = baseIncomeTotal - baseExpenditureTotal;

@@ -3,17 +3,70 @@ import { fundsLiabilitiesItems, propertyAssetsItems } from './reportData';
 
 const Step5BalanceSheet = ({ formData, onChange }) => {
   const getNum = (key) => parseFloat(formData[key] || 0);
+
+  const calcGroupSubTotal = (itemKey) => {
+    if (itemKey === 'fl_trust_funds') {
+      const bal = getNum('fl_tf_balance');
+      const adjOuter = getNum('fl_tf_adjustment_outer');
+      const adjInner = getNum('fl_tf_adjustment_inner');
+      return adjOuter > 0 ? adjOuter : (bal + adjInner);
+    } else if (itemKey === 'fl_earmarked') {
+      const outer = getNum('fl_ef_other_outer');
+      return outer > 0 ? outer : (getNum('fl_ef_depreciation') + getNum('fl_ef_sinking') + getNum('fl_ef_reserve') + getNum('fl_ef_other_inner'));
+    } else if (itemKey === 'fl_loans') {
+      const outer = getNum('fl_lo_others_outer');
+      return outer > 0 ? outer : (getNum('fl_lo_trustee') + getNum('fl_lo_others_inner'));
+    } else if (itemKey === 'fl_liabilities') {
+      const outer = getNum('fl_li_sundry_outer');
+      return outer > 0 ? outer : (getNum('fl_li_expenses') + getNum('fl_li_advances') + getNum('fl_li_rent') + getNum('fl_li_sundry_inner'));
+    } else if (itemKey === 'fl_income_exp') {
+      const ieBal = getNum('fl_ie_balance');
+      const surplus = getNum('fl_ie_surplus');
+      const deficit = getNum('fl_ie_deficit');
+      const appInner = getNum('fl_ie_appropriation_inner');
+      const appOuter = getNum('fl_ie_appropriation_outer');
+      return appOuter > 0 ? appOuter : (ieBal + surplus - deficit - appInner);
+    } else if (itemKey === 'pa_immovable') {
+      const bal = getNum('pa_im_balance');
+      const add = getNum('pa_im_add');
+      const ded = getNum('pa_im_deduction');
+      const depInner = getNum('pa_im_dep_inner');
+      const depOuter = getNum('pa_im_dep_outer');
+      return depOuter > 0 ? depOuter : (bal + add - ded - depInner);
+    } else if (itemKey === 'pa_furniture') {
+      const bal = getNum('pa_fu_balance');
+      const add = getNum('pa_fu_add');
+      const less = getNum('pa_fu_less');
+      const depInner = getNum('pa_fu_dep_inner');
+      const depOuter = getNum('pa_fu_dep_outer');
+      return depOuter > 0 ? depOuter : (bal + add - less - depInner);
+    } else if (itemKey === 'pa_loans') {
+      const outer = getNum('pa_lo_others_outer');
+      return outer > 0 ? outer : (getNum('pa_lo_scholarships') + getNum('pa_lo_others_inner'));
+    } else if (itemKey === 'pa_advances') {
+      const outer = getNum('pa_ad_others_outer');
+      return outer > 0 ? outer : (getNum('pa_ad_trustees') + getNum('pa_ad_employees') + getNum('pa_ad_contractor') + getNum('pa_ad_lawyers') + getNum('pa_ad_others_inner'));
+    } else if (itemKey === 'pa_income_outstanding') {
+      const outer = getNum('pa_io_other_outer');
+      return outer > 0 ? outer : (getNum('pa_io_rent') + getNum('pa_io_interest') + getNum('pa_io_other_inner'));
+    } else if (itemKey === 'pa_cash') {
+      const outer = getNum('pa_cb_manager_outer');
+      return outer > 0 ? outer : (getNum('pa_cb_saving') + getNum('pa_cb_current') + getNum('pa_cb_fixed') + getNum('pa_cb_trustee') + getNum('pa_cb_manager_inner'));
+    }
+    return 0;
+  };
+
   // Calculate totals for Funds & Liabilities
   let flTotal = 0;
   fundsLiabilitiesItems.forEach(item => {
     if (item.type === 'nested') {
-      item.subFields.forEach(sub => {
-        if (sub.type === 'double_field' || sub.outerKey) {
-          flTotal += getNum(sub.outerKey);
-        }
-      });
-    } else if (item.type === 'double_field' || item.outerKey) {
-      flTotal += getNum(item.outerKey);
+      flTotal += calcGroupSubTotal(item.key);
+    } else if (item.type === 'double_field') {
+      const outV = getNum(item.outerKey);
+      const inV = getNum(item.innerKey);
+      flTotal += (outV > 0 ? outV : inV);
+    } else {
+      flTotal += (getNum(item.outerKey) || getNum(item.key));
     }
   });
 
@@ -21,13 +74,13 @@ const Step5BalanceSheet = ({ formData, onChange }) => {
   let paTotal = 0;
   propertyAssetsItems.forEach(item => {
     if (item.type === 'nested') {
-      item.subFields.forEach(sub => {
-        if (sub.type === 'double_field' || sub.outerKey) {
-          paTotal += getNum(sub.outerKey);
-        }
-      });
-    } else if (item.type === 'double_field' || item.outerKey) {
-      paTotal += getNum(item.outerKey);
+      paTotal += calcGroupSubTotal(item.key);
+    } else if (item.type === 'double_field') {
+      const outV = getNum(item.outerKey);
+      const inV = getNum(item.innerKey);
+      paTotal += (outV > 0 ? outV : inV);
+    } else {
+      paTotal += (getNum(item.outerKey) || getNum(item.key));
     }
   });
 
@@ -74,6 +127,13 @@ const Step5BalanceSheet = ({ formData, onChange }) => {
                       <div className="space-y-2 pl-4">
                         {item.subFields.map((sub, index) => {
                           const isLast = index === item.subFields.length - 1;
+                          const groupSubTotal = calcGroupSubTotal(item.key);
+                          const outerVal = sub.outerKey
+                            ? (formData[sub.outerKey] !== undefined && formData[sub.outerKey] !== ''
+                                ? formData[sub.outerKey]
+                                : (isLast && groupSubTotal !== 0 ? groupSubTotal.toFixed(2) : ''))
+                            : '';
+
                           return (
                             <div key={sub.key || sub.innerKey} className="grid grid-cols-12 items-center">
                               <span className="col-span-6 text-slate-700">{sub.label}</span>
@@ -83,7 +143,7 @@ const Step5BalanceSheet = ({ formData, onChange }) => {
                                 
                                 {/* Outer Input */}
                                 {sub.type === "double_field" || sub.outerKey ? (
-                                  renderInput(sub.outerKey, formData[sub.outerKey] || "", false, true)
+                                  renderInput(sub.outerKey, outerVal, false, true)
                                 ) : (
                                   <div className="w-24" />
                                 )}
@@ -142,6 +202,13 @@ const Step5BalanceSheet = ({ formData, onChange }) => {
                       <div className="space-y-2 pl-4">
                         {item.subFields.map((sub, index) => {
                           const isLast = index === item.subFields.length - 1;
+                          const groupSubTotal = calcGroupSubTotal(item.key);
+                          const outerVal = sub.outerKey
+                            ? (formData[sub.outerKey] !== undefined && formData[sub.outerKey] !== ''
+                                ? formData[sub.outerKey]
+                                : (isLast && groupSubTotal !== 0 ? groupSubTotal.toFixed(2) : ''))
+                            : '';
+
                           return (
                             <div key={sub.key || sub.innerKey} className="grid grid-cols-12 items-center">
                               <span className="col-span-6 text-slate-700">{sub.label}</span>
@@ -151,7 +218,7 @@ const Step5BalanceSheet = ({ formData, onChange }) => {
                                 
                                 {/* Outer Input */}
                                 {sub.type === "double_field" || sub.outerKey ? (
-                                  renderInput(sub.outerKey, formData[sub.outerKey] || "", false, true)
+                                  renderInput(sub.outerKey, outerVal, false, true)
                                 ) : (
                                   <div className="w-24" />
                                 )}

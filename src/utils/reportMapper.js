@@ -393,14 +393,15 @@ const buildAccountingRows = (items, formData) => {
           });
         });
       } else {
-        const val = getNum(item.key);
-        const enteredTotal = getNum(`${item.key}_total`);
-        const finalVal = enteredTotal > 0 ? enteredTotal : (val !== 0 ? val : null);
+        const innerVal = getNum(item.key);
+        const outerVal = getNum(`${item.key}_total`);
+        const finalTotal = outerVal > 0 ? outerVal : (innerVal > 0 ? innerVal : null);
+        const finalAmount = innerVal > 0 && outerVal > 0 ? innerVal : null;
         rows.push({
           key: item.key,
           label: item.label,
-          amount: null,
-          total: finalVal,
+          amount: finalAmount,
+          total: finalTotal,
           isHeader: false
         });
       }
@@ -409,8 +410,9 @@ const buildAccountingRows = (items, formData) => {
     items.forEach(item => {
       if (item.subItems && item.subItems.length > 0) {
         const subSum = item.subItems.reduce((s, sub) => s + (getNum(sub.key) || getNum(`${sub.key}_total`)), 0);
-        const enteredTotal = getNum(`${item.key}_total`) || getNum(item.key);
-        const finalSubTotal = enteredTotal > 0 ? enteredTotal : subSum;
+        const outerVal = getNum(`${item.key}_total`);
+        const innerVal = getNum(item.key);
+        const finalSubTotal = outerVal > 0 ? outerVal : (subSum > 0 ? subSum : (innerVal > 0 ? innerVal : 0));
 
         rows.push({
           key: item.key,
@@ -431,14 +433,15 @@ const buildAccountingRows = (items, formData) => {
           });
         });
       } else {
-        const val = getNum(item.key);
-        const enteredTotal = getNum(`${item.key}_total`);
-        const finalVal = enteredTotal > 0 ? enteredTotal : (val !== 0 ? val : null);
+        const innerVal = getNum(item.key);
+        const outerVal = getNum(`${item.key}_total`);
+        const finalTotal = outerVal > 0 ? outerVal : (innerVal > 0 ? innerVal : null);
+        const finalAmount = innerVal > 0 && outerVal > 0 ? innerVal : null;
         rows.push({
           key: item.key,
           label: item.label,
-          amount: null,
-          total: finalVal,
+          amount: finalAmount,
+          total: finalTotal,
           isHeader: false
         });
       }
@@ -448,7 +451,7 @@ const buildAccountingRows = (items, formData) => {
   return rows;
 };
 
-/** Compute receipt total from leaf keys only (skip parent header keys). */
+/** Compute receipt total from leaf keys or parent outer/inner totals */
 const calcAccountingTotal = (items, formData) => {
   const getNum = (k) => parseFloat(formData[k] || 0);
   const isPayment = items.some(i => i.key === 'pay_expenses');
@@ -470,7 +473,9 @@ const calcAccountingTotal = (items, formData) => {
     let otherPaySum = 0;
     items.forEach(item => {
       if (item.key !== 'pay_expenses' && !expenseKeys.includes(item.key) && item.key !== 'pay_close') {
-        otherPaySum += (getNum(`${item.key}_total`) || getNum(item.key));
+        const outerVal = getNum(`${item.key}_total`);
+        const innerVal = getNum(item.key);
+        otherPaySum += (outerVal > 0 ? outerVal : innerVal);
       }
     });
 
@@ -480,10 +485,14 @@ const calcAccountingTotal = (items, formData) => {
     items.forEach(item => {
       if (item.subItems && item.subItems.length > 0) {
         const subSum = item.subItems.reduce((s, sub) => s + (getNum(sub.key) || getNum(`${sub.key}_total`)), 0);
-        const parentVal = getNum(`${item.key}_total`) || getNum(item.key);
-        sum += parentVal > 0 ? parentVal : subSum;
+        const outerVal = getNum(`${item.key}_total`);
+        const innerVal = getNum(item.key);
+        const parentVal = outerVal > 0 ? outerVal : (subSum > 0 ? subSum : innerVal);
+        sum += parentVal;
       } else {
-        sum += (getNum(`${item.key}_total`) || getNum(item.key));
+        const outerVal = getNum(`${item.key}_total`);
+        const innerVal = getNum(item.key);
+        sum += (outerVal > 0 ? outerVal : innerVal);
       }
     });
     return sum;
@@ -512,12 +521,17 @@ export const mapFormDataToBackendPayload = (formData, currentStep, status = 'dra
 
   const baseExpenditureTotal =
     subTotalExpProperties +
-    getNum('exp_establishment') + getNum('exp_remuneration_trustees') +
-    getNum('exp_remuneration_head') + getNum('exp_legal') +
-    getNum('exp_audit') + getNum('exp_contribution_fees') +
+    (getNum('exp_establishment') || getNum('exp_establishment_inner')) +
+    (getNum('exp_remuneration_trustees') || getNum('exp_remuneration_trustees_inner')) +
+    (getNum('exp_remuneration_head') || getNum('exp_remuneration_head_inner')) +
+    (getNum('exp_legal') || getNum('exp_legal_inner')) +
+    (getNum('exp_audit') || getNum('exp_audit_inner')) +
+    (getNum('exp_contribution_fees') || getNum('exp_contribution_fees_inner')) +
     subTotalWrittenOff +
-    getNum('exp_misc') + getNum('exp_depreciations') +
-    getNum('exp_transfer_reserve') + subTotalObjectsTrust;
+    (getNum('exp_misc') || getNum('exp_misc_inner')) +
+    (getNum('exp_depreciations') || getNum('exp_depreciations_inner')) +
+    (getNum('exp_transfer_reserve') || getNum('exp_transfer_reserve_inner')) +
+    subTotalObjectsTrust;
 
   //Step 4: Income sub-totals
   const subTotalIncRent =
@@ -551,22 +565,76 @@ export const mapFormDataToBackendPayload = (formData, currentStep, status = 'dra
   let flTotal = 0;
   fundsLiabilitiesItems.forEach(item => {
     if (item.type === 'nested') {
+      let groupTotal = 0;
+      let hasOuter = false;
       item.subFields.forEach(sub => {
-        if (sub.type === 'double_field' || sub.outerKey) flTotal += getNum(sub.outerKey);
+        if (sub.type === 'double_field' || sub.outerKey) {
+          const outV = getNum(sub.outerKey);
+          if (outV > 0) {
+            groupTotal += outV;
+            hasOuter = true;
+          }
+        }
       });
-    } else if (item.type === 'double_field' || item.outerKey) {
-      flTotal += getNum(item.outerKey);
+      if (!hasOuter) {
+        if (item.key === 'fl_trust_funds') {
+          groupTotal = getNum('fl_tf_balance') + getNum('fl_tf_adjustment_inner');
+        } else if (item.key === 'fl_earmarked') {
+          groupTotal = getNum('fl_ef_depreciation') + getNum('fl_ef_sinking') + getNum('fl_ef_reserve') + getNum('fl_ef_other_inner');
+        } else if (item.key === 'fl_loans') {
+          groupTotal = getNum('fl_lo_trustee') + getNum('fl_lo_others_inner');
+        } else if (item.key === 'fl_liabilities') {
+          groupTotal = getNum('fl_li_expenses') + getNum('fl_li_advances') + getNum('fl_li_rent') + getNum('fl_li_sundry_inner');
+        } else if (item.key === 'fl_income_exp') {
+          groupTotal = getNum('fl_ie_balance') + getNum('fl_ie_surplus') - getNum('fl_ie_deficit') - getNum('fl_ie_appropriation_inner');
+        }
+      }
+      flTotal += groupTotal;
+    } else if (item.type === 'double_field') {
+      const outV = getNum(item.outerKey);
+      const inV = getNum(item.innerKey);
+      flTotal += (outV > 0 ? outV : inV);
+    } else {
+      flTotal += (getNum(item.outerKey) || getNum(item.key));
     }
   });
 
   let paTotal = 0;
   propertyAssetsItems.forEach(item => {
     if (item.type === 'nested') {
+      let groupTotal = 0;
+      let hasOuter = false;
       item.subFields.forEach(sub => {
-        if (sub.type === 'double_field' || sub.outerKey) paTotal += getNum(sub.outerKey);
+        if (sub.type === 'double_field' || sub.outerKey) {
+          const outV = getNum(sub.outerKey);
+          if (outV > 0) {
+            groupTotal += outV;
+            hasOuter = true;
+          }
+        }
       });
-    } else if (item.type === 'double_field' || item.outerKey) {
-      paTotal += getNum(item.outerKey);
+      if (!hasOuter) {
+        if (item.key === 'pa_immovable') {
+          groupTotal = getNum('pa_im_balance') + getNum('pa_im_add') - getNum('pa_im_deduction') - getNum('pa_im_dep_inner');
+        } else if (item.key === 'pa_furniture') {
+          groupTotal = getNum('pa_fu_balance') + getNum('pa_fu_add') - getNum('pa_fu_less') - getNum('pa_fu_dep_inner');
+        } else if (item.key === 'pa_loans') {
+          groupTotal = getNum('pa_lo_scholarships') + getNum('pa_lo_others_inner');
+        } else if (item.key === 'pa_advances') {
+          groupTotal = getNum('pa_ad_trustees') + getNum('pa_ad_employees') + getNum('pa_ad_contractor') + getNum('pa_ad_lawyers') + getNum('pa_ad_others_inner');
+        } else if (item.key === 'pa_income_outstanding') {
+          groupTotal = getNum('pa_io_rent') + getNum('pa_io_interest') + getNum('pa_io_other_inner');
+        } else if (item.key === 'pa_cash') {
+          groupTotal = getNum('pa_cb_saving') + getNum('pa_cb_current') + getNum('pa_cb_fixed') + getNum('pa_cb_trustee') + getNum('pa_cb_manager_inner');
+        }
+      }
+      paTotal += groupTotal;
+    } else if (item.type === 'double_field') {
+      const outV = getNum(item.outerKey);
+      const inV = getNum(item.innerKey);
+      paTotal += (outV > 0 ? outV : inV);
+    } else {
+      paTotal += (getNum(item.outerKey) || getNum(item.key));
     }
   });
 
