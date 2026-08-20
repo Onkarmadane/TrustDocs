@@ -14,9 +14,16 @@ import {
 } from './reportData';
 
 const fmt = (val) => {
-  const n = parseFloat(val);
+  if (val === null || val === undefined || val === '') return '';
+  if (val === '-' || val === '—' || val === '- ') return '-';
+  if (val === '0.00') return '0.00';
+  const n = parseFloat(String(val).replace(/,/g, ''));
   if (isNaN(n) || n === 0) return '';
-  return n.toLocaleString('en-IN', { minimumFractionDigits: 2 });
+  const str = String(val);
+  if (str.includes('.') && str.split('.')[1].length === 2) {
+    return n.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
+  return n.toLocaleString('en-IN');
 };
 
 // ── Helpers to format addresses from the new Step 1 fields ──
@@ -205,7 +212,25 @@ export const PermissionsPage = ({ formData }) => (
 
 // Schedule & Deductions IX
 export const ScheduleIXPage = ({ formData }) => {
-  const grossIncome = parseFloat(formData.sch_income_shown || 0);
+  const getNum = (key) => parseFloat(formData[key] || 0);
+
+  const subTotalIncRent = getNum("inc_rent_accrued_inner") + getNum("inc_rent_realised_inner") + getNum("inc_rent_total_outer");
+  const subTotalIncInterest =
+    getNum("inc_interest_accrued_inner") + getNum("inc_interest_realised_inner") +
+    getNum("inc_interest_securities_inner") + getNum("inc_interest_loan_inner") +
+    getNum("inc_interest_bank_inner") + getNum("inc_interest_total_outer");
+
+  const autoIncomeShown =
+    subTotalIncRent +
+    subTotalIncInterest +
+    (getNum("inc_dividend_outer") || getNum("inc_dividend_inner") || getNum("inc_dividend")) +
+    (getNum("inc_donations_outer") || getNum("inc_donations_inner") || getNum("inc_donations")) +
+    (getNum("inc_grants_outer") || getNum("inc_grants_inner") || getNum("inc_grants")) +
+    (getNum("inc_other_sources_outer") || getNum("inc_other_sources_inner") || getNum("inc_other_sources")) +
+    (getNum("inc_transfer_reserve_outer") || getNum("inc_transfer_reserve_inner") || getNum("inc_transfer_reserve"));
+
+  const grossIncome = autoIncomeShown > 0 ? autoIncomeShown : parseFloat(formData.sch_income_shown || 0);
+
   const totalDeductions = scheduleIXItems.reduce((sum, item) => {
     if (item.type === 'group') {
       return sum + item.subItems.reduce((s, sub) => s + (parseFloat(formData[sub.key]) || 0), 0);
@@ -249,7 +274,7 @@ export const ScheduleIXPage = ({ formData }) => {
                 Income as showan in the income and Expenditure Account (Schedule IX)
               </td>
               <td className="border border-black font-bold text-center p-1 align-middle">
-                {formData.sch_income_shown ? Number(formData.sch_income_shown).toLocaleString('en-IN') : ''}
+                {grossIncome ? Number(grossIncome).toLocaleString('en-IN') : ''}
               </td>
             </tr>
 
@@ -257,76 +282,25 @@ export const ScheduleIXPage = ({ formData }) => {
               <td className="border border-black font-bold text-center w-[6%] p-1 align-top">II.</td>
               <td className="border border-black p-1 align-top text-[4.8px] leading-tight">
                 <p className="font-bold mb-0.5">Items not chargeable to contribution under Section 58 and Rules 32</p>
-                <div className="flex justify-between items-baseline">
-                  <span>i) Donations received from other Public Trust and Dharmadas:</span>
-                  <span className="font-bold font-mono text-right min-w-[30px] pr-1">{formData.sch_donations ? Number(formData.sch_donations).toLocaleString('en-IN') : ''}</span>
-                </div>
-                <div className="flex justify-between items-baseline">
-                  <span>ii) Grants received from Government and local authorities:</span>
-                  <span className="font-bold font-mono text-right min-w-[30px] pr-1">{formData.sch_grants ? Number(formData.sch_grants).toLocaleString('en-IN') : ''}</span>
-                </div>
-                <div className="flex justify-between items-baseline">
-                  <span>iii) Interest or Sinking or Depreciation Fund:</span>
-                  <span className="font-bold font-mono text-right min-w-[30px] pr-1">{formData.sch_sinking ? Number(formData.sch_sinking).toLocaleString('en-IN') : ''}</span>
-                </div>
-                <div className="flex justify-between items-baseline">
-                  <span>iv) Amount spent for the purpose of secular education:</span>
-                  <span className="font-bold font-mono text-right min-w-[30px] pr-1">{formData.sch_education ? Number(formData.sch_education).toLocaleString('en-IN') : ''}</span>
-                </div>
-                <div className="flex justify-between items-baseline">
-                  <span>v) Amount spent for the purpose of medical relief:</span>
-                  <span className="font-bold font-mono text-right min-w-[30px] pr-1">{formData.sch_medical ? Number(formData.sch_medical).toLocaleString('en-IN') : ''}</span>
-                </div>
-                <div className="flex justify-between items-baseline">
-                  <span>vi) Amount spent for the purpose of veterinary treatment of animals:</span>
-                  <span className="font-bold font-mono text-right min-w-[30px] pr-1">{formData.sch_veterinary ? Number(formData.sch_veterinary).toLocaleString('en-IN') : ''}</span>
-                </div>
-                <div className="flex justify-between items-baseline">
-                  <span>vii) Expenditure incurred from donations for relief of distress caused by scarcity, drought, flood, fire or other natural calamity:</span>
-                  <span className="font-bold font-mono text-right min-w-[30px] pr-1">{formData.sch_calamity ? Number(formData.sch_calamity).toLocaleString('en-IN') : ''}</span>
-                </div>
+                <div>i) Donations received from other Public Trust and Dharmadas:</div>
+                <div>ii) Grants received from Government and local authorities:</div>
+                <div>iii) Interest or Sinking or Depreciation Fund:</div>
+                <div>iv) Amount spent for the purpose of secular education:</div>
+                <div>v) Amount spent for the purpose of medical relief:</div>
+                <div>vi) Amount spent for the purpose of veterinary treatment of animals:</div>
+                <div>vii) Expenditure incurred from donations for relief of distress caused by scarcity, drought, flood, fire or other natural calamity:</div>
                 <div>viii) Deductions out of income from lands used for agricultural purpose:</div>
-                <div className="flex justify-between items-baseline pl-2">
-                  <span>a] Land Revenue and local Fund cess:</span>
-                  <span className="font-bold font-mono text-right min-w-[30px] pr-1">{formData.sch_agri_a ? Number(formData.sch_agri_a).toLocaleString('en-IN') : ''}</span>
-                </div>
-                <div className="flex justify-between items-baseline pl-2">
-                  <span>b] Rent payable to superior landlord:</span>
-                  <span className="font-bold font-mono text-right min-w-[30px] pr-1">{formData.sch_agri_b ? Number(formData.sch_agri_b).toLocaleString('en-IN') : ''}</span>
-                </div>
-                <div className="flex justify-between items-baseline pl-2">
-                  <span>c] Cost of production, if lands are cultivated by trust:</span>
-                  <span className="font-bold font-mono text-right min-w-[30px] pr-1">{formData.sch_agri_c ? Number(formData.sch_agri_c).toLocaleString('en-IN') : ''}</span>
-                </div>
+                <div className="pl-2">a] Land Revenue and local Fund cess:</div>
+                <div className="pl-2">b] Rent payable to superior landlord:</div>
+                <div className="pl-2">c] Cost of production, if lands are cultivated by trust:</div>
                 <div>ix) Deductions out of income from lands used for non agricultural purpose:</div>
-                <div className="flex justify-between items-baseline pl-2">
-                  <span>a] Assessment, cesses and other Government or Municipal taxes:</span>
-                  <span className="font-bold font-mono text-right min-w-[30px] pr-1">{formData.sch_non_agri_a ? Number(formData.sch_non_agri_a).toLocaleString('en-IN') : ''}</span>
-                </div>
-                <div className="flex justify-between items-baseline pl-2">
-                  <span>b] Ground rent payable to the superior landlord:</span>
-                  <span className="font-bold font-mono text-right min-w-[30px] pr-1">{formData.sch_non_agri_b ? Number(formData.sch_non_agri_b).toLocaleString('en-IN') : ''}</span>
-                </div>
-                <div className="flex justify-between items-baseline pl-2">
-                  <span>c] Insurance premia:</span>
-                  <span className="font-bold font-mono text-right min-w-[30px] pr-1">{formData.sch_non_agri_c ? Number(formData.sch_non_agri_c).toLocaleString('en-IN') : ''}</span>
-                </div>
-                <div className="flex justify-between items-baseline pl-2">
-                  <span>d] Repairs at 10% of gross rent of Building let out:</span>
-                  <span className="font-bold font-mono text-right min-w-[30px] pr-1">{formData.sch_non_agri_d ? Number(formData.sch_non_agri_d).toLocaleString('en-IN') : ''}</span>
-                </div>
-                <div className="flex justify-between items-baseline pl-2">
-                  <span>e] Cost of Collection at 4 percent of gross rent of buildings let out:</span>
-                  <span className="font-bold font-mono text-right min-w-[30px] pr-1">{formData.sch_non_agri_e ? Number(formData.sch_non_agri_e).toLocaleString('en-IN') : ''}</span>
-                </div>
-                <div className="flex justify-between items-baseline">
-                  <span>x) Cost of collection of income or receipts from securities, stocks etc at 1% of such income:</span>
-                  <span className="font-bold font-mono text-right min-w-[30px] pr-1">{formData.sch_securities_1 ? Number(formData.sch_securities_1).toLocaleString('en-IN') : ''}</span>
-                </div>
-                <div className="flex justify-between items-baseline">
-                  <span>xi) Deduction on account of repairs in respect of building not rented and yielding no income at 10% of the estimated gross annual rent:</span>
-                  <span className="font-bold font-mono text-right min-w-[30px] pr-1">{formData.sch_repairs ? Number(formData.sch_repairs).toLocaleString('en-IN') : ''}</span>
-                </div>
+                <div className="pl-2">a] Assessment, cesses and other Government or Municipal taxes:</div>
+                <div className="pl-2">b] Ground rent payable to the superior landlord:</div>
+                <div className="pl-2">c] Insurance premia:</div>
+                <div className="pl-2">d] Repairs at 10% of gross rent of Building let out:</div>
+                <div className="pl-2">e] Cost of Collection at 4 percent of gross rent of buildings let out:</div>
+                <div>x) Cost of collection of income or receipts from securities, stocks etc at 1% of such income:</div>
+                <div>xi) Deduction on account of repairs in respect of building not rented and yielding no income at 10% of the estimated gross annual rent:</div>
               </td>
               <td className="border border-black font-bold text-center p-1 align-middle">
                 {totalDeductions > 0 ? totalDeductions.toLocaleString('en-IN') : ''}
@@ -379,16 +353,19 @@ export const IncomeExpPage = ({ formData }) => {
     getNum("exp_contribution_fees") + subTotalWrittenOff + getNum("exp_misc") +
     getNum("exp_depreciations") + getNum("exp_transfer_reserve") + subTotalObjectsTrust;
 
-  const subTotalIncRent = getNum("inc_rent_accrued_inner") + getNum("inc_rent_realised_inner");
+  const subTotalIncRent = getNum("inc_rent_accrued_inner") + getNum("inc_rent_realised_inner") + getNum("inc_rent_total_outer");
   const subTotalIncInterest =
     getNum("inc_interest_accrued_inner") + getNum("inc_interest_realised_inner") +
     getNum("inc_interest_securities_inner") + getNum("inc_interest_loan_inner") +
-    getNum("inc_interest_bank_inner");
+    getNum("inc_interest_bank_inner") + getNum("inc_interest_total_outer");
 
   const baseIncomeTotal =
-    subTotalIncRent + subTotalIncInterest + getNum("inc_dividend_outer") +
-    getNum("inc_donations_outer") + getNum("inc_grants_outer") +
-    getNum("inc_other_sources_outer") + getNum("inc_transfer_reserve_outer");
+    subTotalIncRent + subTotalIncInterest +
+    (getNum("inc_dividend_outer") || getNum("inc_dividend_inner") || getNum("inc_dividend")) +
+    (getNum("inc_donations_outer") || getNum("inc_donations_inner") || getNum("inc_donations")) +
+    (getNum("inc_grants_outer") || getNum("inc_grants_inner") || getNum("inc_grants")) +
+    (getNum("inc_other_sources_outer") || getNum("inc_other_sources_inner") || getNum("inc_other_sources")) +
+    (getNum("inc_transfer_reserve_outer") || getNum("inc_transfer_reserve_inner") || getNum("inc_transfer_reserve"));
 
   const netBalance = baseIncomeTotal - baseExpenditureTotal;
   const autoCalculatedSurplus = netBalance > 0 ? netBalance : 0;
@@ -432,7 +409,7 @@ export const IncomeExpPage = ({ formData }) => {
   expRows.push({
     label: <span className="font-bold text-black">To Surplus Carried Over To Balance Sheet</span>,
     inner: '',
-    outer: surplus,
+    outer: surplus > 0 ? surplus : '',
     isLastNested: true
   });
 
@@ -460,10 +437,12 @@ export const IncomeExpPage = ({ formData }) => {
         });
       });
     } else if (inc.type === 'double_field') {
+      const innerVal = formData[inc.innerKey];
+      const outerVal = formData[inc.outerKey] || formData[inc.key];
       incRows.push({
         label: <span className="font-bold">{inc.label}</span>,
-        inner: formData[inc.innerKey],
-        outer: formData[inc.outerKey],
+        inner: innerVal,
+        outer: outerVal,
         isLastNested: true
       });
     } else {
@@ -478,7 +457,7 @@ export const IncomeExpPage = ({ formData }) => {
   incRows.push({
     label: <span className="font-bold">By Deficit Carried Over To Balance Sheet</span>,
     inner: '',
-    outer: deficit,
+    outer: deficit > 0 ? deficit : '',
     isLastNested: true
   });
 
@@ -561,25 +540,78 @@ export const IncomeExpPage = ({ formData }) => {
 export const BalanceSheetPage = ({ formData }) => {
   const getNum = (key) => parseFloat(formData[key] || 0);
 
+  // Balance Sheet Totals & Subtotals calculation
+  const calcGroupSubTotal = (itemKey) => {
+    if (itemKey === 'fl_trust_funds') {
+      const bal = getNum('fl_tf_balance');
+      const adjOuter = getNum('fl_tf_adjustment_outer');
+      const adjInner = getNum('fl_tf_adjustment_inner');
+      return adjOuter > 0 ? adjOuter : (bal + adjInner);
+    } else if (itemKey === 'fl_earmarked') {
+      const outer = getNum('fl_ef_other_outer');
+      return outer > 0 ? outer : (getNum('fl_ef_depreciation') + getNum('fl_ef_sinking') + getNum('fl_ef_reserve') + getNum('fl_ef_other_inner'));
+    } else if (itemKey === 'fl_loans') {
+      const outer = getNum('fl_lo_others_outer');
+      return outer > 0 ? outer : (getNum('fl_lo_trustee') + getNum('fl_lo_others_inner'));
+    } else if (itemKey === 'fl_liabilities') {
+      const outer = getNum('fl_li_sundry_outer');
+      return outer > 0 ? outer : (getNum('fl_li_expenses') + getNum('fl_li_advances') + getNum('fl_li_rent') + getNum('fl_li_sundry_inner'));
+    } else if (itemKey === 'fl_income_exp') {
+      const ieBal = getNum('fl_ie_balance');
+      const surplus = getNum('fl_ie_surplus');
+      const deficit = getNum('fl_ie_deficit');
+      const appInner = getNum('fl_ie_appropriation_inner');
+      const appOuter = getNum('fl_ie_appropriation_outer');
+      return appOuter > 0 ? appOuter : (ieBal + surplus - deficit - appInner);
+    } else if (itemKey === 'pa_immovable') {
+      const bal = getNum('pa_im_balance');
+      const add = getNum('pa_im_add');
+      const ded = getNum('pa_im_deduction');
+      const depInner = getNum('pa_im_dep_inner');
+      const depOuter = getNum('pa_im_dep_outer');
+      return depOuter > 0 ? depOuter : (bal + add - ded - depInner);
+    } else if (itemKey === 'pa_furniture') {
+      const bal = getNum('pa_fu_balance');
+      const add = getNum('pa_fu_add');
+      const less = getNum('pa_fu_less');
+      const depInner = getNum('pa_fu_dep_inner');
+      const depOuter = getNum('pa_fu_dep_outer');
+      return depOuter > 0 ? depOuter : (bal + add - less - depInner);
+    } else if (itemKey === 'pa_loans') {
+      const outer = getNum('pa_lo_others_outer');
+      return outer > 0 ? outer : (getNum('pa_lo_scholarships') + getNum('pa_lo_others_inner'));
+    } else if (itemKey === 'pa_advances') {
+      const outer = getNum('pa_ad_others_outer');
+      return outer > 0 ? outer : (getNum('pa_ad_trustees') + getNum('pa_ad_employees') + getNum('pa_ad_contractor') + getNum('pa_ad_lawyers') + getNum('pa_ad_others_inner'));
+    } else if (itemKey === 'pa_income_outstanding') {
+      const outer = getNum('pa_io_other_outer');
+      return outer > 0 ? outer : (getNum('pa_io_rent') + getNum('pa_io_interest') + getNum('pa_io_other_inner'));
+    } else if (itemKey === 'pa_cash') {
+      const outer = getNum('pa_cb_manager_outer');
+      return outer > 0 ? outer : (getNum('pa_cb_saving') + getNum('pa_cb_current') + getNum('pa_cb_fixed') + getNum('pa_cb_trustee') + getNum('pa_cb_manager_inner'));
+    }
+    return 0;
+  };
+
   let flTotal = 0;
   fundsLiabilitiesItems.forEach(item => {
     if (item.type === 'nested') {
-      item.subFields.forEach(sub => {
-        if (sub.type === 'double_field' || sub.outerKey) flTotal += getNum(sub.outerKey);
-      });
-    } else if (item.type === 'double_field' || item.outerKey) {
-      flTotal += getNum(item.outerKey);
+      flTotal += calcGroupSubTotal(item.key);
+    } else if (item.type === 'double_field') {
+      flTotal += getNum(item.outerKey) || getNum(item.innerKey);
+    } else {
+      flTotal += getNum(item.outerKey || item.key);
     }
   });
 
   let paTotal = 0;
   propertyAssetsItems.forEach(item => {
     if (item.type === 'nested') {
-      item.subFields.forEach(sub => {
-        if (sub.type === 'double_field' || sub.outerKey) paTotal += getNum(sub.outerKey);
-      });
-    } else if (item.type === 'double_field' || item.outerKey) {
-      paTotal += getNum(item.outerKey);
+      paTotal += calcGroupSubTotal(item.key);
+    } else if (item.type === 'double_field') {
+      paTotal += getNum(item.outerKey) || getNum(item.innerKey);
+    } else {
+      paTotal += getNum(item.outerKey || item.key);
     }
   });
 
@@ -588,21 +620,43 @@ export const BalanceSheetPage = ({ formData }) => {
     items.forEach(item => {
       if (item.type === 'nested') {
         rows.push({ label: item.label, inner: null, outer: null, isHeader: true });
+        const groupTotal = calcGroupSubTotal(item.key);
         item.subFields.forEach((sub, idx) => {
           const isLast = idx === item.subFields.length - 1;
           const innerKey = sub.innerKey || sub.key;
+          const innerVal = formData[innerKey];
+          const outerVal = sub.outerKey ? formData[sub.outerKey] : null;
+          const finalOuter = outerVal !== null && outerVal !== undefined && outerVal !== ''
+            ? outerVal
+            : (isLast && groupTotal !== 0 ? groupTotal : null);
+
           rows.push({
             label: sub.label,
-            inner: formData[innerKey],
-            outer: sub.outerKey ? formData[sub.outerKey] : null,
+            inner: innerVal !== undefined && innerVal !== '' && Number(innerVal) !== 0 ? innerVal : null,
+            outer: finalOuter,
             isLast,
             isSubItem: true
           });
         });
       } else if (item.type === 'double_field') {
-        rows.push({ label: item.label, inner: formData[item.innerKey], outer: formData[item.outerKey], isHeader: true, isLast: true });
+        const innerVal = formData[item.innerKey];
+        const outerVal = formData[item.outerKey];
+        rows.push({
+          label: item.label,
+          inner: innerVal !== undefined && innerVal !== '' && Number(innerVal) !== 0 ? innerVal : null,
+          outer: outerVal || innerVal || null,
+          isHeader: true,
+          isLast: true
+        });
       } else {
-        rows.push({ label: item.label, inner: null, outer: formData[item.outerKey || item.key], isHeader: true, isLast: true });
+        const val = formData[item.outerKey || item.key];
+        rows.push({
+          label: item.label,
+          inner: null,
+          outer: val || null,
+          isHeader: true,
+          isLast: true
+        });
       }
     });
     return rows;
@@ -611,7 +665,6 @@ export const BalanceSheetPage = ({ formData }) => {
   const flRows = buildRows(fundsLiabilitiesItems);
   const paRows = buildRows(propertyAssetsItems);
   const maxRows = Math.max(flRows.length, paRows.length);
-
 
   return (
     <A4Page pageLabel="Page 4 — Balance Sheet">
@@ -649,7 +702,7 @@ export const BalanceSheetPage = ({ formData }) => {
                   <td className={`border-r border-slate-200 p-0.5 text-right font-mono align-bottom ${fl?.isLast && fl?.inner != null ? 'border-b border-slate-400' : ''}`}>
                     {fl && fl.inner != null ? fmt(fl.inner) : ''}
                   </td>
-                  <td className={`border-r border-slate-200 p-0.5 text-right font-mono align-bottom ${fl?.isLast && fl?.outer != null ? 'border-b border-slate-400' : ''}`}>
+                  <td className={`border-r border-slate-200 p-0.5 text-right font-mono font-bold align-bottom ${fl?.isLast && fl?.outer != null ? 'border-b border-slate-400' : ''}`}>
                     {fl && fl.outer != null ? fmt(fl.outer) : ''}
                   </td>
                   {/* PA side */}
@@ -659,7 +712,7 @@ export const BalanceSheetPage = ({ formData }) => {
                   <td className={`border-r border-slate-200 p-0.5 text-right font-mono align-bottom ${pa?.isLast && pa?.inner != null ? 'border-b border-slate-400' : ''}`}>
                     {pa && pa.inner != null ? fmt(pa.inner) : ''}
                   </td>
-                  <td className={`border-r border-slate-200 p-0.5 text-right font-mono align-bottom ${pa?.isLast && pa?.outer != null ? 'border-b border-slate-400' : ''}`}>
+                  <td className={`border-r border-slate-200 p-0.5 text-right font-mono font-bold align-bottom ${pa?.isLast && pa?.outer != null ? 'border-b border-slate-400' : ''}`}>
                     {pa && pa.outer != null ? fmt(pa.outer) : ''}
                   </td>
                 </tr>
@@ -692,32 +745,104 @@ export const BalanceSheetPage = ({ formData }) => {
 
 //  PAGE 5 — Receipt & Payment Account                        
 export const ReceiptPaymentPage = ({ formData }) => {
-  const recTotal = Object.entries(formData).filter(([k]) => k.startsWith('rec_')).reduce((s, [, v]) => s + (parseFloat(v) || 0), 0);
-  const payTotal = Object.entries(formData).filter(([k]) => k.startsWith('pay_')).reduce((s, [, v]) => s + (parseFloat(v) || 0), 0);
+  const getNum = (k) => parseFloat(formData[k] || 0);
 
-  const renderColumn = (items) =>
-    items.map((item) => (
-      <React.Fragment key={item.key}>
-        <tr className="bg-slate-50/60">
-          <td className="border border-slate-200 p-1 font-bold text-[5.5px] text-black" colSpan={1}>
-            {item.label}
-          </td>
-          <td className="border border-slate-200 p-1 text-right font-mono">{fmt(formData[item.key])}</td>
-          <td className="border border-slate-200 p-1 text-right font-mono">{fmt(formData[`${item.key}_total`])}</td>
-        </tr>
-        {item.subItems && item.subItems.map((sub) => {
-          const sk = typeof sub === 'string' ? `${item.key}_s` : sub.key;
-          const sl = typeof sub === 'string' ? sub : sub.label;
-          return (
-            <tr key={sk}>
-              <td className="border border-slate-100 p-0.5 pl-3.5 text-slate-700 font-normal">{sl}</td>
-              <td className="border border-slate-100 p-0.5 text-right font-mono">{fmt(formData[sk])}</td>
-              <td className="border border-slate-100 p-0.5"></td>
-            </tr>
-          );
-        })}
-      </React.Fragment>
-    ));
+  // Opening Balance
+  const openCash = getNum('rec_op_cash');
+  const openBank = getNum('rec_op_bank');
+  const openTotal = getNum('rec_open_total') || (openCash + openBank);
+
+  // Receipts
+  const recReceipts = getNum('rec_receipts_total') || getNum('rec_receipts');
+  const recMembers = getNum('rec_members_total') || getNum('rec_members');
+  const recDonation = getNum('rec_donation_total') || getNum('rec_donation');
+
+  const customRecs = Object.keys(formData)
+    .filter(k => k.startsWith('rec_custom_') && !k.endsWith('_label'))
+    .map(k => ({ label: formData[`${k}_label`] || 'Custom Receipt', value: getNum(k) }));
+
+  const customRecTotal = customRecs.reduce((s, r) => s + r.value, 0);
+  const recTotal = openTotal + recReceipts + recMembers + recDonation + customRecTotal;
+
+  // Expenses
+  const expItems = [
+    { key: 'pay_meeting', label: 'By Meeting Exp.' },
+    { key: 'pay_traveling', label: 'By Travaling Exp.' },
+    { key: 'pay_printing', label: 'By Printing & Stationery Exp.' },
+    { key: 'pay_misc', label: 'By Miscellenious Exp.' },
+    { key: 'pay_education', label: 'By Education Exp.' },
+    { key: 'pay_swachata', label: 'By Swachata Abhiyan Exp.' },
+    { key: 'pay_cultural', label: 'By Cultural Program Exp.' },
+    { key: 'pay_tree', label: 'By Tree Plantation Exp.' },
+    { key: 'pay_audit', label: 'By Audit Fess' }
+  ];
+
+  const expIndividualSum = expItems.reduce((s, it) => s + (getNum(it.key) || getNum(`${it.key}_total`)), 0);
+  const expTotalEntered = getNum('pay_expenses_total') || getNum('pay_expenses') || getNum('pay_audit_total');
+  const finalExpensesTotal = expIndividualSum > 0 ? expIndividualSum : expTotalEntered;
+
+  // Closing Balance
+  const closeCash = getNum('pay_cl_cash');
+  const closeBank = getNum('pay_cl_bank');
+  const closeTotal = getNum('pay_close_total') || (closeCash + closeBank);
+
+  const customPays = Object.keys(formData)
+    .filter(k => k.startsWith('pay_custom_') && !k.endsWith('_label'))
+    .map(k => ({ label: formData[`${k}_label`] || 'Custom Payment', value: getNum(k) }));
+
+  const customPayTotal = customPays.reduce((s, p) => s + p.value, 0);
+  const payTotal = finalExpensesTotal + closeTotal + customPayTotal;
+
+  // Build Left (Receipts) rows list matching SHISODE2026 format
+  const leftRows = [
+    { label: 'To Opening Balance', inner: null, outer: null, isHeader: true },
+    { label: 'CASH', inner: openCash > 0 ? openCash : null, outer: null, isSubItem: true },
+    { label: 'BANK', inner: (openBank > 0 || openCash > 0) ? (openBank === 0 ? '0.00' : openBank) : null, outer: openTotal > 0 ? openTotal : null, isSubItem: true },
+    { label: '', inner: null, outer: null },
+    { label: '', inner: null, outer: null },
+    { label: 'To Receipts', inner: null, outer: null, isHeader: true },
+    { label: 'To Member Contribution', inner: null, outer: recMembers > 0 ? recMembers : null, isHeader: false },
+  ];
+
+  if (recDonation > 0) {
+    leftRows.push({ label: 'To Donation Received', inner: null, outer: recDonation, isHeader: false });
+  }
+  customRecs.forEach(cr => {
+    if (cr.value > 0) {
+      leftRows.push({ label: cr.label, inner: null, outer: cr.value, isHeader: false });
+    }
+  });
+
+  // Build Right (Payments) rows list matching SHISODE2026 format
+  const rightRows = [
+    { label: 'By Expenses', inner: null, outer: null, isHeader: true },
+  ];
+
+  expItems.forEach((it, idx) => {
+    const isLast = idx === expItems.length - 1;
+    const val = getNum(it.key) || getNum(`${it.key}_total`);
+    const outerVal = isLast && finalExpensesTotal > 0 ? finalExpensesTotal : null;
+    rightRows.push({
+      label: it.label,
+      inner: val > 0 ? val : null,
+      outer: outerVal,
+      isSubItem: true
+    });
+  });
+
+  rightRows.push({ label: '', inner: null, outer: null });
+  rightRows.push({ label: '', inner: null, outer: null });
+  rightRows.push({ label: 'BY CLOSING BALANCE', inner: null, outer: null, isHeader: true });
+  rightRows.push({ label: 'CASH IN HAND', inner: closeCash > 0 ? closeCash : null, outer: null, isSubItem: true });
+  rightRows.push({ label: 'BANK', inner: (closeBank > 0 || closeCash > 0) ? (closeBank === 0 ? '0.00' : closeBank) : null, outer: closeTotal > 0 ? closeTotal : null, isSubItem: true });
+
+  customPays.forEach(cp => {
+    if (cp.value > 0) {
+      rightRows.push({ label: cp.label, inner: null, outer: cp.value, isHeader: false });
+    }
+  });
+
+  const maxRows = Math.max(leftRows.length, rightRows.length);
 
   return (
     <A4Page pageLabel="Page 5 — Receipt & Payment">
@@ -725,73 +850,71 @@ export const ReceiptPaymentPage = ({ formData }) => {
         <div className="text-center mb-2 space-y-0.5">
           <p className="font-bold text-[7px]">Name of the Trust :- {getTrustName(formData)}</p>
           <p className="text-[5px] mt-1">{getTrustAddress(formData)}</p>
-          <p className="font-bold text-[6px] mt-1">Receipt & Payment Account</p>
+          <p className="font-bold text-[6px] mt-1">Receipt &amp; Payment Account</p>
           <p className="text-[5px] mt-1">For the Period from 01.04.2025 to {getFinancialYear(formData)}</p>
         </div>
 
-        <div className="grid grid-cols-2 gap-0.5">
-          <table className="border-collapse border border-slate-300 text-[4.5px] w-full">
-            <thead>
-              <tr className="bg-slate-100">
-                <th className="border border-slate-300 p-1 text-left">Receipt</th>
-                <th className="border border-slate-300 p-0.5 text-center w-[22%]">Amount</th>
-                <th className="border border-slate-300 p-0.5 text-center w-[22%]">Amount</th>
-              </tr>
-            </thead>
-            <tbody>
-              {renderColumn(receiptItems)}
-              {Object.keys(formData)
-                .filter(k => k.startsWith('rec_custom_') && !k.endsWith('_label'))
-                .map(key => (
-                  <tr key={key} className="bg-slate-50/60">
-                    <td className="border border-slate-200 p-1 font-bold text-[5.5px]" colSpan={1}>
-                      {formData[`${key}_label`] || 'Custom Receipt'}
-                    </td>
-                    <td className="border border-slate-200 p-1 text-right font-mono">{fmt(formData[key])}</td>
-                    <td className="border border-slate-200 p-1 text-right font-mono"></td>
-                  </tr>
-                ))
-              }
-            </tbody>
-            <tfoot>
-              <tr className="bg-emerald-50 font-bold">
-                <td className="border border-emerald-200 p-1">Total</td>
-                <td className="border border-emerald-200 p-1 text-right font-mono" colSpan={2}>{fmt(recTotal) || '0.00'}</td>
-              </tr>
-            </tfoot>
-          </table>
+        <table className="w-full border-collapse border border-slate-300 text-[4.5px]">
+          <thead>
+            <tr className="bg-slate-100 font-bold">
+              <th className="border border-slate-300 p-1 text-left w-[29%]">Receipt</th>
+              <th className="border border-slate-300 p-0.5 text-center w-[10.5%]">Amount</th>
+              <th className="border border-slate-300 p-0.5 text-center w-[10.5%]">Amount</th>
+              <th className="border border-slate-300 p-1 text-left w-[29%]">Payments</th>
+              <th className="border border-slate-300 p-0.5 text-center w-[10.5%]">Amount</th>
+              <th className="border border-slate-300 p-0.5 text-center w-[10.5%]">Amount</th>
+            </tr>
+          </thead>
+          <tbody>
+            {Array.from({ length: maxRows }).map((_, i) => {
+              const l = leftRows[i];
+              const r = rightRows[i];
+              return (
+                <tr key={i} className="border-b border-slate-200">
+                  {/* Receipt side */}
+                  <td className="border-l border-r border-slate-200 p-0.5 leading-tight">
+                    {l && (
+                      <span className={l.isHeader ? 'font-bold text-black' : (l.isSubItem ? 'pl-3.5 text-slate-700 font-normal' : 'font-bold text-black')}>
+                        {l.label}
+                      </span>
+                    )}
+                  </td>
+                  <td className="border-r border-slate-200 p-0.5 text-right font-mono align-bottom">
+                    {l && l.inner != null ? (typeof l.inner === 'string' ? l.inner : fmt(l.inner)) : ''}
+                  </td>
+                  <td className="border-r border-slate-200 p-0.5 text-right font-mono font-bold align-bottom">
+                    {l && l.outer != null ? fmt(l.outer) : ''}
+                  </td>
 
-          <table className="border-collapse border border-slate-300 text-[4.5px] w-full">
-            <thead>
-              <tr className="bg-slate-100">
-                <th className="border border-slate-300 p-1 text-left">Payments</th>
-                <th className="border border-slate-300 p-0.5 text-center w-[22%]">Amount</th>
-                <th className="border border-slate-300 p-0.5 text-center w-[22%]">Amount</th>
-              </tr>
-            </thead>
-            <tbody>
-              {renderColumn(paymentItems)}
-              {Object.keys(formData)
-                .filter(k => k.startsWith('pay_custom_') && !k.endsWith('_label'))
-                .map(key => (
-                  <tr key={key} className="bg-slate-50/60">
-                    <td className="border border-slate-200 p-1 font-bold text-[5.5px]" colSpan={1}>
-                      {formData[`${key}_label`] || 'Custom Payment'}
-                    </td>
-                    <td className="border border-slate-200 p-1 text-right font-mono">{fmt(formData[key])}</td>
-                    <td className="border border-slate-200 p-1 text-right font-mono"></td>
-                  </tr>
-                ))
-              }
-            </tbody>
-            <tfoot>
-              <tr className="bg-emerald-50 font-bold">
-                <td className="border border-emerald-200 p-1">Total</td>
-                <td className="border border-emerald-200 p-1 text-right font-mono" colSpan={2}>{fmt(payTotal) || '0.00'}</td>
-              </tr>
-            </tfoot>
-          </table>
-        </div>
+                  {/* Payment side */}
+                  <td className="border-r border-slate-200 p-0.5 leading-tight">
+                    {r && (
+                      <span className={r.isHeader ? 'font-bold text-black' : (r.isSubItem ? 'pl-3.5 text-slate-700 font-normal' : 'font-bold text-black')}>
+                        {r.label}
+                      </span>
+                    )}
+                  </td>
+                  <td className="border-r border-slate-200 p-0.5 text-right font-mono align-bottom">
+                    {r && r.inner != null ? (typeof r.inner === 'string' ? r.inner : fmt(r.inner)) : ''}
+                  </td>
+                  <td className="border-r border-slate-200 p-0.5 text-right font-mono font-bold align-bottom">
+                    {r && r.outer != null ? fmt(r.outer) : ''}
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+          <tfoot>
+            <tr className="bg-slate-100 font-bold border-t-2 border-black">
+              <td className="border border-slate-300 p-1 text-center font-bold">Total</td>
+              <td className="border border-slate-300 p-0.5"></td>
+              <td className="border border-slate-300 p-0.5 text-right font-mono font-bold text-[5.5px]">{fmt(recTotal) || '0.00'}</td>
+              <td className="border border-slate-300 p-1 text-center font-bold">Total</td>
+              <td className="border border-slate-300 p-0.5"></td>
+              <td className="border border-slate-300 p-0.5 text-right font-mono font-bold text-[5.5px]">{fmt(payTotal) || '0.00'}</td>
+            </tr>
+          </tfoot>
+        </table>
 
         <div className="mt-2 flex justify-between items-end px-1 text-[5px]">
           <p className="text-slate-500">Examined As Per Books.</p>

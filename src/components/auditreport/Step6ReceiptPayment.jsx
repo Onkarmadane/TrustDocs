@@ -49,6 +49,36 @@ const Step6ReceiptPayment = ({ formData, onChange, setFormData }) => {
     });
   };
 
+  const getNum = (key) => parseFloat(formData[key] || 0);
+
+  const customRecTotal = customReceiptKeys.reduce((sum, key) => sum + getNum(key), 0);
+  const customPayTotal = customPaymentKeys.reduce((sum, key) => sum + getNum(key), 0);
+
+  let recStandardTotal = 0;
+  receiptItems.forEach(item => {
+    if (item.subItems) {
+      item.subItems.forEach(sub => {
+        recStandardTotal += getNum(sub.key);
+      });
+    } else {
+      recStandardTotal += getNum(item.key);
+    }
+  });
+
+  let payStandardTotal = 0;
+  paymentItems.forEach(item => {
+    if (item.subItems) {
+      item.subItems.forEach(sub => {
+        payStandardTotal += getNum(sub.key);
+      });
+    } else {
+      payStandardTotal += getNum(item.key);
+    }
+  });
+
+  const recTotal = recStandardTotal + customRecTotal;
+  const payTotal = payStandardTotal + customPayTotal;
+
   return (
     <>
       <div className="border-t border-slate-100 bg-white overflow-x-auto">
@@ -60,134 +90,158 @@ const Step6ReceiptPayment = ({ formData, onChange, setFormData }) => {
             <div className="p-4 text-center font-bold text-[10px] text-black uppercase tracking-widest">Amount</div>
           </div>
 
-          <div className="grid grid-cols-2 divide-x divide-slate-100 bg-white">
+          <div className="grid grid-cols-2 divide-x divide-slate-100 bg-white items-stretch">
             {/* Receipts Column */}
-            <div className="px-5 py-6 space-y-5">
-              <BalanceSheetColumn
-                items={receiptItems}
-                formData={formData}
-                onChange={onChange}
-                colorClass="text-black"
-              />
+            <div className="px-5 py-6 flex flex-col justify-between">
+              <div className="flex-1 space-y-5">
+                <BalanceSheetColumn
+                  items={receiptItems}
+                  formData={formData}
+                  onChange={onChange}
+                  colorClass="text-black"
+                />
 
-              {/* Custom Receipts Section */}
-              {customReceiptKeys.length > 0 && (
-                <div className="space-y-4 pt-4 border-t border-dashed border-slate-200">
-                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider pl-5">Custom Receipts</p>
-                  <div className="px-5 space-y-3">
-                    {customReceiptKeys.map((key) => (
-                      <div key={key} className="flex items-center justify-between gap-3 group">
-                        <div className="flex-1">
-                          <InputField
-                            name={`${key}_label`}
-                            type="text"
-                            value={formData[`${key}_label`] || ''}
-                            onChange={onChange}
-                            placeholder="Receipt Label"
-                            variant="minimal"
-                            size="compact"
-                            className="w-full text-[11px] font-bold uppercase tracking-wide"
-                          />
+                {/* Custom Receipts Section */}
+                {customReceiptKeys.length > 0 && (
+                  <div className="space-y-4 pt-4 border-t border-dashed border-slate-200">
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider pl-5">Custom Receipts</p>
+                    <div className="px-5 space-y-3">
+                      {customReceiptKeys.map((key) => (
+                        <div key={key} className="flex items-center justify-between gap-3 group">
+                          <div className="flex-1">
+                            <InputField
+                              name={`${key}_label`}
+                              type="text"
+                              value={formData[`${key}_label`] || ''}
+                              onChange={onChange}
+                              placeholder="Receipt Label"
+                              variant="minimal"
+                              size="compact"
+                              className="w-full text-[11px] font-bold uppercase tracking-wide"
+                            />
+                          </div>
+                          <div className="flex items-center gap-2 shrink-0">
+                            <InputField
+                              name={key}
+                              type="number"
+                              value={formData[key] || ''}
+                              onChange={onChange}
+                              placeholder="Amount"
+                              variant="minimal"
+                              size="compact"
+                              className="w-20"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => handleRemoveReceipt(key)}
+                              className="p-1.5 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded transition-colors"
+                            >
+                              <Trash2 size={14} />
+                            </button>
+                          </div>
                         </div>
-                        <div className="flex items-center gap-2 shrink-0">
-                          <InputField
-                            name={key}
-                            type="number"
-                            value={formData[key] || ''}
-                            onChange={onChange}
-                            placeholder="Amount"
-                            variant="minimal"
-                            size="compact"
-                            className="w-20"
-                          />
-                          <button
-                            type="button"
-                            onClick={() => handleRemoveReceipt(key)}
-                            className="p-1.5 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded transition-colors"
-                          >
-                            <Trash2 size={14} />
-                          </button>
-                        </div>
-                      </div>
-                    ))}
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                <div className="px-5">
+                  <button
+                    type="button"
+                    onClick={handleAddReceipt}
+                    className="w-full py-2 px-3 border border-dashed border-slate-200 hover:border-blue-400 hover:bg-blue-50/30 rounded-xl flex items-center justify-center gap-2 text-xs font-semibold text-slate-500 hover:text-blue-600 transition-all mt-2"
+                  >
+                    <Plus size={14} />
+                    Add Receipt
+                  </button>
+                </div>
+              </div>
+
+              {/* Total Receipts Row */}
+              <div className="mt-auto pt-6 border-t border-slate-200">
+                <div className="flex items-center justify-between px-2">
+                  <span className="font-bold text-black text-xs">Total Receipts</span>
+                  <div className="border border-slate-300 rounded px-2 py-1 text-right font-mono text-xs w-28 bg-slate-50 font-bold">
+                    {recTotal.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                   </div>
                 </div>
-              )}
-
-              <div className="px-5">
-                <button
-                  type="button"
-                  onClick={handleAddReceipt}
-                  className="w-full py-2 px-3 border border-dashed border-slate-200 hover:border-blue-400 hover:bg-blue-50/30 rounded-xl flex items-center justify-center gap-2 text-xs font-semibold text-slate-500 hover:text-blue-600 transition-all mt-2"
-                >
-                  <Plus size={14} />
-                  Add Receipt
-                </button>
               </div>
             </div>
 
             {/* Payments Column */}
-            <div className="px-5 py-6 space-y-5">
-              <BalanceSheetColumn
-                items={paymentItems}
-                formData={formData}
-                onChange={onChange}
-                colorClass="text-black"
-              />
+            <div className="px-5 py-6 flex flex-col justify-between">
+              <div className="flex-1 space-y-5">
+                <BalanceSheetColumn
+                  items={paymentItems}
+                  formData={formData}
+                  onChange={onChange}
+                  colorClass="text-black"
+                />
 
-              {/* Custom Payments Section */}
-              {customPaymentKeys.length > 0 && (
-                <div className="space-y-4 pt-4 border-t border-dashed border-slate-200">
-                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider pl-5">Custom Payments</p>
-                  <div className="px-5 space-y-3">
-                    {customPaymentKeys.map((key) => (
-                      <div key={key} className="flex items-center justify-between gap-3 group">
-                        <div className="flex-1">
-                          <InputField
-                            name={`${key}_label`}
-                            type="text"
-                            value={formData[`${key}_label`] || ''}
-                            onChange={onChange}
-                            placeholder="Payment Label"
-                            variant="minimal"
-                            size="compact"
-                            className="w-full text-[11px] font-bold uppercase tracking-wide"
-                          />
+                {/* Custom Payments Section */}
+                {customPaymentKeys.length > 0 && (
+                  <div className="space-y-4 pt-4 border-t border-dashed border-slate-200">
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider pl-5">Custom Payments</p>
+                    <div className="px-5 space-y-3">
+                      {customPaymentKeys.map((key) => (
+                        <div key={key} className="flex items-center justify-between gap-3 group">
+                          <div className="flex-1">
+                            <InputField
+                              name={`${key}_label`}
+                              type="text"
+                              value={formData[`${key}_label`] || ''}
+                              onChange={onChange}
+                              placeholder="Payment Label"
+                              variant="minimal"
+                              size="compact"
+                              className="w-full text-[11px] font-bold uppercase tracking-wide"
+                            />
+                          </div>
+                          <div className="flex items-center gap-2 shrink-0">
+                            <InputField
+                              name={key}
+                              type="number"
+                              value={formData[key] || ''}
+                              onChange={onChange}
+                              placeholder="Amount"
+                              variant="minimal"
+                              size="compact"
+                              className="w-20"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => handleRemovePayment(key)}
+                              className="p-1.5 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded transition-colors"
+                            >
+                              <Trash2 size={14} />
+                            </button>
+                          </div>
                         </div>
-                        <div className="flex items-center gap-2 shrink-0">
-                          <InputField
-                            name={key}
-                            type="number"
-                            value={formData[key] || ''}
-                            onChange={onChange}
-                            placeholder="Amount"
-                            variant="minimal"
-                            size="compact"
-                            className="w-20"
-                          />
-                          <button
-                            type="button"
-                            onClick={() => handleRemovePayment(key)}
-                            className="p-1.5 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded transition-colors"
-                          >
-                            <Trash2 size={14} />
-                          </button>
-                        </div>
-                      </div>
-                    ))}
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                <div className="px-5">
+                  <button
+                    type="button"
+                    onClick={handleAddPayment}
+                    className="w-full py-2 px-3 border border-dashed border-slate-200 hover:border-blue-400 hover:bg-blue-50/30 rounded-xl flex items-center justify-center gap-2 text-xs font-semibold text-slate-500 hover:text-blue-600 transition-all mt-2"
+                  >
+                    <Plus size={14} />
+                    Add Payment
+                  </button>
+                </div>
+              </div>
+
+              {/* Total Payments Row */}
+              <div className="mt-auto pt-6 border-t border-slate-200">
+                <div className="flex items-center justify-between px-2">
+                  <span className="font-bold text-black text-xs">Total Payments</span>
+                  <div className="border border-slate-300 rounded px-2 py-1 text-right font-mono text-xs w-28 bg-slate-50 font-bold">
+                    {payTotal.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                   </div>
                 </div>
-              )}
-
-              <div className="px-5">
-                <button
-                  type="button"
-                  onClick={handleAddPayment}
-                  className="w-full py-2 px-3 border border-dashed border-slate-200 hover:border-blue-400 hover:bg-blue-50/30 rounded-xl flex items-center justify-center gap-2 text-xs font-semibold text-slate-500 hover:text-blue-600 transition-all mt-2"
-                >
-                  <Plus size={14} />
-                  Add Payment
-                </button>
               </div>
             </div>
           </div>

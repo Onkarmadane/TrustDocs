@@ -124,6 +124,12 @@ const NondaniReportForm = ({ reportType, setReportType, editReportId }) => {
     }
   };
 
+  const handleStepClick = (stepId) => {
+    if (stepId === currentStep) return;
+    saveDraft(formData);
+    setCurrentStep(stepId);
+  };
+
   const handleFinalSubmit = async () => {
     const toastId = toast.loading('Finalizing report...');
     try {
@@ -196,7 +202,7 @@ const NondaniReportForm = ({ reportType, setReportType, editReportId }) => {
       <main className="max-w-[1600px] mx-auto px-4 md:px-8 pt-8 space-y-8">
         <div className="w-full flex justify-between items-center">
           <div className="flex-1">
-            <StepIndicator currentStep={currentStep} steps={steps} />
+            <StepIndicator currentStep={currentStep} steps={steps} onStepClick={handleStepClick} />
           </div>
           {currentStep !== 3 && (
             <button

@@ -321,31 +321,30 @@ export const scheduleIXItems = [
 export const receiptItems = [
   {
     key: 'rec_open', label: 'To Opening Balance', subItems: [
-      { key: 'rec_op_cash', label: 'Cash' },
-      { key: 'rec_op_bank', label: 'Bank' },
+      { key: 'rec_op_cash', label: 'CASH' },
+      { key: 'rec_op_bank', label: 'BANK' },
     ]
   },
   { key: 'rec_receipts', label: 'To Receipts' },
-  { key: 'rec_members', label: 'To Members Contribution' },
+  { key: 'rec_members', label: 'To Member Contribution' },
   { key: 'rec_donation', label: 'To Donation Received' },
 ];
 
 export const paymentItems = [
   { key: 'pay_expenses', label: 'By Expenses' },
   { key: 'pay_meeting', label: 'By Meeting Exp.' },
-  { key: 'pay_traveling', label: 'By Traveling Exp.' },
+  { key: 'pay_traveling', label: 'By Travaling Exp.' },
   { key: 'pay_printing', label: 'By Printing & Stationery Exp.' },
-  { key: 'pay_misc', label: 'By Miscellaneous Expenses' },
+  { key: 'pay_misc', label: 'By Miscellenious Exp.' },
   { key: 'pay_education', label: 'By Education Exp.' },
-  { key: 'pay_bank', label: 'By Bank Charges Exp.' },
   { key: 'pay_swachata', label: 'By Swachata Abhiyan Exp.' },
   { key: 'pay_cultural', label: 'By Cultural Program Exp.' },
-  { key: 'pay_tree', label: 'By Tree Plantation Fees' },
-  { key: 'pay_audit', label: 'By Audit Fees' },
+  { key: 'pay_tree', label: 'By Tree Plantation Exp.' },
+  { key: 'pay_audit', label: 'By Audit Fess' },
   {
-    key: 'pay_close', label: 'By Closing Balances', subItems: [
-      { key: 'pay_cl_cash', label: 'Cash In Hand' },
-      { key: 'pay_cl_bank', label: 'Bank' },
+    key: 'pay_close', label: 'BY CLOSING BALANCE', subItems: [
+      { key: 'pay_cl_cash', label: 'CASH IN HAND' },
+      { key: 'pay_cl_bank', label: 'BANK' },
     ]
   },
 ];

@@ -63,6 +63,14 @@ const InputField = ({
             name={name}
             value={value}
             onChange={onChange}
+            onWheel={(e) => {
+              if (type === 'number') {
+                e.target.blur();
+              }
+              if (props.onWheel) {
+                props.onWheel(e);
+              }
+            }}
             placeholder={placeholder}
             id={id || name}
             className={cn(

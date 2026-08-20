@@ -148,6 +148,12 @@ const AuditReportForm = ({ reportType, setReportType, editReportId }) => {
     setCurrentStep(prev => Math.max(1, prev - 1));
   };
 
+  const handleStepClick = (stepId) => {
+    if (stepId === currentStep) return;
+    saveDraft();
+    setCurrentStep(stepId);
+  };
+
 
   const handleSaveReport = async () => {
     try {
@@ -179,7 +185,22 @@ const AuditReportForm = ({ reportType, setReportType, editReportId }) => {
   const handleDownloadPdf = async () => {
     setIsDownloading(true);
     try {
-      const id = await saveDraft();
+      // Explicitly map and save latest form data before generating PDF
+      const payload = mapFormDataToBackendPayload(formDataRef.current, currentStepRef.current, 'completed');
+      let id = reportIdRef.current;
+
+      if (!id) {
+        const createRes = await reportService.createReport(payload);
+        if (createRes.success && createRes.data?._id) {
+          id = createRes.data._id;
+          setReportId(id);
+          reportIdRef.current = id;
+          lastSavedData.current = formDataRef.current;
+        }
+      } else {
+        await reportService.updateReport(id, payload);
+        lastSavedData.current = formDataRef.current;
+      }
 
       if (!id) {
         toast.error("Please save the report first");
@@ -211,7 +232,7 @@ const AuditReportForm = ({ reportType, setReportType, editReportId }) => {
       <main className="max-w-[1600px] mx-auto px-4 md:px-8 pt-8 space-y-8">
         <div className="w-full flex justify-between items-center">
           <div className="flex-1">
-            <StepIndicator currentStep={currentStep} />
+            <StepIndicator currentStep={currentStep} onStepClick={handleStepClick} />
           </div>
           {currentStep !== 9 && (
             <button

@@ -114,7 +114,8 @@ const buildExpenditureRows = (formData, surplus) => {
       // Section header
       rows.push({ key: item.key, label: item.label, amount: null, isHeader: true });
       item.subFields.forEach(sub => {
-        rows.push({ key: sub.key, label: sub.label, amount: getNum(sub.key), isSubItem: true });
+        const val = getNum(sub.key);
+        rows.push({ key: sub.key, label: sub.label, amount: val > 0 ? val : null, isSubItem: true });
       });
     } else {
       // Standalone – outer key is the totalling value used in calculations
@@ -134,7 +135,7 @@ const buildExpenditureRows = (formData, surplus) => {
   rows.push({
     key: 'exp_surplus_override',
     label: 'To Surplus Carried Over to Balance Sheet',
-    amount: surplus,
+    amount: surplus > 0 ? surplus : null,
     isHeader: true,
   });
 
@@ -154,32 +155,33 @@ const buildIncomeRows = (formData, deficit) => {
       rows.push({ key: item.key, label: item.label, amount: null, isHeader: true });
       item.subFields.forEach(sub => {
         const innerVal = getNum(sub.innerKey);
-        const outerVal = sub.outerKey ? getNum(sub.outerKey) : null;
+        const outerVal = sub.outerKey ? (getNum(sub.outerKey) || getNum(sub.key)) : null;
         rows.push({
           key: sub.innerKey,
           outerKey: sub.outerKey,
           label: sub.label,
-          amount: innerVal !== 0 ? innerVal : null,
+          amount: innerVal !== 0 ? innerVal : (outerVal !== null && outerVal !== 0 ? outerVal : null),
           total: outerVal !== null && outerVal !== 0 ? outerVal : null,
           isSubItem: true
         });
       });
     } else if (item.type === 'double_field') {
       const innerVal = getNum(item.innerKey);
-      const outerVal = getNum(item.outerKey);
+      const outerVal = getNum(item.outerKey) || getNum(item.key);
       rows.push({
         key: item.innerKey,
         outerKey: item.outerKey,
         label: item.label,
-        amount: innerVal !== 0 ? innerVal : null,
-        total: outerVal !== 0 ? outerVal : null,
+        amount: innerVal !== 0 ? innerVal : (outerVal !== 0 ? outerVal : null),
+        total: outerVal !== 0 ? outerVal : (innerVal !== 0 ? innerVal : null),
         isHeader: true
       });
     } else if (item.type === 'single_outer') {
+      const val = getNum(item.outerKey || item.key);
       rows.push({
         key: item.outerKey || item.key,
         label: item.label,
-        amount: getNum(item.outerKey || item.key),
+        amount: val > 0 ? val : null,
         isHeader: true,
       });
     }
@@ -188,7 +190,7 @@ const buildIncomeRows = (formData, deficit) => {
   rows.push({
     key: 'inc_deficit_calc',
     label: 'By Deficit Carried Over to Balance Sheet',
-    amount: deficit,
+    amount: deficit > 0 ? deficit : null,
     isHeader: true,
   });
 
@@ -205,17 +207,97 @@ const buildBalanceSheetRows = (items, formData, labelMap) => {
   items.forEach(item => {
     if (item.type === 'nested') {
       rows.push({ key: item.key, label: item.label, amount: null, total: null, isHeader: true });
-      item.subFields.forEach(sub => {
+
+      // Calculate group subtotal if outerKey not manually entered
+      let calcGroupTotal = 0;
+      let hasAnyVal = false;
+
+      if (item.key === 'fl_trust_funds') {
+        const bal = getNum('fl_tf_balance');
+        const adjOuter = getNum('fl_tf_adjustment_outer');
+        const adjInner = getNum('fl_tf_adjustment_inner');
+        calcGroupTotal = adjOuter > 0 ? adjOuter : (bal + adjInner);
+        hasAnyVal = bal !== 0 || adjInner !== 0 || adjOuter !== 0;
+      } else if (item.key === 'fl_earmarked') {
+        const outer = getNum('fl_ef_other_outer');
+        calcGroupTotal = outer > 0 ? outer : (getNum('fl_ef_depreciation') + getNum('fl_ef_sinking') + getNum('fl_ef_reserve') + getNum('fl_ef_other_inner'));
+        hasAnyVal = calcGroupTotal !== 0;
+      } else if (item.key === 'fl_loans') {
+        const outer = getNum('fl_lo_others_outer');
+        calcGroupTotal = outer > 0 ? outer : (getNum('fl_lo_trustee') + getNum('fl_lo_others_inner'));
+        hasAnyVal = calcGroupTotal !== 0;
+      } else if (item.key === 'fl_liabilities') {
+        const outer = getNum('fl_li_sundry_outer');
+        calcGroupTotal = outer > 0 ? outer : (getNum('fl_li_expenses') + getNum('fl_li_advances') + getNum('fl_li_rent') + getNum('fl_li_sundry_inner'));
+        hasAnyVal = calcGroupTotal !== 0;
+      } else if (item.key === 'fl_income_exp') {
+        const ieBal = getNum('fl_ie_balance');
+        const surplus = getNum('fl_ie_surplus');
+        const deficit = getNum('fl_ie_deficit');
+        const appInner = getNum('fl_ie_appropriation_inner');
+        const appOuter = getNum('fl_ie_appropriation_outer');
+        calcGroupTotal = appOuter > 0 ? appOuter : (ieBal + surplus - deficit - appInner);
+        hasAnyVal = ieBal !== 0 || surplus !== 0 || deficit !== 0 || appInner !== 0 || appOuter !== 0;
+      } else if (item.key === 'pa_immovable') {
+        const bal = getNum('pa_im_balance');
+        const add = getNum('pa_im_add');
+        const ded = getNum('pa_im_deduction');
+        const depInner = getNum('pa_im_dep_inner');
+        const depOuter = getNum('pa_im_dep_outer');
+        calcGroupTotal = depOuter > 0 ? depOuter : (bal + add - ded - depInner);
+        hasAnyVal = bal !== 0 || add !== 0 || ded !== 0 || depInner !== 0 || depOuter !== 0;
+      } else if (item.key === 'pa_furniture') {
+        const bal = getNum('pa_fu_balance');
+        const add = getNum('pa_fu_add');
+        const less = getNum('pa_fu_less');
+        const depInner = getNum('pa_fu_dep_inner');
+        const depOuter = getNum('pa_fu_dep_outer');
+        calcGroupTotal = depOuter > 0 ? depOuter : (bal + add - less - depInner);
+        hasAnyVal = bal !== 0 || add !== 0 || less !== 0 || depInner !== 0 || depOuter !== 0;
+      } else if (item.key === 'pa_loans') {
+        const outer = getNum('pa_lo_others_outer');
+        calcGroupTotal = outer > 0 ? outer : (getNum('pa_lo_scholarships') + getNum('pa_lo_others_inner'));
+        hasAnyVal = calcGroupTotal !== 0;
+      } else if (item.key === 'pa_advances') {
+        const outer = getNum('pa_ad_others_outer');
+        calcGroupTotal = outer > 0 ? outer : (getNum('pa_ad_trustees') + getNum('pa_ad_employees') + getNum('pa_ad_contractor') + getNum('pa_ad_lawyers') + getNum('pa_ad_others_inner'));
+        hasAnyVal = calcGroupTotal !== 0;
+      } else if (item.key === 'pa_income_outstanding') {
+        const outer = getNum('pa_io_other_outer');
+        calcGroupTotal = outer > 0 ? outer : (getNum('pa_io_rent') + getNum('pa_io_interest') + getNum('pa_io_other_inner'));
+        hasAnyVal = calcGroupTotal !== 0;
+      } else if (item.key === 'pa_cash') {
+        const outer = getNum('pa_cb_manager_outer');
+        calcGroupTotal = outer > 0 ? outer : (getNum('pa_cb_saving') + getNum('pa_cb_current') + getNum('pa_cb_fixed') + getNum('pa_cb_trustee') + getNum('pa_cb_manager_inner'));
+        hasAnyVal = calcGroupTotal !== 0;
+      }
+
+      item.subFields.forEach((sub, index) => {
+        const isLast = index === item.subFields.length - 1;
         const innerKey = sub.innerKey || sub.key;
-        const innerVal = getNum(innerKey);
-        const outerVal = sub.outerKey ? getNum(sub.outerKey) : null;
+        const rawInner = formData[innerKey];
+        const innerVal = rawInner !== undefined && rawInner !== '' ? parseFloat(rawInner) : null;
+        const outerVal = sub.outerKey && formData[sub.outerKey] !== undefined && formData[sub.outerKey] !== '' ? parseFloat(formData[sub.outerKey]) : null;
+
+        let finalAmount = innerVal !== null && (innerVal !== 0 || rawInner === '0' || rawInner === 0) ? innerVal : null;
+        let finalTotal = null;
+
+        // If Trust Funds has only balance (opening balance) without adjustments, place it in total column on the balance row
+        if (item.key === 'fl_trust_funds' && index === 0 && getNum('fl_tf_adjustment_inner') === 0 && getNum('fl_tf_adjustment_outer') === 0 && getNum('fl_tf_balance') > 0) {
+          finalTotal = getNum('fl_tf_balance');
+          finalAmount = null;
+        } else if (outerVal !== null && outerVal !== 0) {
+          finalTotal = outerVal;
+        } else if (isLast && hasAnyVal && calcGroupTotal !== 0) {
+          finalTotal = calcGroupTotal;
+        }
 
         rows.push({
           key: innerKey,
           outerKey: sub.outerKey,
           label: labelMap[innerKey] || sub.label,
-          amount: innerVal !== 0 ? innerVal : null,
-          total: outerVal !== null && outerVal !== 0 ? outerVal : null,
+          amount: finalAmount,
+          total: finalTotal,
           isSubItem: true,
         });
       });
@@ -227,7 +309,7 @@ const buildBalanceSheetRows = (items, formData, labelMap) => {
         outerKey: item.outerKey,
         label: item.label,
         amount: innerVal !== 0 ? innerVal : null,
-        total: outerVal !== 0 ? outerVal : null,
+        total: outerVal !== 0 ? outerVal : (innerVal !== 0 ? innerVal : null),
         isHeader: true,
       });
     } else {
@@ -254,16 +336,114 @@ const buildAccountingRows = (items, formData) => {
   const getNum = (k) => parseFloat(formData[k] || 0);
   const rows = [];
 
-  items.forEach(item => {
-    if (item.subItems && item.subItems.length > 0) {
-      rows.push({ key: item.key, label: item.label, amount: null, total: null, isHeader: true });
-      item.subItems.forEach(sub => {
-        rows.push({ key: sub.key, label: sub.label, amount: getNum(sub.key), total: null, isSubItem: true });
-      });
-    } else {
-      rows.push({ key: item.key, label: item.label, amount: getNum(item.key), total: null, isHeader: true });
-    }
-  });
+  const isPayment = items.some(i => i.key === 'pay_expenses');
+
+  if (isPayment) {
+    let expensesSubTotal = 0;
+    const expenseKeys = [
+      'pay_meeting', 'pay_traveling', 'pay_printing', 'pay_misc',
+      'pay_education', 'pay_bank', 'pay_swachata', 'pay_cultural',
+      'pay_tree', 'pay_audit'
+    ];
+    expenseKeys.forEach(k => { expensesSubTotal += (getNum(k) || getNum(`${k}_total`)); });
+
+    const enteredExpTotal = getNum('pay_expenses_total') || getNum('pay_expenses') || getNum('pay_audit_total');
+    const finalExpSubTotal = expensesSubTotal > 0 ? expensesSubTotal : enteredExpTotal;
+
+    items.forEach(item => {
+      if (item.key === 'pay_expenses') {
+        rows.push({
+          key: item.key,
+          label: item.label,
+          amount: null,
+          total: null,
+          isHeader: true
+        });
+      } else if (expenseKeys.includes(item.key)) {
+        const isLastExp = item.key === 'pay_audit';
+        const val = getNum(item.key);
+        const enteredTotal = getNum(`${item.key}_total`);
+        rows.push({
+          key: item.key,
+          label: item.label,
+          amount: val !== 0 ? val : null,
+          total: enteredTotal > 0 ? enteredTotal : (isLastExp && finalExpSubTotal > 0 ? finalExpSubTotal : null),
+          isSubItem: true
+        });
+      } else if (item.key === 'pay_close') {
+        const cash = getNum('pay_cl_cash');
+        const bank = getNum('pay_cl_bank');
+        const closeTotal = getNum('pay_close_total') || (cash + bank);
+        rows.push({
+          key: item.key,
+          label: item.label,
+          amount: null,
+          total: null,
+          isHeader: true
+        });
+        (item.subItems || []).forEach((sub, sIdx) => {
+          const isLastSub = sIdx === item.subItems.length - 1;
+          const subVal = getNum(sub.key);
+          rows.push({
+            key: sub.key,
+            label: sub.label,
+            amount: subVal !== 0 ? subVal : (cash > 0 ? 0 : null),
+            total: isLastSub && closeTotal > 0 ? closeTotal : null,
+            isSubItem: true
+          });
+        });
+      } else {
+        const val = getNum(item.key);
+        const enteredTotal = getNum(`${item.key}_total`);
+        const finalVal = enteredTotal > 0 ? enteredTotal : (val !== 0 ? val : null);
+        rows.push({
+          key: item.key,
+          label: item.label,
+          amount: null,
+          total: finalVal,
+          isHeader: false
+        });
+      }
+    });
+  } else {
+    items.forEach(item => {
+      if (item.subItems && item.subItems.length > 0) {
+        const subSum = item.subItems.reduce((s, sub) => s + (getNum(sub.key) || getNum(`${sub.key}_total`)), 0);
+        const enteredTotal = getNum(`${item.key}_total`) || getNum(item.key);
+        const finalSubTotal = enteredTotal > 0 ? enteredTotal : subSum;
+
+        rows.push({
+          key: item.key,
+          label: item.label,
+          amount: null,
+          total: null,
+          isHeader: true
+        });
+        item.subItems.forEach((sub, sIdx) => {
+          const isLastSub = sIdx === item.subItems.length - 1;
+          const subVal = getNum(sub.key);
+          rows.push({
+            key: sub.key,
+            label: sub.label,
+            amount: subVal !== 0 ? subVal : (subSum > 0 ? 0 : null),
+            total: isLastSub && finalSubTotal > 0 ? finalSubTotal : null,
+            isSubItem: true
+          });
+        });
+      } else {
+        const val = getNum(item.key);
+        const enteredTotal = getNum(`${item.key}_total`);
+        const finalVal = enteredTotal > 0 ? enteredTotal : (val !== 0 ? val : null);
+        rows.push({
+          key: item.key,
+          label: item.label,
+          amount: null,
+          total: finalVal,
+          isHeader: false
+        });
+      }
+    });
+  }
 
   return rows;
 };
@@ -271,12 +451,43 @@ const buildAccountingRows = (items, formData) => {
 /** Compute receipt total from leaf keys only (skip parent header keys). */
 const calcAccountingTotal = (items, formData) => {
   const getNum = (k) => parseFloat(formData[k] || 0);
-  return items.reduce((sum, item) => {
-    if (item.subItems && item.subItems.length > 0) {
-      return sum + item.subItems.reduce((s, sub) => s + getNum(sub.key), 0);
-    }
-    return sum + getNum(item.key);
-  }, 0);
+  const isPayment = items.some(i => i.key === 'pay_expenses');
+
+  if (isPayment) {
+    const expenseKeys = [
+      'pay_meeting', 'pay_traveling', 'pay_printing', 'pay_misc',
+      'pay_education', 'pay_bank', 'pay_swachata', 'pay_cultural',
+      'pay_tree', 'pay_audit'
+    ];
+    const expensesIndividualSum = expenseKeys.reduce((s, k) => s + (getNum(k) || getNum(`${k}_total`)), 0);
+    const expensesEnteredTotal = getNum('pay_expenses_total') || getNum('pay_expenses') || getNum('pay_audit_total');
+    const finalExpenses = expensesIndividualSum > 0 ? expensesIndividualSum : expensesEnteredTotal;
+
+    const closeCash = getNum('pay_cl_cash');
+    const closeBank = getNum('pay_cl_bank');
+    const closeTotal = getNum('pay_close_total') || (closeCash + closeBank);
+
+    let otherPaySum = 0;
+    items.forEach(item => {
+      if (item.key !== 'pay_expenses' && !expenseKeys.includes(item.key) && item.key !== 'pay_close') {
+        otherPaySum += (getNum(`${item.key}_total`) || getNum(item.key));
+      }
+    });
+
+    return finalExpenses + closeTotal + otherPaySum;
+  } else {
+    let sum = 0;
+    items.forEach(item => {
+      if (item.subItems && item.subItems.length > 0) {
+        const subSum = item.subItems.reduce((s, sub) => s + (getNum(sub.key) || getNum(`${sub.key}_total`)), 0);
+        const parentVal = getNum(`${item.key}_total`) || getNum(item.key);
+        sum += parentVal > 0 ? parentVal : subSum;
+      } else {
+        sum += (getNum(`${item.key}_total`) || getNum(item.key));
+      }
+    });
+    return sum;
+  }
 };
 
 //MAIN EXPORT: mapFormDataToBackendPayload
@@ -310,18 +521,20 @@ export const mapFormDataToBackendPayload = (formData, currentStep, status = 'dra
 
   //Step 4: Income sub-totals
   const subTotalIncRent =
-    getNum('inc_rent_accrued_inner') + getNum('inc_rent_realised_inner');
+    getNum('inc_rent_accrued_inner') + getNum('inc_rent_realised_inner') + getNum('inc_rent_total_outer');
 
   const subTotalIncInterest =
     getNum('inc_interest_accrued_inner') + getNum('inc_interest_realised_inner') +
     getNum('inc_interest_securities_inner') + getNum('inc_interest_loan_inner') +
-    getNum('inc_interest_bank_inner');
+    getNum('inc_interest_bank_inner') + getNum('inc_interest_total_outer');
 
   const baseIncomeTotal =
     subTotalIncRent + subTotalIncInterest +
-    getNum('inc_dividend_outer') + getNum('inc_donations_outer') +
-    getNum('inc_grants_outer') + getNum('inc_other_sources_outer') +
-    getNum('inc_transfer_reserve_outer');
+    (getNum('inc_dividend_outer') || getNum('inc_dividend_inner') || getNum('inc_dividend')) +
+    (getNum('inc_donations_outer') || getNum('inc_donations_inner') || getNum('inc_donations')) +
+    (getNum('inc_grants_outer') || getNum('inc_grants_inner') || getNum('inc_grants')) +
+    (getNum('inc_other_sources_outer') || getNum('inc_other_sources_inner') || getNum('inc_other_sources')) +
+    (getNum('inc_transfer_reserve_outer') || getNum('inc_transfer_reserve_inner') || getNum('inc_transfer_reserve'));
 
   const netBalance = baseIncomeTotal - baseExpenditureTotal;
   const autoCalculatedSurplus = netBalance > 0 ? netBalance : 0;
@@ -358,8 +571,9 @@ export const mapFormDataToBackendPayload = (formData, currentStep, status = 'dra
   });
 
   // ── Schedule IX
+  const incomeShown = baseIncomeTotal > 0 ? baseIncomeTotal : (Number(formData.sch_income_shown) || 0);
   const totalDeductions = calcTotalDeductions(formData);
-  const grossAnnualIncome = Math.max(0, (Number(formData.sch_income_shown) || 0) - totalDeductions);
+  const grossAnnualIncome = Math.max(0, incomeShown - totalDeductions);
 
   // Receipt & Payment totals 
   const customRecTotal = Object.keys(formData)
@@ -454,8 +668,9 @@ export const mapFormDataToBackendPayload = (formData, currentStep, status = 'dra
 
     // Step 3: Schedule IX 
     scheduleIX: {
-      incomeShown: Number(formData.sch_income_shown) || 0,
+      incomeShown: incomeShown,
       deductions: buildScheduleIXDeductions(formData),
+      totalDeductions: totalDeductions,
       grossAnnualIncome: grossAnnualIncome,
       contribution: Number(formData.sch_contribution) || 0,
     },
@@ -485,8 +700,8 @@ export const mapFormDataToBackendPayload = (formData, currentStep, status = 'dra
           .map(key => ({
             key,
             label: formData[`${key}_label`] || 'Custom Receipt',
-            amount: Number(formData[key]) || 0,
-            total: null
+            amount: null,
+            total: Number(formData[key]) || null
           }))
       ],
       payments: [
@@ -496,7 +711,7 @@ export const mapFormDataToBackendPayload = (formData, currentStep, status = 'dra
           .map(key => ({
             key,
             label: formData[`${key}_label`] || 'Custom Payment',
-            amount: Number(formData[key]) || 0,
+            amount: Number(formData[key]) || null,
             total: null
           }))
       ],
@@ -543,6 +758,8 @@ const formatDateForInput = (dateValue) => {
 };
 
 export const mapBackendPayloadToFormData = (report) => {
+  if (!report) return {};
+
   const formData = {
     reportType: report.reportType || 'audit',
     trustName: report.trustName || '',
@@ -592,14 +809,14 @@ export const mapBackendPayloadToFormData = (report) => {
     audaddr_emailId: report.auditorAddress?.emailId || '',
   };
 
-  //Step 2: Permissions
-  if (report.permissions) {
+  // Step 2: Permissions
+  if (report.permissions && Array.isArray(report.permissions)) {
     report.permissions.forEach((p, i) => {
       formData[`perm_${i}`] = p.answer || '';
     });
   }
 
-  //Step 3: Schedule IX 
+  // Step 3: Schedule IX 
   if (report.scheduleIX) {
     formData.sch_income_shown = report.scheduleIX.incomeShown || 0;
     formData.sch_contribution = report.scheduleIX.contribution || 0;
@@ -611,20 +828,51 @@ export const mapBackendPayloadToFormData = (report) => {
   // Step 4: Income & Expenditure
   if (report.incomeExpenditure) {
     (report.incomeExpenditure.expenditures || []).forEach(e => {
-      if (e.key) formData[e.key] = e.amount || 0;
+      if (e.key) {
+        formData[e.key] = e.amount || 0;
+        if (e.innerKey) {
+          formData[e.innerKey] = e.amount || 0;
+        }
+        if (e.key.includes('surplus')) {
+          formData.exp_surplus_override = e.amount || 0;
+        }
+      }
     });
+
     (report.incomeExpenditure.incomes || []).forEach(i => {
-      if (i.key) formData[i.key] = i.amount || 0;
+      if (i.key) {
+        formData[i.key] = i.amount || 0;
+        if (i.outerKey) {
+          formData[i.outerKey] = i.total || i.amount || 0;
+        } else if (i.key.endsWith('_inner') && i.total) {
+          formData[i.key.replace('_inner', '_outer')] = i.total;
+        }
+      }
     });
   }
 
-  //Step 5: Balance Sheet
+  // Step 5: Balance Sheet
   if (report.balanceSheet) {
     (report.balanceSheet.fundsLiabilities || []).forEach(fl => {
-      if (fl.key) formData[fl.key] = fl.amount || 0;
+      if (fl.key) {
+        formData[fl.key] = fl.amount !== null && fl.amount !== undefined ? fl.amount : (fl.total || 0);
+        if (fl.outerKey) {
+          formData[fl.outerKey] = fl.total || 0;
+        } else if (fl.key.endsWith('_inner') && fl.total) {
+          formData[fl.key.replace('_inner', '_outer')] = fl.total;
+        }
+      }
     });
+
     (report.balanceSheet.propertyAssets || []).forEach(pa => {
-      if (pa.key) formData[pa.key] = pa.amount || 0;
+      if (pa.key) {
+        formData[pa.key] = pa.amount !== null && pa.amount !== undefined ? pa.amount : (pa.total || 0);
+        if (pa.outerKey) {
+          formData[pa.outerKey] = pa.total || 0;
+        } else if (pa.key.endsWith('_inner') && pa.total) {
+          formData[pa.key.replace('_inner', '_outer')] = pa.total;
+        }
+      }
     });
   }
 
@@ -632,17 +880,28 @@ export const mapBackendPayloadToFormData = (report) => {
   if (report.receiptPayment) {
     (report.receiptPayment.receipts || []).forEach(r => {
       if (r.key) {
-        formData[r.key] = r.amount || 0;
         if (r.key.startsWith('rec_custom_')) {
+          formData[r.key] = r.total !== null && r.total !== undefined ? r.total : (r.amount || 0);
           formData[`${r.key}_label`] = r.label || '';
+        } else {
+          formData[r.key] = r.amount !== null && r.amount !== undefined ? r.amount : 0;
+          if (r.total !== null && r.total !== undefined) {
+            formData[`${r.key}_total`] = r.total;
+          }
         }
       }
     });
+
     (report.receiptPayment.payments || []).forEach(p => {
       if (p.key) {
-        formData[p.key] = p.amount || 0;
         if (p.key.startsWith('pay_custom_')) {
+          formData[p.key] = p.amount !== null && p.amount !== undefined ? p.amount : (p.total || 0);
           formData[`${p.key}_label`] = p.label || '';
+        } else {
+          formData[p.key] = p.amount !== null && p.amount !== undefined ? p.amount : 0;
+          if (p.total !== null && p.total !== undefined) {
+            formData[`${p.key}_total`] = p.total;
+          }
         }
       }
     });
